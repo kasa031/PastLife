@@ -264,6 +264,9 @@ async function performAnalysis(mergeMode = false) {
             }
         });
         
+        // Store all relationships for generation calculation
+        const allRelationships = extractedData.relationships || [];
+        
         if (mergeMode) {
             // Merge mode: Add new persons without replacing existing
             const existingNames = new Set(allTreeData.map(p => p.name.toLowerCase()));
@@ -285,6 +288,12 @@ async function performAnalysis(mergeMode = false) {
                     });
                 }
                 
+                // Recalculate generations for all persons including new ones
+                const allRels = allTreeData.flatMap(p => p.relationships || []).filter((r, i, arr) => 
+                    arr.findIndex(a => a.person1 === r.person1 && a.person2 === r.person2 && a.type === r.type) === i
+                );
+                calculateAllGenerations(allTreeData, allRels);
+                
                 showMessage(`La til ${uniqueNewPersons.length} nye personer til eksisterende tre! (${allTreeData.length} totalt)`, 'success');
             }
         } else {
@@ -301,6 +310,9 @@ async function performAnalysis(mergeMode = false) {
                     return person;
                 });
             }
+            
+            // Calculate generations (already done in analyzeWithOpenRouter, but ensure it's correct)
+            calculateAllGenerations(allTreeData, allRelationships);
             
             showMessage(`Successfully extracted ${allTreeData.length} family members!`, 'success');
         }
@@ -414,9 +426,11 @@ ${text.substring(0, 40000)}`;
             id: `tree_${Date.now()}_${index}`,
             x: 0,
             y: 0,
-            generation: determineGeneration(person, extracted.relationships || []),
             tags: person.tags || []
         }));
+        
+        // Calculate generations for all persons
+        calculateAllGenerations(extracted.persons, extracted.relationships || []);
         
         return extracted;
         
@@ -484,24 +498,134 @@ function extractPlace(context) {
 }
 
 // Determine generation based on relationships
-function determineGeneration(person, relationships) {
-    // Simple heuristic: if person has children, they're generation 0
-    // If they have parents, add to generation
-    const hasChildren = relationships.some(r => 
+function determineGeneration(person, relationships, allPersons = []) {
+    if (!relationships || relationships.length === 0) {
+        return 0; // Default generation if no relationships
+    }
+    
+    // Build a graph of relationships
+    const personRelations = relationships.filter(r => 
+        r.person1 === person.name || r.person2 === person.name
+    );
+    
+    // Find the oldest generation (persons with no parents)
+    const hasParents = personRelations.some(r => {
+        if (r.type === 'child') {
+            return r.person1 === person.name; // person is child, person2 is parent
+        }
+        return false;
+    });
+    
+    // If person has parents, recursively find their generation
+    if (hasParents) {
+        const parentRels = personRelations.filter(r => 
+            r.type === 'child' && r.person1 === person.name
+        );
+        
+        if (parentRels.length > 0) {
+            // Find parent's generation
+            const parentName = parentRels[0].person2;
+            const parentPerson = allPersons.find(p => p.name === parentName);
+            
+            if (parentPerson && parentPerson.generation !== undefined) {
+                return parentPerson.generation + 1;
+            }
+            
+            // Recursively calculate parent's generation
+            const parentGen = determineGeneration(
+                { name: parentName },
+                relationships,
+                allPersons
+            );
+            return parentGen + 1;
+        }
+    }
+    
+    // If person has children, they're generation 0 or 1
+    const hasChildren = personRelations.some(r => 
         (r.person1 === person.name && r.type === 'parent') ||
         (r.person2 === person.name && r.type === 'child')
     );
     
-    if (hasChildren) return 0;
+    // If no parents and has children, likely generation 0 (oldest)
+    if (!hasParents && hasChildren) {
+        return 0;
+    }
     
-    const hasParents = relationships.some(r => 
-        (r.person1 === person.name && r.type === 'child') ||
-        (r.person2 === person.name && r.type === 'parent')
-    );
-    
-    if (hasParents) return 1;
-    
+    // Default: generation 0
     return 0;
+}
+
+// Calculate generations for all persons in tree
+function calculateAllGenerations(persons, relationships) {
+    // First pass: find persons with no parents (generation 0)
+    const personsWithNoParents = persons.filter(person => {
+        if (!relationships || relationships.length === 0) return true;
+        
+        const personRels = relationships.filter(r => 
+            (r.person1 === person.name || r.person2 === person.name) &&
+            r.type === 'child' &&
+            r.person1 === person.name
+        );
+        
+        return personRels.length === 0;
+    });
+    
+    // Set generation 0 for oldest generation
+    personsWithNoParents.forEach(p => {
+        p.generation = 0;
+    });
+    
+    // Second pass: calculate generations for others
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = persons.length;
+    
+    while (changed && iterations < maxIterations) {
+        changed = false;
+        iterations++;
+        
+        persons.forEach(person => {
+            if (person.generation !== undefined) return;
+            
+            if (!relationships || relationships.length === 0) {
+                person.generation = 0;
+                changed = true;
+                return;
+            }
+            
+            // Find parent relationships
+            const parentRels = relationships.filter(r => 
+                r.type === 'child' &&
+                r.person1 === person.name &&
+                r.person2
+            );
+            
+            if (parentRels.length > 0) {
+                // Find parent
+                const parentName = parentRels[0].person2;
+                const parent = persons.find(p => p.name === parentName);
+                
+                if (parent && parent.generation !== undefined) {
+                    person.generation = parent.generation + 1;
+                    changed = true;
+                }
+            } else {
+                // No parents found, default to 0
+                person.generation = 0;
+                changed = true;
+            }
+        });
+    }
+    
+    // Set default for any remaining
+    persons.forEach(person => {
+        if (person.generation === undefined) {
+            person.generation = 0;
+        }
+    });
+    
+    return persons;
 }
 
 // Build tree from existing data
@@ -521,9 +645,16 @@ window.buildTreeFromExisting = function() {
         ...person,
         x: 0,
         y: 0,
-        generation: 0,
         tags: person.tags || []
     }));
+    
+    // Try to extract relationships from existing data or calculate from person descriptions
+    // For now, set all to generation 0, but user can manually organize
+    allTreeData.forEach(p => {
+        if (p.generation === undefined) {
+            p.generation = 0;
+        }
+    });
     
     // Apply current filter and render
     applyFilter(currentFilter);
@@ -777,6 +908,17 @@ window.resetView = function() {
     showMessage('Visning tilbakestilt', 'success', 2000);
 };
 
+// Get generation label text
+function getGenerationLabel(generation) {
+    const genNum = generation || 0;
+    if (genNum === 0) return 'Generasjon 1 (Eldste)';
+    if (genNum === 1) return 'Generasjon 2';
+    if (genNum === 2) return 'Generasjon 3';
+    if (genNum === 3) return 'Generasjon 4';
+    if (genNum === 4) return 'Generasjon 5';
+    return `Generasjon ${genNum + 1}`;
+}
+
 // Create tree node element
 function createTreeNode(person) {
     const node = document.createElement('div');
@@ -784,9 +926,15 @@ function createTreeNode(person) {
     node.id = `node_${person.id}`;
     node.dataset.personId = person.id;
     
+    const generation = person.generation !== undefined ? person.generation : 0;
+    const generationText = getGenerationLabel(generation);
+    
     node.innerHTML = `
         <div class="tree-node-header">
-            <h3 class="tree-node-name">${escapeHtml(person.name)}</h3>
+            <div>
+                <div class="tree-generation-badge generation-${generation}">${generationText}</div>
+                <h3 class="tree-node-name">${escapeHtml(person.name)}</h3>
+            </div>
             <div class="tree-node-actions">
                 <button class="tree-node-btn" onclick="editTreeNode('${person.id}')" title="Edit">✏️</button>
                 <button class="tree-node-btn" onclick="deleteTreeNode('${person.id}')" title="Delete">🗑️</button>
@@ -797,6 +945,9 @@ function createTreeNode(person) {
         ${person.country ? `<div class="tree-node-info"><strong>Country:</strong> ${escapeHtml(person.country)}</div>` : ''}
         ${person.tags && person.tags.length > 0 ? `<div class="person-tags" style="margin-top: 0.5rem;">${person.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
     `;
+    
+    // Add generation class to node for styling
+    node.classList.add(`generation-${generation}`);
     
     // Make draggable
     makeNodeDraggable(node, person);

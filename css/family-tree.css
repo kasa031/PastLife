@@ -99,6 +99,71 @@
     color: var(--turquoise-dark);
 }
 
+/* Generation Badge */
+.tree-generation-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Generation-specific colors */
+.tree-generation-badge.generation-0 {
+    background: var(--orange-primary);
+}
+
+.tree-generation-badge.generation-1 {
+    background: #ff8c42;
+}
+
+.tree-generation-badge.generation-2 {
+    background: #ffa366;
+}
+
+.tree-generation-badge.generation-3 {
+    background: #ffb88c;
+}
+
+.tree-generation-badge.generation-4 {
+    background: #ffccb3;
+    color: var(--gray-dark);
+}
+
+.tree-generation-badge.generation-5,
+.tree-generation-badge.generation-6,
+.tree-generation-badge.generation-7,
+.tree-generation-badge.generation-8,
+.tree-generation-badge.generation-9 {
+    background: #ffe6d9;
+    color: var(--gray-dark);
+}
+
+/* Generation node borders */
+.tree-node.generation-0 {
+    border-color: var(--orange-primary);
+    border-width: 3px;
+}
+
+.tree-node.generation-1 {
+    border-color: #ff8c42;
+    border-width: 2.5px;
+}
+
+.tree-node.generation-2 {
+    border-color: #ffa366;
+    border-width: 2px;
+}
+
+.tree-node.generation-3 {
+    border-color: #ffb88c;
+    border-width: 2px;
+}
+
 /* Tree Connections */
 .tree-connection {
     position: absolute;
@@ -244,6 +309,30 @@
     justify-content: center;
     color: var(--turquoise-dark);
     font-weight: bold;
+}
+
+/* Tree Filter Buttons */
+.tree-filter-btn {
+    padding: 0.5rem 1rem;
+    background: var(--white);
+    color: var(--turquoise-dark);
+    border: 2px solid var(--turquoise-primary);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.tree-filter-btn:hover {
+    background: var(--turquoise-primary);
+    color: var(--white);
+}
+
+.tree-filter-btn.active {
+    background: var(--orange-primary);
+    color: var(--white);
+    border-color: var(--orange-primary);
 }
 
 /* Responsive */
