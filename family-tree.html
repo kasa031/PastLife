@@ -59,11 +59,11 @@
                 <div class="form-group">
                     <label for="apiKey">OpenRouter API Key (Anbefalt for best resultat)</label>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <input type="password" id="apiKey" placeholder="sk-or-..." style="flex: 1;">
+                        <input type="text" id="apiKey" placeholder="sk-or-..." style="flex: 1; font-family: monospace;">
                         <button type="button" onclick="pasteApiKey()" style="padding: 0.5rem 1rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;">📋 Lim inn</button>
                         <button type="button" onclick="clearApiKey()" style="padding: 0.5rem 1rem; background: var(--gray-medium); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;">🗑️ Slett</button>
                     </div>
-                    <small style="color: var(--gray-dark); display: block; margin-top: 0.5rem;">
+                    <small id="apiKeyStatus" style="color: var(--gray-dark); display: block; margin-top: 0.5rem;">
                         ✅ API-nøkkel er allerede satt opp og klar til bruk! Du kan overskrive den hvis du vil bruke en annen.
                     </small>
                 </div>

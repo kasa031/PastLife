@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load saved API key or use default
     const savedApiKey = getSavedApiKey();
     const apiKeyInput = document.getElementById('apiKey');
+    const apiKeyStatus = document.getElementById('apiKeyStatus');
     if (apiKeyInput) {
         // Use saved key if exists, otherwise use default
         const keyToUse = localStorage.getItem(API_KEY_STORAGE) || DEFAULT_API_KEY;
@@ -64,15 +65,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!localStorage.getItem(API_KEY_STORAGE)) {
             saveApiKey(DEFAULT_API_KEY);
         }
+        // Update status message to show key is loaded
+        if (apiKeyStatus && keyToUse) {
+            const maskedKey = keyToUse.substring(0, 10) + '...' + keyToUse.substring(keyToUse.length - 4);
+            apiKeyStatus.innerHTML = `✅ API-nøkkel er lastet (${maskedKey}) og klar til bruk! Du kan overskrive den hvis du vil bruke en annen.`;
+        }
     }
     
     // Save API key when changed
     if (apiKeyInput) {
-        apiKeyInput.addEventListener('blur', () => {
+        apiKeyInput.addEventListener('input', () => {
             const key = apiKeyInput.value.trim();
+            const apiKeyStatus = document.getElementById('apiKeyStatus');
             if (key) {
                 saveApiKey(key);
-                showMessage('API-nøkkel lagret!', 'success', 2000);
+                if (apiKeyStatus) {
+                    const maskedKey = key.substring(0, 10) + '...' + key.substring(key.length - 4);
+                    apiKeyStatus.innerHTML = `✅ API-nøkkel oppdatert (${maskedKey}) og klar til bruk!`;
+                    apiKeyStatus.style.color = 'var(--gray-dark)';
+                }
+            } else if (apiKeyStatus) {
+                apiKeyStatus.innerHTML = '⚠️ Ingen API-nøkkel. Standard nøkkel vil brukes automatisk.';
+                apiKeyStatus.style.color = 'var(--orange-dark)';
             }
         });
     }
@@ -120,8 +134,13 @@ window.pasteApiKey = async function() {
 window.clearApiKey = function() {
     if (confirm('Er du sikker på at du vil slette API-nøkkelen?')) {
         const apiKeyInput = document.getElementById('apiKey');
+        const apiKeyStatus = document.getElementById('apiKeyStatus');
         apiKeyInput.value = '';
         saveApiKey('');
+        if (apiKeyStatus) {
+            apiKeyStatus.textContent = '⚠️ API-nøkkel er slettet. Du kan legge til en ny nøkkel eller bruke standard nøkkel (lastes automatisk).';
+            apiKeyStatus.style.color = 'var(--orange-dark)';
+        }
         showMessage('API-nøkkel slettet', 'success');
     }
 };
