@@ -85,4 +85,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Esc key - close any open modals/messages
+        if (e.key === 'Escape') {
+            const message = document.getElementById('globalMessage');
+            if (message) {
+                message.classList.remove('show');
+                setTimeout(() => message.remove(), 300);
+            }
+        }
+        
+        // Ctrl/Cmd + K for quick search (focus search box)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            if (heroSearch) {
+                heroSearch.focus();
+            }
+        }
+    });
 });

@@ -177,4 +177,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Esc key - clear search
+        if (e.key === 'Escape') {
+            const message = document.getElementById('globalMessage');
+            if (message) {
+                message.classList.remove('show');
+                setTimeout(() => message.remove(), 300);
+            }
+        }
+        
+        // Ctrl/Cmd + / to focus search name field
+        if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+            e.preventDefault();
+            const nameInput = document.getElementById('searchName');
+            if (nameInput) {
+                nameInput.focus();
+            }
+        }
+    });
 });

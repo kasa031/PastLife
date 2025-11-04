@@ -867,6 +867,28 @@ body {
     
     .sort-filter-bar {
         flex-direction: column;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+        margin-top: 1rem;
+    }
+    
+    .nav-menu li {
+        width: 100%;
+    }
+    
+    .nav-menu a {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .navbar .container {
+        flex-direction: column;
+    }
         align-items: stretch;
     }
     

@@ -13,6 +13,10 @@
 - [x] Statistikk-dashboard
 - [x] Duplikat-deteksjon
 - [x] Dato-intervall søk
+- [x] Farget favicon med familietre-symbol (turkis/oransje)
+- [x] Keyboard shortcuts (Enter, Esc, Ctrl/Cmd+K, Ctrl/Cmd+/)
+- [x] Forbedret feilmeldinger med detaljer og forslag
+- [x] Validering av år og dato-intervaller
 
 ## 🔄 Høy prioritet - Performance & UX
 
@@ -44,9 +48,10 @@
 ## 🎨 Medium prioritet - Funksjonalitet
 
 ### 5. Keyboard shortcuts
-- [ ] Enter for å søke (delvis implementert)
-- [ ] Esc for å lukke modaler/dropdowns
-- [ ] Ctrl/Cmd + K for quick search
+- [x] Enter for å søke (implementert)
+- [x] Esc for å lukke modaler/dropdowns (implementert)
+- [x] Ctrl/Cmd + K for quick search (implementert på index)
+- [x] Ctrl/Cmd + / for å fokusere søkefelt (implementert på search)
 - [ ] Piltaster for navigasjon i søkeresultater
 
 ### 6. Bulk-operasjoner

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="treeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00CED1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#treeGradient)" stroke="#008B8B" stroke-width="2"/>
+  
+  <!-- Family tree symbol - stylized tree with generations -->
+  <!-- Generation 0 (top) -->
+  <circle cx="50" cy="25" r="6" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  
+  <!-- Generation 1 (middle) -->
+  <circle cx="35" cy="45" r="5" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  <circle cx="50" cy="45" r="5" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  <circle cx="65" cy="45" r="5" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  
+  <!-- Generation 2 (bottom) -->
+  <circle cx="25" cy="70" r="4" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  <circle cx="40" cy="70" r="4" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  <circle cx="55" cy="70" r="4" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  <circle cx="70" cy="70" r="4" fill="#FFFFFF" stroke="#008B8B" stroke-width="1.5"/>
+  
+  <!-- Connecting lines -->
+  <line x1="50" y1="31" x2="35" y2="40" stroke="#FFFFFF" stroke-width="2" opacity="0.8"/>
+  <line x1="50" y1="31" x2="50" y2="40" stroke="#FFFFFF" stroke-width="2" opacity="0.8"/>
+  <line x1="50" y1="31" x2="65" y2="40" stroke="#FFFFFF" stroke-width="2" opacity="0.8"/>
+  
+  <line x1="35" y1="50" x2="25" y2="66" stroke="#FFFFFF" stroke-width="1.5" opacity="0.8"/>
+  <line x1="35" y1="50" x2="40" y2="66" stroke="#FFFFFF" stroke-width="1.5" opacity="0.8"/>
+  <line x1="50" y1="50" x2="55" y2="66" stroke="#FFFFFF" stroke-width="1.5" opacity="0.8"/>
+  <line x1="65" y1="50" x2="70" y2="66" stroke="#FFFFFF" stroke-width="1.5" opacity="0.8"/>
+  
+  <!-- F³ text overlay -->
+  <text x="50" y="85" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#FFFFFF" text-anchor="middle">F³</text>
+</svg>
+
