@@ -379,17 +379,32 @@ async function analyzeWithOpenRouter(text, apiKey) {
     const sideInfo = isMotherSide ? ' (morsside/mother side)' : isFatherSide ? ' (farsside/father side)' : '';
     
     const prompt = `Analyze the following family information text and extract all family members with their details and relationships.${sideInfo}
+
+CRITICAL INSTRUCTIONS FOR ACCURACY:
+1. CORRECT SPELLING ERRORS: Fix typos in names, places, and dates automatically (e.g., "Kristian" not "Kristan", "født" not "fodt")
+2. PLACES ONLY: Only extract REAL geographic locations (cities, countries, regions). DO NOT include:
+   - Band names (e.g., "the Steve Miller band" is NOT a place)
+   - Song titles, book titles, or other non-geographic references
+   - Family names or surnames as places
+3. RELATIONSHIPS: Be extremely careful with relationship types:
+   - "helbror" (half-brother) means sharing ONE parent, not both
+   - "bror" (brother) means sharing BOTH parents
+   - Only mark relationships as "sibling" if explicitly stated or clearly implied
+   - Verify parent-child relationships are correct (not reversed)
+4. CONTEXT AWARENESS: Consider surrounding text to understand ambiguous references
+5. VALIDATION: Only include information that is clearly stated or can be reasonably inferred from context
+
 Return a JSON object with this structure:
 {
   "persons": [
     {
-      "name": "Full Name",
+      "name": "Full Name (corrected spelling)",
       "birthYear": year or null,
       "deathYear": year or null,
-      "birthPlace": "place",
-      "country": "country",
-      "city": "city",
-      "description": "biography",
+      "birthPlace": "real geographic location only (city, region, or country)",
+      "country": "country name only",
+      "city": "city name only (real cities, not bands/songs/etc)",
+      "description": "biography (corrected spelling and grammar)",
       "tags": ["tag1", "tag2"]
     }
   ],
@@ -397,13 +412,15 @@ Return a JSON object with this structure:
     {
       "person1": "Name",
       "person2": "Name",
-      "type": "parent|child|spouse|sibling"
+      "type": "parent|child|spouse|sibling|half-sibling"
     }
   ]
 }
 
 ${isMotherSide ? 'Add "morsside" to the tags array for all persons from the mother side.' : ''}
 ${isFatherSide ? 'Add "farsside" to the tags array for all persons from the father side.' : ''}
+
+IMPORTANT: Double-check all extracted information for accuracy. If uncertain about a place or relationship, leave it null rather than guessing.
 
 Text to analyze:
 ${text.substring(0, 40000)}`;
@@ -422,7 +439,19 @@ ${text.substring(0, 40000)}`;
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a helpful assistant that extracts family information from text and returns structured JSON data.'
+                        content: `You are an expert genealogist and family history analyst. Your task is to:
+1. Extract family information with HIGH ACCURACY
+2. Correct spelling errors automatically (names, places, dates)
+3. Distinguish between REAL geographic locations and other references (bands, songs, etc.)
+4. Verify relationships carefully (siblings, half-siblings, parents, children)
+5. Only include information that is clearly stated or can be reasonably inferred
+6. Leave fields as null if uncertain rather than guessing
+
+Be particularly careful to:
+- Never treat band names, song titles, or book titles as places
+- Verify relationship types (especially "helbror" vs "bror" - half-brother vs full brother)
+- Correct common spelling mistakes in Norwegian and English names
+- Validate that birthPlace, country, and city are actual geographic locations`
                     },
                     {
                         role: 'user',
