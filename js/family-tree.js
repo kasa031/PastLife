@@ -484,14 +484,48 @@ Be particularly careful to:
             extracted.persons = [];
         }
         
-        // Add IDs and metadata
-        extracted.persons = extracted.persons.map((person, index) => ({
-            ...person,
-            id: `tree_${Date.now()}_${index}`,
-            x: 0,
-            y: 0,
-            tags: person.tags || []
-        }));
+        // Validate and clean each person - remove invalid places and verify data
+        extracted.persons = extracted.persons.map((person, index) => {
+            // Remove invalid place names (bands, songs, etc.)
+            const invalidPlacePatterns = [
+                /band$/i, /song$/i, /album$/i, /music$/i, /the\s+\w+\s+band/i,
+                /steve\s+miller\s+band/i, /miller\s+band/i
+            ];
+            
+            // Clean birthPlace, city - remove if it's not a real place
+            let birthPlace = person.birthPlace || '';
+            let city = person.city || '';
+            let country = person.country || '';
+            
+            // Check if birthPlace looks like a band/song name
+            if (invalidPlacePatterns.some(pattern => pattern.test(birthPlace))) {
+                birthPlace = '';
+            }
+            if (invalidPlacePatterns.some(pattern => pattern.test(city))) {
+                city = '';
+            }
+            
+            return {
+                ...person,
+                id: `tree_${Date.now()}_${index}`,
+                x: 0,
+                y: 0,
+                tags: person.tags || [],
+                birthPlace: birthPlace,
+                city: city,
+                country: country
+            };
+        });
+        
+        // Validate relationships - remove invalid ones
+        if (extracted.relationships && Array.isArray(extracted.relationships)) {
+            extracted.relationships = extracted.relationships.filter(rel => {
+                // Only keep relationships where both persons exist
+                const person1Exists = extracted.persons.some(p => p.name === rel.person1);
+                const person2Exists = extracted.persons.some(p => p.name === rel.person2);
+                return person1Exists && person2Exists;
+            });
+        }
         
         // Calculate generations for all persons
         calculateAllGenerations(extracted.persons, extracted.relationships || []);
