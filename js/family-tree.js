@@ -458,8 +458,8 @@ Be particularly careful to:
                         content: prompt
                     }
                 ],
-                temperature: 0.3,
-                max_tokens: 4000
+                temperature: 0.2, // Lower temperature for more accuracy
+                max_tokens: 6000 // More tokens for detailed analysis
             })
         });
         
