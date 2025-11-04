@@ -23,19 +23,21 @@
 ### 1. Bildeloading og optimalisering
 - [x] Implementer lazy loading for bilder som ikke er "above the fold" - implementert
 - [x] Optimaliser bildestørrelser (resize før lagring) - implementert (maxWidth 800px, quality 0.7)
+- [x] Legg til skeleton loaders for bilder som lastes - implementert (loading-animasjon)
 - [ ] Konverter bilder til WebP format for bedre komprimering
-- [ ] Legg til skeleton loaders for bilder som lastes
 
 ### 2. Responsiv design
 - [x] Optimaliser navigasjon for små skjermer (hamburger menu) - implementert
+- [x] Forbedre touch-gestures for familietre (drag, zoom) - implementert (pinch-to-zoom, touch drag)
 - [ ] Test og forbedre mobil-opplevelse på alle sider
-- [ ] Forbedre touch-gestures for familietre (drag, zoom)
 - [ ] Test på tablets og forskjellige skjermstørrelser
 
 ### 3. Søk og filtrering
 - [x] Fuzzy search forbedringer (f.eks. "Edvard" finner "Edward") - implementert
 - [x] Autocomplete/forslag mens bruker skriver - implementert
-- [ ] Avansert søk med flere kriterier samtidig
+- [x] Avansert søk med flere kriterier samtidig - implementert (navn, land, by, år-intervall, beskrivelse, tags)
+- [x] Søk i beskrivelse - implementert
+- [x] Søk i tags - implementert
 - [ ] Søk i relasjoner (f.eks. "finn alle søsken av X")
 - [ ] Søk-suggestions basert på tidligere søk
 

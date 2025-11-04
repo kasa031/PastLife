@@ -980,6 +980,7 @@ function renderTree() {
     
     // Setup pan and zoom
     setupPanAndZoom();
+    setupTouchGestures(); // Add touch gestures for mobile
 }
 
 // Calculate tree bounds
@@ -1002,6 +1003,70 @@ function calculateTreeBounds() {
 }
 
 // Setup pan and zoom
+// Setup touch gestures for mobile
+function setupTouchGestures() {
+    const container = document.getElementById('treeWrapper');
+    if (!container) return;
+    
+    let lastTouchDistance = 0;
+    let initialPinchZoom = zoomLevel;
+    
+    container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            // Pinch zoom start
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            lastTouchDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            initialPinchZoom = zoomLevel;
+        } else if (e.touches.length === 1) {
+            // Pan start
+            isPanning = true;
+            const touch = e.touches[0];
+            const startX = touch.clientX - panX;
+            const startY = touch.clientY - panY;
+            
+            container.addEventListener('touchmove', handleTouchMove);
+            container.addEventListener('touchend', handleTouchEnd);
+            
+            function handleTouchMove(e) {
+                if (e.touches.length === 1 && isPanning) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    panX = touch.clientX - startX;
+                    panY = touch.clientY - startY;
+                    updateTransform();
+                } else if (e.touches.length === 2) {
+                    // Pinch zoom
+                    e.preventDefault();
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    const currentDistance = Math.hypot(
+                        touch2.clientX - touch1.clientX,
+                        touch2.clientY - touch1.clientY
+                    );
+                    
+                    if (lastTouchDistance > 0) {
+                        const scale = currentDistance / lastTouchDistance;
+                        zoomLevel = Math.max(0.1, Math.min(3, initialPinchZoom * scale));
+                        updateTransform();
+                    }
+                }
+            }
+            
+            function handleTouchEnd() {
+                isPanning = false;
+                lastTouchDistance = 0;
+                container.removeEventListener('touchmove', handleTouchMove);
+                container.removeEventListener('touchend', handleTouchEnd);
+            }
+        }
+    }, { passive: false });
+}
+
 function setupPanAndZoom() {
     const wrapper = document.getElementById('treeWrapper');
     const container = document.getElementById('treeContainer');

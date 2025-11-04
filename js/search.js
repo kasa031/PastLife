@@ -114,14 +114,14 @@ window.applySorting = function() {
     container.innerHTML = sorted.map(person => createPersonCard(person)).join('');
 }
 
-// Create person card HTML with lazy loading
+// Create person card HTML with lazy loading and skeleton
 function createPersonCard(person) {
     const photo = person.photo || 'assets/images/oldphoto2.jpg';
     const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
     
     return `
         <div class="person-card" onclick="viewPerson('${person.id}')">
-            <img src="assets/images/oldphoto2.jpg" data-src="${photo}" alt="${person.name}" class="person-card-image lazy-load" onerror="this.src='assets/images/oldphoto2.jpg'">
+            <img src="assets/images/oldphoto2.jpg" data-src="${photo}" alt="${person.name}" class="person-card-image lazy-load loading" onerror="this.src='assets/images/oldphoto2.jpg'; this.classList.remove('loading');" onload="this.classList.remove('loading');">
             <div class="person-card-info">
                 <h3>${escapeHtml(person.name)}</h3>
                 ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
