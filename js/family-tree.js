@@ -275,10 +275,10 @@ async function performAnalysis(mergeMode = false) {
         
         const newPersons = extractedData.persons || [];
         
-        // Detect side (mother/father) from text
-        const text = document.getElementById('familyText').value.toLowerCase();
-        const isMotherSide = text.includes('mor') || text.includes('mother') || text.includes('morsside') || text.includes('morsledn');
-        const isFatherSide = text.includes('far') || text.includes('father') || text.includes('farsside') || text.includes('farsledn');
+        // Detect side (mother/father) from text (use already defined text variable)
+        const textLower = text.toLowerCase();
+        const isMotherSide = textLower.includes('mor') || textLower.includes('mother') || textLower.includes('morsside') || textLower.includes('morsledn');
+        const isFatherSide = textLower.includes('far') || textLower.includes('father') || textLower.includes('farsside') || textLower.includes('farsledn');
         
         // Add side tag to persons
         newPersons.forEach(person => {
