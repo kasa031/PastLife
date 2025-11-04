@@ -759,8 +759,12 @@ function renderTree() {
     
     // Calculate container size based on tree bounds
     const bounds = calculateTreeBounds();
-    container.style.width = `${bounds.maxX + 300}px`;
-    container.style.height = `${bounds.maxY + 200}px`;
+    // Use stored width or calculate from bounds
+    const containerWidth = window.treeContainerWidth || Math.max(bounds.maxX + 400, 2000);
+    const containerHeight = Math.max(bounds.maxY + 300, 5000); // Very tall for deep trees
+    
+    container.style.width = `${containerWidth}px`;
+    container.style.height = `${containerHeight}px`;
     
     // Render nodes
     treeData.forEach(person => {
@@ -875,7 +879,7 @@ window.zoomOut = function() {
     updateTransform();
 };
 
-// Fit to screen
+// Fit to screen (focus on top - generation 0)
 window.fitToScreen = function() {
     const bounds = calculateTreeBounds();
     const wrapper = document.getElementById('treeWrapper');
@@ -887,16 +891,18 @@ window.fitToScreen = function() {
     const treeWidth = bounds.maxX - bounds.minX;
     const treeHeight = bounds.maxY - bounds.minY;
     
+    // Fit to width primarily, or height if tree is very tall
     const scaleX = wrapperWidth / treeWidth;
-    const scaleY = wrapperHeight / treeHeight;
-    zoomLevel = Math.min(scaleX, scaleY, 1.0) * 0.9; // 90% for padding
+    const scaleY = wrapperHeight / (treeHeight * 0.4); // Show top 40% of tree
     
-    // Center the tree
+    zoomLevel = Math.min(scaleX, scaleY, 1.0) * 0.85; // 85% for padding
+    
+    // Center horizontally, align to top
     panX = (wrapperWidth - treeWidth * zoomLevel) / 2 - bounds.minX * zoomLevel;
-    panY = (wrapperHeight - treeHeight * zoomLevel) / 2 - bounds.minY * zoomLevel;
+    panY = 20 - bounds.minY * zoomLevel; // Small padding from top
     
     updateTransform();
-    showMessage('Treet tilpasset skjermen', 'success', 2000);
+    showMessage('Treet tilpasset skjermen (viser øverste del)', 'success', 2000);
 };
 
 // Reset view
@@ -908,15 +914,20 @@ window.resetView = function() {
     showMessage('Visning tilbakestilt', 'success', 2000);
 };
 
-// Get generation label text
+// Get generation label text (user is generation 0, ancestors go down)
 function getGenerationLabel(generation) {
     const genNum = generation || 0;
-    if (genNum === 0) return 'Generasjon 1 (Eldste)';
-    if (genNum === 1) return 'Generasjon 2';
-    if (genNum === 2) return 'Generasjon 3';
-    if (genNum === 3) return 'Generasjon 4';
-    if (genNum === 4) return 'Generasjon 5';
-    return `Generasjon ${genNum + 1}`;
+    if (genNum === 0) return 'Du (Generasjon 0)';
+    if (genNum === 1) return 'Generasjon 1 (Foreldre)';
+    if (genNum === 2) return 'Generasjon 2 (Besteforeldre)';
+    if (genNum === 3) return 'Generasjon 3 (Oldeforeldre)';
+    if (genNum === 4) return 'Generasjon 4 (Tippoldeforeldre)';
+    if (genNum === 5) return 'Generasjon 5';
+    if (genNum === 6) return 'Generasjon 6';
+    if (genNum === 7) return 'Generasjon 7';
+    if (genNum === 8) return 'Generasjon 8';
+    if (genNum === 9) return 'Generasjon 9';
+    return `Generasjon ${genNum}`;
 }
 
 // Create tree node element
@@ -1023,37 +1034,47 @@ function selectNode(nodeId) {
     }
 }
 
-// Layout tree automatically
+// Layout tree automatically - VERTICAL layout (user at top, ancestors below)
 function layoutTree() {
     // Group by generation
     const generations = {};
     treeData.forEach(person => {
-        if (!generations[person.generation]) {
-            generations[person.generation] = [];
+        const gen = person.generation !== undefined ? person.generation : 0;
+        if (!generations[gen]) {
+            generations[gen] = [];
         }
-        generations[person.generation].push(person);
+        generations[gen].push(person);
     });
     
-    // Calculate positions
+    // Sort generations (0 = user at top, increasing numbers go down)
     const genNumbers = Object.keys(generations).map(Number).sort((a, b) => a - b);
-    const spacing = 280; // Increased spacing
-    const verticalSpacing = 220; // Increased vertical spacing
     
-    // Calculate minimum width needed
-    const maxPersonsInGen = Math.max(...genNumbers.map(gen => generations[gen].length));
-    const minWidth = maxPersonsInGen * spacing + 200;
+    // Vertical spacing between generations (much larger for deep trees)
+    const verticalSpacing = 350; // Large vertical spacing for scrolling down
+    const horizontalSpacing = 300; // Horizontal spacing between persons in same generation
     
+    // Calculate container width needed (for many persons per generation)
+    const maxPersonsInGen = Math.max(...genNumbers.map(gen => generations[gen].length), 1);
+    const containerWidth = Math.max(2000, maxPersonsInGen * horizontalSpacing + 400); // Minimum 2000px, more if needed
+    
+    // Center each generation horizontally
     genNumbers.forEach((gen, genIndex) => {
         const persons = generations[gen];
-        const startY = genIndex * verticalSpacing + 50;
-        const totalWidth = (persons.length - 1) * spacing;
-        const startX = Math.max(100, (minWidth - totalWidth) / 2);
+        const startY = genIndex * verticalSpacing + 100; // Start 100px from top
         
+        // Calculate horizontal centering for this generation
+        const totalWidth = (persons.length - 1) * horizontalSpacing;
+        const startX = Math.max(200, (containerWidth - totalWidth) / 2);
+        
+        // Position persons horizontally in this generation
         persons.forEach((person, index) => {
-            person.x = startX + index * spacing;
+            person.x = startX + index * horizontalSpacing;
             person.y = startY;
         });
     });
+    
+    // Store container width for use in renderTree
+    window.treeContainerWidth = containerWidth;
 }
 
 // Draw connections between related nodes
@@ -1079,28 +1100,81 @@ function drawConnections() {
     });
 }
 
-// Draw connection line
+// Draw connection line (vertical layout - parent above, child below)
 function drawConnection(person1, person2, container) {
-    const x1 = person1.x + 125; // Center of node
-    const y1 = person1.y + 50;
-    const x2 = person2.x + 125;
-    const y2 = person2.y + 50;
+    const nodeWidth = 250; // Approximate node width
+    const nodeHeight = 150; // Approximate node height
     
-    // Horizontal line
-    const hLine = document.createElement('div');
-    hLine.className = 'tree-connection horizontal';
-    hLine.style.left = `${Math.min(x1, x2)}px`;
-    hLine.style.top = `${y1}px`;
-    hLine.style.width = `${Math.abs(x2 - x1)}px`;
-    container.appendChild(hLine);
+    const x1 = person1.x + nodeWidth / 2; // Center of node
+    const y1 = person1.y + nodeHeight;
+    const x2 = person2.x + nodeWidth / 2;
+    const y2 = person2.y;
     
-    // Vertical line
+    // Determine which person is above (lower generation) and which is below (higher generation)
+    const gen1 = person1.generation || 0;
+    const gen2 = person2.generation || 0;
+    
+    let topPerson, bottomPerson, topX, topY, bottomX, bottomY;
+    
+    if (gen1 < gen2) {
+        // person1 is above (parent)
+        topPerson = person1;
+        bottomPerson = person2;
+        topX = x1;
+        topY = person1.y + nodeHeight;
+        bottomX = x2;
+        bottomY = person2.y;
+    } else if (gen2 < gen1) {
+        // person2 is above (parent)
+        topPerson = person2;
+        bottomPerson = person1;
+        topX = x2;
+        topY = person2.y + nodeHeight;
+        bottomX = x1;
+        bottomY = person1.y;
+    } else {
+        // Same generation - horizontal connection
+        if (person1.x < person2.x) {
+            topX = person1.x + nodeWidth;
+            topY = person1.y + nodeHeight / 2;
+            bottomX = person2.x;
+            bottomY = person2.y + nodeHeight / 2;
+        } else {
+            topX = person2.x + nodeWidth;
+            topY = person2.y + nodeHeight / 2;
+            bottomX = person1.x;
+            bottomY = person1.y + nodeHeight / 2;
+        }
+        
+        const hLine = document.createElement('div');
+        hLine.className = 'tree-connection horizontal';
+        hLine.style.left = `${topX}px`;
+        hLine.style.top = `${topY}px`;
+        hLine.style.width = `${bottomX - topX}px`;
+        container.appendChild(hLine);
+        return;
+    }
+    
+    // Vertical line from parent to child
     const vLine = document.createElement('div');
     vLine.className = 'tree-connection vertical';
-    vLine.style.left = `${x2}px`;
-    vLine.style.top = `${Math.min(y1, y2)}px`;
-    vLine.style.height = `${Math.abs(y2 - y1)}px`;
+    vLine.style.left = `${topX}px`;
+    vLine.style.top = `${topY}px`;
+    vLine.style.height = `${bottomY - topY}px`;
+    vLine.style.width = '3px';
     container.appendChild(vLine);
+    
+    // If parents are horizontally offset, draw horizontal connector
+    if (Math.abs(topX - bottomX) > 10) {
+        const midY = topY + (bottomY - topY) / 2;
+        const hLine = document.createElement('div');
+        hLine.className = 'tree-connection horizontal';
+        hLine.style.left = `${Math.min(topX, bottomX)}px`;
+        hLine.style.top = `${midY}px`;
+        hLine.style.width = `${Math.abs(bottomX - topX)}px`;
+        hLine.style.height = '3px';
+        container.appendChild(hLine);
+    }
 }
 
 // Edit tree node
