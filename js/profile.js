@@ -310,6 +310,7 @@ function createPersonCard(person) {
                 ${isOwner ? `
                     <div class="action-buttons">
                         <button class="btn-edit" onclick="editPerson('${person.id}')" title="Edit this ancestor's information">✏️ Edit</button>
+                        <button class="btn-edit" onclick="quickAddToTree('${person.id}')" title="Quick add to family tree" style="background: var(--turquoise-primary);">🌳 Add to Tree</button>
                         <button class="btn-delete" onclick="deletePersonConfirm('${person.id}')" title="⚠️ Delete this ancestor (will ask for confirmation)">🗑️ Delete</button>
                     </div>
                 ` : ''}
@@ -429,6 +430,59 @@ window.importData = function(event) {
     };
     reader.readAsText(file);
     event.target.value = ''; // Reset file input
+};
+
+// Quick add to family tree from profile
+window.quickAddToTree = function(personId) {
+    const person = getPersonById(personId);
+    if (!person) return;
+    
+    // Get existing tree data
+    const treeDataKey = 'pastlife_family_tree_data';
+    const savedTree = localStorage.getItem(treeDataKey);
+    let treeData = { persons: [], relationships: [] };
+    
+    if (savedTree) {
+        try {
+            treeData = JSON.parse(savedTree);
+        } catch (e) {
+            console.error('Error loading tree:', e);
+        }
+    }
+    
+    // Check if already in tree
+    const alreadyInTree = (treeData.persons || []).some(p => 
+        p.name === person.name && 
+        (!person.birthYear || !p.birthYear || p.birthYear === person.birthYear)
+    );
+    
+    if (alreadyInTree) {
+        showMessage('This person is already in your family tree', 'info');
+        setTimeout(() => {
+            window.location.href = 'family-tree.html';
+        }, 1500);
+        return;
+    }
+    
+    // Add person to tree
+    const treePerson = {
+        ...person,
+        id: person.id || `tree_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        x: 0,
+        y: 0,
+        generation: 0
+    };
+    
+    if (!treeData.persons) treeData.persons = [];
+    treeData.persons.push(treePerson);
+    
+    // Save tree
+    localStorage.setItem(treeDataKey, JSON.stringify(treeData));
+    
+    showMessage('Person added to family tree! Redirecting...', 'success');
+    setTimeout(() => {
+        window.location.href = 'family-tree.html';
+    }, 1500);
 };
 
 // Make functions globally available

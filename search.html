@@ -31,6 +31,14 @@
             <h1 style="text-align: center; color: var(--turquoise-dark); margin-bottom: 2rem;">Search Ancestors</h1>
             
             <div class="search-filters">
+                <!-- Search History Dropdown -->
+                <div class="filter-group" style="grid-column: 1 / -1;">
+                    <label for="searchHistory">Recent Searches (click to reuse)</label>
+                    <select id="searchHistory" onchange="loadSearchFromHistory()" style="width: 100%; padding: 0.5rem; border: 2px solid var(--turquoise-primary); border-radius: 5px;">
+                        <option value="">-- Select a recent search --</option>
+                    </select>
+                </div>
+                
                 <div class="filter-group">
                     <label for="searchName">Name</label>
                     <input type="text" id="searchName" placeholder="e.g., Edvard Jensen">

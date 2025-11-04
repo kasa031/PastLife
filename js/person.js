@@ -22,15 +22,117 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPersonDetails();
     loadComments();
     updateFavoriteButton();
+    checkPersonInTree();
     
     // Setup comment form
     const commentForm = document.getElementById('commentFormSection');
     if (!isLoggedIn()) {
         commentForm.innerHTML = '<p style="text-align: center; color: var(--gray-dark);">Please <a href="login.html">login</a> to leave comments.</p>';
         const favoriteBtn = document.getElementById('favoriteBtn');
+        const addToTreeBtn = document.getElementById('addToTreeBtn');
         if (favoriteBtn) favoriteBtn.style.display = 'none';
+        if (addToTreeBtn) addToTreeBtn.style.display = 'none';
     }
 });
+
+// Check if person is in family tree
+function checkPersonInTree() {
+    if (!isLoggedIn()) return;
+    
+    const treeDataKey = 'pastlife_family_tree_data';
+    const savedTree = localStorage.getItem(treeDataKey);
+    
+    if (savedTree) {
+        try {
+            const treeData = JSON.parse(savedTree);
+            const allTreePersons = treeData.persons || [];
+            
+            // Check if current person exists in tree (by name match)
+            const person = getPersonById(currentPersonId);
+            if (person) {
+                const inTree = allTreePersons.some(p => 
+                    p.name === person.name && 
+                    (!person.birthYear || !p.birthYear || p.birthYear === person.birthYear)
+                );
+                
+                const viewBtn = document.getElementById('viewInTreeBtn');
+                if (viewBtn) {
+                    if (inTree) {
+                        viewBtn.style.display = 'block';
+                    } else {
+                        viewBtn.style.display = 'none';
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error checking tree:', e);
+        }
+    }
+}
+
+// View person in family tree
+window.viewInFamilyTree = function() {
+    window.location.href = 'family-tree.html?highlight=' + encodeURIComponent(currentPersonId);
+};
+
+// Add person to family tree
+window.addToFamilyTree = function() {
+    if (!isLoggedIn()) {
+        showMessage('Please login to add to family tree', 'error');
+        setTimeout(() => window.location.href = 'login.html', 1500);
+        return;
+    }
+    
+    const person = getPersonById(currentPersonId);
+    if (!person) return;
+    
+    // Get existing tree data
+    const treeDataKey = 'pastlife_family_tree_data';
+    const savedTree = localStorage.getItem(treeDataKey);
+    let treeData = { persons: [], relationships: [] };
+    
+    if (savedTree) {
+        try {
+            treeData = JSON.parse(savedTree);
+        } catch (e) {
+            console.error('Error loading tree:', e);
+        }
+    }
+    
+    // Check if already in tree
+    const alreadyInTree = (treeData.persons || []).some(p => 
+        p.name === person.name && 
+        (!person.birthYear || !p.birthYear || p.birthYear === person.birthYear)
+    );
+    
+    if (alreadyInTree) {
+        showMessage('This person is already in your family tree', 'info');
+        setTimeout(() => {
+            window.location.href = 'family-tree.html';
+        }, 1500);
+        return;
+    }
+    
+    // Add person to tree
+    const treePerson = {
+        ...person,
+        id: person.id || `tree_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        x: 0,
+        y: 0,
+        generation: 0 // Default generation, can be adjusted
+    };
+    
+    if (!treeData.persons) treeData.persons = [];
+    treeData.persons.push(treePerson);
+    
+    // Save tree
+    localStorage.setItem(treeDataKey, JSON.stringify(treeData));
+    
+    showMessage('Person added to family tree! Redirecting...', 'success');
+    setTimeout(() => {
+        window.location.href = 'family-tree.html';
+    }, 1500);
+};
 
 // Load person details
 function loadPersonDetails() {
@@ -200,6 +302,37 @@ window.submitComment = function() {
     showMessage('Comment posted successfully!', 'success');
     loadComments();
 };
+
+// Get related persons (same last name, tags, or places)
+function getRelatedPersons(person) {
+    const allPersons = getAllPersons();
+    const personLastName = person.name.split(' ').pop()?.toLowerCase() || '';
+    
+    return allPersons.filter(p => {
+        if (p.id === person.id) return false; // Exclude self
+        
+        // Same last name
+        const pLastName = p.name.split(' ').pop()?.toLowerCase() || '';
+        if (personLastName && pLastName && personLastName === pLastName) return true;
+        
+        // Same tags (excluding morsside/farsside)
+        const personTags = (person.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
+        const pTags = (p.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
+        if (personTags.length > 0 && pTags.some(t => personTags.includes(t))) return true;
+        
+        // Same city or country
+        if (person.city && p.city && person.city.toLowerCase() === p.city.toLowerCase()) return true;
+        if (person.country && p.country && person.country.toLowerCase() === p.country.toLowerCase()) return true;
+        
+        return false;
+    }).slice(0, 10); // Limit to 10
+}
+
+// Get all persons (helper)
+function getAllPersons() {
+    const personsKey = 'pastlife_persons';
+    return JSON.parse(localStorage.getItem(personsKey) || '[]');
+}
 
 // Escape HTML
 function escapeHtml(text) {

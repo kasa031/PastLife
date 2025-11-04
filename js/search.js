@@ -41,6 +41,9 @@ function performSearch() {
     // Save to history
     saveSearchHistory(filters);
     
+    // Reload history dropdown
+    loadSearchHistory();
+    
     const results = searchPersons(filters);
     displaySearchResults(results);
 }

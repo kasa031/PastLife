@@ -49,7 +49,11 @@ window.viewPerson = function(id) {
 window.handleHeroSearch = function() {
     const searchTerm = document.getElementById('heroSearch').value.trim();
     if (searchTerm) {
+        // Pre-fill name field in search page
         window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+    } else {
+        // Just go to search page
+        window.location.href = 'search.html';
     }
 }
 

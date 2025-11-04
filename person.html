@@ -35,9 +35,11 @@
             <div class="comments-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h2 style="color: var(--turquoise-dark); margin: 0;">Comments</h2>
-                    <div style="display: flex; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <button class="btn-share" onclick="sharePerson()" title="Share this person page (uses native share if available, otherwise copies link)">📤 Share or Copy Link</button>
                         <button class="btn-edit" onclick="toggleFavorite()" id="favoriteBtn" title="Add or remove from favorites">⭐ Favorite</button>
+                        <button class="btn-edit" onclick="viewInFamilyTree()" id="viewInTreeBtn" style="display: none;" title="View this person in the family tree">🌳 View in Family Tree</button>
+                        <button class="btn-edit" onclick="addToFamilyTree()" id="addToTreeBtn" title="Add this person to your family tree">➕ Add to Family Tree</button>
                     </div>
                 </div>
                 
