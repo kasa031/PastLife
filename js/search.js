@@ -159,9 +159,136 @@ function checkUrlParams() {
 window.performSearch = performSearch;
 window.viewPerson = viewPerson;
 
+// Autocomplete for name search
+let selectedSuggestionIndex = -1;
+let suggestions = [];
+
+function setupAutocomplete() {
+    const nameInput = document.getElementById('searchName');
+    const suggestionsDiv = document.getElementById('nameSuggestions');
+    
+    if (!nameInput || !suggestionsDiv) return;
+    
+    nameInput.addEventListener('input', (e) => {
+        const value = e.target.value.trim();
+        
+        if (value.length < 2) {
+            suggestionsDiv.classList.remove('show');
+            suggestions = [];
+            return;
+        }
+        
+        // Get all unique names from persons
+        const allPersons = getAllPersons();
+        const uniqueNames = [...new Set(allPersons.map(p => p.name))];
+        
+        // Filter names that match (fuzzy)
+        suggestions = uniqueNames
+            .filter(name => {
+                const nameLower = name.toLowerCase();
+                const valueLower = value.toLowerCase();
+                return nameLower.includes(valueLower) || 
+                       nameLower.split(' ').some(part => part.startsWith(valueLower));
+            })
+            .slice(0, 5); // Limit to 5 suggestions
+        
+        if (suggestions.length > 0) {
+            displaySuggestions(suggestions);
+        } else {
+            suggestionsDiv.classList.remove('show');
+        }
+    });
+    
+    nameInput.addEventListener('blur', () => {
+        // Delay to allow click on suggestion
+        setTimeout(() => {
+            suggestionsDiv.classList.remove('show');
+        }, 200);
+    });
+    
+    nameInput.addEventListener('keydown', (e) => {
+        if (!suggestionsDiv.classList.contains('show') || suggestions.length === 0) return;
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, suggestions.length - 1);
+            updateSuggestionSelection();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+            updateSuggestionSelection();
+        } else if (e.key === 'Enter' && selectedSuggestionIndex >= 0) {
+            e.preventDefault();
+            selectSuggestion(suggestions[selectedSuggestionIndex]);
+        }
+    });
+}
+
+function displaySuggestions(names) {
+    const suggestionsDiv = document.getElementById('nameSuggestions');
+    if (!suggestionsDiv) return;
+    
+    suggestionsDiv.innerHTML = names.map((name, index) => 
+        `<div class="autocomplete-suggestion" data-index="${index}">${escapeHtml(name)}</div>`
+    ).join('');
+    
+    // Add click handlers
+    suggestionsDiv.querySelectorAll('.autocomplete-suggestion').forEach((suggestion, index) => {
+        suggestion.addEventListener('click', () => {
+            selectSuggestion(names[index]);
+        });
+    });
+    
+    suggestionsDiv.classList.add('show');
+    selectedSuggestionIndex = -1;
+}
+
+function updateSuggestionSelection() {
+    const suggestionsDiv = document.getElementById('nameSuggestions');
+    if (!suggestionsDiv) return;
+    
+    suggestionsDiv.querySelectorAll('.autocomplete-suggestion').forEach((suggestion, index) => {
+        if (index === selectedSuggestionIndex) {
+            suggestion.classList.add('selected');
+        } else {
+            suggestion.classList.remove('selected');
+        }
+    });
+}
+
+function selectSuggestion(name) {
+    const nameInput = document.getElementById('searchName');
+    const suggestionsDiv = document.getElementById('nameSuggestions');
+    
+    if (nameInput) {
+        nameInput.value = name;
+    }
+    if (suggestionsDiv) {
+        suggestionsDiv.classList.remove('show');
+    }
+    selectedSuggestionIndex = -1;
+    suggestions = [];
+}
+
+// Get all persons (helper)
+function getAllPersons() {
+    const personsKey = 'pastlife_persons';
+    return JSON.parse(localStorage.getItem(personsKey) || '[]');
+}
+
+// Escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     updateNavigation();
+    
+    // Setup autocomplete
+    setupAutocomplete();
     
     // Load search history
     loadSearchHistory();
@@ -186,6 +313,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (message) {
                 message.classList.remove('show');
                 setTimeout(() => message.remove(), 300);
+            }
+            const suggestionsDiv = document.getElementById('nameSuggestions');
+            if (suggestionsDiv) {
+                suggestionsDiv.classList.remove('show');
             }
         }
         

@@ -27,22 +27,22 @@
 - [ ] Optimaliser bildestørrelser (resize før lagring)
 
 ### 2. Responsiv design
+- [x] Optimaliser navigasjon for små skjermer (hamburger menu) - implementert
 - [ ] Test og forbedre mobil-opplevelse på alle sider
 - [ ] Forbedre touch-gestures for familietre (drag, zoom)
-- [ ] Optimaliser navigasjon for små skjermer (hamburger menu?)
 - [ ] Test på tablets og forskjellige skjermstørrelser
 
 ### 3. Søk og filtrering
-- [ ] Fuzzy search forbedringer (f.eks. "Edvard" finner "Edward")
-- [ ] Autocomplete/forslag mens bruker skriver
+- [x] Fuzzy search forbedringer (f.eks. "Edvard" finner "Edward") - implementert
+- [x] Autocomplete/forslag mens bruker skriver - implementert
 - [ ] Avansert søk med flere kriterier samtidig
 - [ ] Søk i relasjoner (f.eks. "finn alle søsken av X")
 - [ ] Søk-suggestions basert på tidligere søk
 
 ### 4. Feilmeldinger og validering
-- [ ] Mer detaljerte feilmeldinger med forslag til løsning
-- [ ] Bedre validering av input (f.eks. datoer, år)
-- [ ] Visuelle indikatorer for påkrevde felt
+- [x] Mer detaljerte feilmeldinger med forslag til løsning - implementert
+- [x] Bedre validering av input (f.eks. datoer, år) - implementert
+- [x] Visuelle indikatorer for påkrevde felt - implementert (rød *)
 - [ ] Kontekstuelle hjelpetekster
 
 ## 🎨 Medium prioritet - Funksjonalitet

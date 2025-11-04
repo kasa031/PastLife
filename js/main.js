@@ -70,6 +70,23 @@ function preloadHeroImage() {
     img.src = 'assets/images/doors.jpg';
 }
 
+// Toggle mobile menu
+window.toggleMobileMenu = function() {
+    const menu = document.getElementById('navMenu');
+    if (menu) {
+        menu.classList.toggle('active');
+    }
+};
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('navMenu');
+    const toggle = document.querySelector('.menu-toggle');
+    if (menu && toggle && !menu.contains(e.target) && !toggle.contains(e.target)) {
+        menu.classList.remove('active');
+    }
+});
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     loadRecentPersons();

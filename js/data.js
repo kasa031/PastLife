@@ -124,9 +124,60 @@ export function searchPersons(filters) {
         if (filters.name) {
             const nameSearch = filters.name.toLowerCase().trim();
             const personName = person.name.toLowerCase();
+            
             // Exact match or contains match
-            const nameMatch = personName.includes(nameSearch) || 
+            let nameMatch = personName.includes(nameSearch) || 
                            personName.split(' ').some(part => part.startsWith(nameSearch));
+            
+            // Fuzzy search - handle common name variations
+            if (!nameMatch) {
+                // Common letter substitutions (Norwegian/English)
+                const variations = {
+                    'edvard': ['edward', 'edvart', 'edvards'],
+                    'edward': ['edvard', 'edvart'],
+                    'kristian': ['christian', 'kristan', 'kristian'],
+                    'christian': ['kristian', 'kristan'],
+                    'johan': ['johannes', 'johan', 'johann'],
+                    'anders': ['andreas', 'andré', 'andrew'],
+                    'marie': ['maria', 'mary'],
+                    'anna': ['anne', 'annah'],
+                    'ole': ['ole', 'ola', 'olav'],
+                    'hans': ['johannes', 'johan']
+                };
+                
+                // Check if search term has known variations
+                for (const [key, variants] of Object.entries(variations)) {
+                    if (nameSearch.includes(key) || variants.some(v => nameSearch.includes(v))) {
+                        const searchVariations = [key, ...variants];
+                        nameMatch = searchVariations.some(variant => 
+                            personName.includes(variant) || 
+                            personName.split(' ').some(part => part.startsWith(variant))
+                        );
+                        if (nameMatch) break;
+                    }
+                }
+                
+                // Levenshtein-like fuzzy matching (simple version)
+                if (!nameMatch && nameSearch.length >= 3) {
+                    const nameParts = personName.split(' ');
+                    const searchParts = nameSearch.split(' ');
+                    
+                    for (const searchPart of searchParts) {
+                        for (const namePart of nameParts) {
+                            // Check if strings are similar (1-2 character difference)
+                            if (namePart.length >= 3 && searchPart.length >= 3) {
+                                const diff = Math.abs(namePart.length - searchPart.length);
+                                if (diff <= 2 && namePart.slice(0, 3) === searchPart.slice(0, 3)) {
+                                    nameMatch = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (nameMatch) break;
+                    }
+                }
+            }
+            
             matches = matches && nameMatch;
         }
         

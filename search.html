@@ -15,7 +15,8 @@
                 <h1>F³</h1>
                 <p class="tagline">Family Tree - Journey through time, discover your ancestors</p>
             </div>
-            <ul class="nav-menu">
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">☰</button>
+            <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="search.html" class="active">Search</a></li>
                 <li><a href="profile.html" id="profileLink">Profile</a></li>
@@ -41,8 +42,9 @@
                 </div>
                 
                 <div class="filter-group">
-                    <label for="searchName">Name</label>
-                    <input type="text" id="searchName" placeholder="e.g., Edvard Jensen">
+                    <label for="searchName">Name <span class="required-indicator">*</span></label>
+                    <input type="text" id="searchName" placeholder="e.g., Edvard Jensen" autocomplete="off">
+                    <div id="nameSuggestions" class="autocomplete-suggestions"></div>
                 </div>
                 <div class="filter-group">
                     <label for="searchCountry">Country</label>
