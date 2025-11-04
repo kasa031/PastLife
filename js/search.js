@@ -1,6 +1,7 @@
 // Search page functionality
 import { searchPersons } from './data.js';
 import { updateNavigation } from './auth.js';
+import { showMessage } from './utils.js';
 
 let currentResults = [];
 

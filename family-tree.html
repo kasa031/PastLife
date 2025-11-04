@@ -47,7 +47,7 @@
                     <label for="familyText">Family Information</label>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                         <span>Lim inn tekst om familien din her</span>
-                        <button type="button" onclick="loadExampleText()" style="padding: 0.4rem 0.8rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">📝 Last inn eksempel</button>
+                        <button type="button" onclick="loadExampleText()" style="padding: 0.4rem 0.8rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" title="Load example family history text to see format">📝 Load Example</button>
                     </div>
                     <textarea id="familyText" rows="15" placeholder="Eksempel:&#10;&#10;Min oldefar Edvard Jensen ble født i 1885 i Christiania, Norge. Han giftet seg med Anna Larsen i 1910. De fikk tre barn: Olav Jensen (født 1912), Inger Jensen (født 1915), og Knut Jensen (født 1918).&#10;&#10;Edvard døde i 1950 i Oslo. Anna overlevde ham og døde i 1965.&#10;&#10;Olav giftet seg med Maria Hansen i 1935. De fikk to barn: Erik Olsen (født 1938) og Liv Olsen (født 1942)."></textarea>
                     <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
@@ -60,8 +60,8 @@
                     <label for="apiKey">OpenRouter API Key (Anbefalt for best resultat)</label>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
                         <input type="text" id="apiKey" placeholder="sk-or-..." style="flex: 1; font-family: monospace;">
-                        <button type="button" onclick="pasteApiKey()" style="padding: 0.5rem 1rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;">📋 Lim inn</button>
-                        <button type="button" onclick="clearApiKey()" style="padding: 0.5rem 1rem; background: var(--gray-medium); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;">🗑️ Slett</button>
+                        <button type="button" onclick="pasteApiKey()" style="padding: 0.5rem 1rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;" title="Paste API key from clipboard">📋 Paste</button>
+                        <button type="button" onclick="clearApiKey()" style="padding: 0.5rem 1rem; background: var(--gray-medium); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;" title="Clear API key field">🗑️ Clear</button>
                     </div>
                     <small id="apiKeyStatus" style="color: var(--gray-dark); display: block; margin-top: 0.5rem;">
                         ✅ API-nøkkel er allerede satt opp og klar til bruk! Du kan overskrive den hvis du vil bruke en annen.
@@ -106,18 +106,18 @@
                         <button class="tree-filter-btn" onclick="filterTree('both')" id="filterBoth" data-filter="both">Begge</button>
                     </div>
                 </div>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-                    <button class="btn-edit" onclick="saveTree()">Save Tree</button>
-                    <button class="btn-share" onclick="exportTree()">Export Tree</button>
-                    <button class="btn-import" onclick="importTree()">Import Tree</button>
-                    <div style="display: flex; gap: 0.5rem; align-items: center; margin-left: auto;">
-                        <button class="btn-edit" onclick="zoomIn()" title="Zoom in">🔍+</button>
-                        <button class="btn-edit" onclick="zoomOut()" title="Zoom out">🔍-</button>
-                        <button class="btn-edit" onclick="fitToScreen()" title="Fit to screen">📐 Fit</button>
-                        <button class="btn-edit" onclick="resetView()" title="Reset view">🔄 Reset</button>
-                    </div>
-                    <button class="btn-delete" onclick="clearTree()">Clear Tree</button>
-                </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <button class="btn-edit" onclick="saveTree()" title="Save tree data to your profile contributions">💾 Save Tree to Profile</button>
+            <button class="btn-share" onclick="exportTree()" title="Export tree as JSON file for backup">📥 Export Tree (JSON)</button>
+            <button class="btn-import" onclick="importTree()" title="Import tree from JSON file">📤 Import Tree (JSON)</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-left: auto;">
+                <button class="btn-edit" onclick="zoomIn()" title="Zoom in to see details">🔍+ Zoom In</button>
+                <button class="btn-edit" onclick="zoomOut()" title="Zoom out to see more">🔍- Zoom Out</button>
+                <button class="btn-edit" onclick="fitToScreen()" title="Fit entire tree to screen">📐 Fit to Screen</button>
+                <button class="btn-edit" onclick="resetView()" title="Reset zoom and position">🔄 Reset View</button>
+            </div>
+            <button class="btn-delete" onclick="clearTree()" title="⚠️ Delete entire tree (will ask for confirmation)">🗑️ Clear Tree</button>
+        </div>
             </div>
 
             <!-- Family Tree Visualization -->
