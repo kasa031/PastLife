@@ -263,6 +263,48 @@ export function searchPersons(filters) {
     });
 }
 
+// Search for persons by relationship (e.g., find all siblings of X)
+export function searchByRelationship(personName, relationshipType) {
+    const allPersons = getAllPersons();
+    const targetPerson = allPersons.find(p => p.name.toLowerCase() === personName.toLowerCase());
+    
+    if (!targetPerson) return [];
+    
+    // For now, we'll search by tags that indicate relationships
+    // In a full implementation, we'd use the relationships array from family tree
+    const results = [];
+    
+    // Try to find relationships from family tree data
+    const user = JSON.parse(localStorage.getItem('pastlife_auth') || 'null');
+    if (user) {
+        const treeKey = `pastlife_tree_${user.username}`;
+        const treeData = JSON.parse(localStorage.getItem(treeKey) || '[]');
+        
+        // This is a simplified version - in a full implementation,
+        // we'd need to store relationships in the main persons data
+        // For now, return persons with similar last names or tags
+        const lastName = targetPerson.name.split(' ').pop()?.toLowerCase() || '';
+        if (lastName) {
+            return allPersons.filter(p => {
+                if (p.id === targetPerson.id) return false;
+                const pLastName = p.name.split(' ').pop()?.toLowerCase() || '';
+                
+                // Same last name could indicate family relationship
+                if (pLastName === lastName) return true;
+                
+                // Same tags (excluding morsside/farsside)
+                const targetTags = (targetPerson.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
+                const pTags = (p.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
+                if (targetTags.length > 0 && pTags.some(t => targetTags.includes(t))) return true;
+                
+                return false;
+            });
+        }
+    }
+    
+    return results;
+}
+
 // Add comment
 export function addComment(personId, text, author) {
     initData();

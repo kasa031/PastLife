@@ -26,7 +26,18 @@ window.toggleDarkMode = function() {
 };
 
 function loadTheme() {
-    const savedTheme = localStorage.getItem('pastlife_theme') || 'light';
+    // Check for saved preference first
+    let savedTheme = localStorage.getItem('pastlife_theme');
+    
+    // If no saved preference, detect system preference
+    if (!savedTheme) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            savedTheme = 'dark';
+        } else {
+            savedTheme = 'light';
+        }
+    }
+    
     document.documentElement.setAttribute('data-theme', savedTheme);
     
     const toggles = document.querySelectorAll('.theme-toggle');
@@ -34,6 +45,20 @@ function loadTheme() {
         toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
     });
+    
+    // Listen for system theme changes
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('pastlife_theme')) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                toggles.forEach(toggle => {
+                    toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+                    toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+                });
+            }
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

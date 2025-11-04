@@ -38,8 +38,8 @@
 - [x] Avansert søk med flere kriterier samtidig - implementert (navn, land, by, år-intervall, beskrivelse, tags)
 - [x] Søk i beskrivelse - implementert
 - [x] Søk i tags - implementert
-- [ ] Søk i relasjoner (f.eks. "finn alle søsken av X")
-- [ ] Søk-suggestions basert på tidligere søk
+- [x] Søk i relasjoner (f.eks. "finn alle søsken av X") - implementert (søk etter relaterte personer basert på etternavn og tags)
+- [x] Søk-suggestions basert på tidligere søk - implementert (viser søkehistorikk i autocomplete)
 
 ### 4. Feilmeldinger og validering
 - [x] Mer detaljerte feilmeldinger med forslag til løsning - implementert
@@ -98,7 +98,7 @@
 ### 11. Dark mode
 - [x] Dark mode toggle - implementert (🌙/☀️ knapp i navigasjon)
 - [x] Lagre brukerpreferanse - implementert (lagres i localStorage)
-- [ ] Automatisk dark mode basert på system-innstillinger
+- [x] Automatisk dark mode basert på system-innstillinger - implementert (detekterer system-preferanse og oppdaterer automatisk)
 
 ### 12. Eksport/import forbedringer
 - [ ] Eksport til GEDCOM format (standard for slektsforskning)

@@ -28,13 +28,30 @@ function saveSearchHistory(filters) {
 
 // Perform search
 function performSearch() {
+    const relationshipName = document.getElementById('searchRelationship') ? document.getElementById('searchRelationship').value.trim() : '';
+    
+    // If searching by relationship, use that instead
+    if (relationshipName) {
+        const relatedResults = searchByRelationship(relationshipName, 'all');
+        if (relatedResults.length === 0) {
+            showMessage(`No related persons found for "${relationshipName}"`, 'info');
+            document.getElementById('searchResults').innerHTML = '';
+            document.getElementById('resultsTitle').textContent = '';
+        } else {
+            displaySearchResults(relatedResults);
+            document.getElementById('resultsTitle').textContent = `Found ${relatedResults.length} related person${relatedResults.length > 1 ? 's' : ''} for "${relationshipName}"`;
+        }
+        currentResultIndex = -1;
+        return;
+    }
+    
     const filters = {
         name: document.getElementById('searchName').value.trim(),
         country: document.getElementById('searchCountry').value.trim(),
         city: document.getElementById('searchCity').value.trim(),
         yearFrom: document.getElementById('searchYearFrom').value.trim(),
         yearTo: document.getElementById('searchYearTo').value.trim(),
-        tags: document.getElementById('searchTags').value.trim(),
+        tags: document.getElementById('searchTags') ? document.getElementById('searchTags').value.trim().split(',').map(t => t.trim()).filter(t => t) : [],
         description: document.getElementById('searchDescription').value.trim()
     };
     
@@ -217,19 +234,30 @@ function setupAutocomplete() {
             return;
         }
         
+        // Get suggestions from search history first
+        const historyKey = 'pastlife_search_history';
+        const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+        const historySuggestions = history
+            .filter(h => h.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 3)
+            .map(h => ({ text: h, type: 'history' }));
+        
         // Get all unique names from persons
         const allPersons = getAllPersons();
         const uniqueNames = [...new Set(allPersons.map(p => p.name))];
         
         // Filter names that match (fuzzy)
-        suggestions = uniqueNames
+        const nameSuggestions = uniqueNames
             .filter(name => {
                 const nameLower = name.toLowerCase();
                 const valueLower = value.toLowerCase();
                 return nameLower.includes(valueLower) || 
                        nameLower.split(' ').some(part => part.startsWith(valueLower));
             })
-            .slice(0, 5); // Limit to 5 suggestions
+            .slice(0, 5 - historySuggestions.length)
+            .map(name => ({ text: name, type: 'name' }));
+        
+        suggestions = [...historySuggestions, ...nameSuggestions];
         
         if (suggestions.length > 0) {
             displaySuggestions(suggestions);
@@ -263,18 +291,19 @@ function setupAutocomplete() {
     });
 }
 
-function displaySuggestions(names) {
+function displaySuggestions(suggestions) {
     const suggestionsDiv = document.getElementById('nameSuggestions');
     if (!suggestionsDiv) return;
     
-    suggestionsDiv.innerHTML = names.map((name, index) => 
-        `<div class="autocomplete-suggestion" data-index="${index}">${escapeHtml(name)}</div>`
-    ).join('');
+    suggestionsDiv.innerHTML = suggestions.map((item, index) => {
+        const icon = item.type === 'history' ? '🕐 ' : '👤 ';
+        return `<div class="autocomplete-suggestion" data-index="${index}">${icon}${escapeHtml(item.text)}</div>`;
+    }).join('');
     
     // Add click handlers
     suggestionsDiv.querySelectorAll('.autocomplete-suggestion').forEach((suggestion, index) => {
         suggestion.addEventListener('click', () => {
-            selectSuggestion(names[index]);
+            selectSuggestion(suggestions[index].text);
         });
     });
     
@@ -363,7 +392,18 @@ window.toggleDarkMode = function() {
 };
 
 function loadTheme() {
-    const savedTheme = localStorage.getItem('pastlife_theme') || 'light';
+    // Check for saved preference first
+    let savedTheme = localStorage.getItem('pastlife_theme');
+    
+    // If no saved preference, detect system preference
+    if (!savedTheme) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            savedTheme = 'dark';
+        } else {
+            savedTheme = 'light';
+        }
+    }
+    
     document.documentElement.setAttribute('data-theme', savedTheme);
     
     const toggles = document.querySelectorAll('.theme-toggle');
@@ -371,6 +411,20 @@ function loadTheme() {
         toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
     });
+    
+    // Listen for system theme changes
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('pastlife_theme')) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                toggles.forEach(toggle => {
+                    toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+                    toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+                });
+            }
+        });
+    }
 }
 
 // Initialize page
