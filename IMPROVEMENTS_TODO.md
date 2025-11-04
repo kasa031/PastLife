@@ -69,9 +69,10 @@
 - [ ] Automatisk layout-forbedringer (mindre overlapping)
 
 ### 8. AI-forbedringer
-- [x] Forbedret dato-validering (f.eks. "født 1500" ikke "dødd 1499") - implementert i AI prompt
+- [x] Forbedret dato-validering (f.eks. "født 1500" ikke "dødd 1499") - implementert i AI prompt og post-validering
+- [x] Relasjons-validering (f.eks. "far" kan ikke være yngre enn "barn") - implementert (validerer alder i parent-child relasjoner)
+- [x] Post-validering av AI-ekstraherte data - implementert (dato-validering, alder-validering, sted-rensing)
 - [ ] Stedsnavn-validering mot faktiske steder
-- [ ] Relasjons-validering (f.eks. "far" kan ikke være yngre enn "barn")
 - [ ] Flerspråklig støtte (norsk/engelsk)
 - [ ] Batch-analyse (analyser flere tekster samtidig)
 
@@ -157,7 +158,7 @@
 - [ ] Historikk for endringer (hvem endret hva, når)
 
 ## 🐛 Bugs å fikse
-- [ ] Sjekk alle formateringsfeil i datoer
+- [x] Sjekk alle formateringsfeil i datoer - implementert (post-validering av AI-data, klient-side validering)
 - [ ] Test edge cases (tomme felter, spesialtegn)
 - [ ] Test med store mengder data (1000+ personer)
 - [ ] Test på langsomme nettverk

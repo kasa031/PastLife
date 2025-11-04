@@ -511,6 +511,44 @@ Be particularly careful to:
                 city = '';
             }
             
+            // Validate dates - CRITICAL: death year cannot be before birth year
+            let birthYear = person.birthYear;
+            let deathYear = person.deathYear;
+            
+            if (birthYear && deathYear) {
+                const birth = parseInt(birthYear);
+                const death = parseInt(deathYear);
+                
+                if (!isNaN(birth) && !isNaN(death)) {
+                    if (death < birth) {
+                        // Invalid: death before birth - remove death year
+                        deathYear = null;
+                        console.warn(`Invalid dates for ${person.name}: death (${death}) before birth (${birth}). Removed death year.`);
+                    } else if (death - birth > 150) {
+                        // Unusually old - warn but keep
+                        console.warn(`Unusually old age for ${person.name}: ${death - birth} years`);
+                    }
+                }
+            }
+            
+            // Validate birthYear range
+            if (birthYear) {
+                const year = parseInt(birthYear);
+                if (!isNaN(year) && (year < 1000 || year > new Date().getFullYear() + 10)) {
+                    birthYear = null;
+                    console.warn(`Invalid birth year for ${person.name}: ${year}`);
+                }
+            }
+            
+            // Validate deathYear range
+            if (deathYear) {
+                const year = parseInt(deathYear);
+                if (!isNaN(year) && (year < 1000 || year > new Date().getFullYear() + 10)) {
+                    deathYear = null;
+                    console.warn(`Invalid death year for ${person.name}: ${year}`);
+                }
+            }
+            
             return {
                 ...person,
                 id: `tree_${Date.now()}_${index}`,
@@ -519,17 +557,49 @@ Be particularly careful to:
                 tags: person.tags || [],
                 birthPlace: birthPlace,
                 city: city,
-                country: country
+                country: country,
+                birthYear: birthYear,
+                deathYear: deathYear
             };
         });
         
-        // Validate relationships - remove invalid ones
+        // Validate relationships - remove invalid ones and validate age relationships
         if (extracted.relationships && Array.isArray(extracted.relationships)) {
             extracted.relationships = extracted.relationships.filter(rel => {
                 // Only keep relationships where both persons exist
-                const person1Exists = extracted.persons.some(p => p.name === rel.person1);
-                const person2Exists = extracted.persons.some(p => p.name === rel.person2);
-                return person1Exists && person2Exists;
+                const person1 = extracted.persons.find(p => p.name === rel.person1);
+                const person2 = extracted.persons.find(p => p.name === rel.person2);
+                
+                if (!person1 || !person2) {
+                    return false; // Person doesn't exist
+                }
+                
+                // Validate parent-child relationships: parent must be older than child
+                if (rel.type === 'parent' || rel.type === 'child') {
+                    const parent = rel.type === 'parent' ? person1 : person2;
+                    const child = rel.type === 'parent' ? person2 : person1;
+                    
+                    if (parent.birthYear && child.birthYear) {
+                        const parentYear = parseInt(parent.birthYear);
+                        const childYear = parseInt(child.birthYear);
+                        
+                        if (!isNaN(parentYear) && !isNaN(childYear)) {
+                            if (parentYear >= childYear) {
+                                // Parent born same year or after child - invalid
+                                console.warn(`Invalid relationship: ${parent.name} (born ${parentYear}) cannot be parent of ${child.name} (born ${childYear})`);
+                                return false;
+                            }
+                            
+                            // Check minimum age (typically 12-15 years for parents)
+                            const ageDiff = childYear - parentYear;
+                            if (ageDiff < 12) {
+                                console.warn(`Unusually young parent: ${parent.name} would be ${ageDiff} years old when ${child.name} was born`);
+                            }
+                        }
+                    }
+                }
+                
+                return true;
             });
         }
         
