@@ -528,6 +528,30 @@ body {
     background: var(--orange-dark);
 }
 
+/* Profile filter buttons */
+.profile-filter-btn {
+    padding: 0.5rem 1rem;
+    background: var(--white);
+    color: var(--turquoise-dark);
+    border: 2px solid var(--turquoise-primary);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.profile-filter-btn:hover {
+    background: var(--turquoise-light);
+    border-color: var(--turquoise-dark);
+}
+
+.profile-filter-btn.active {
+    background: var(--orange-primary);
+    color: var(--white);
+    border-color: var(--orange-primary);
+}
+
 /* Login/Register Page */
 .auth-container {
     min-height: 70vh;

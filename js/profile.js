@@ -5,6 +5,9 @@ import { showMessage, showLoading, hideLoading } from './utils.js';
 
 let tags = [];
 let photoFile = null;
+let allContributions = []; // Store all user contributions
+let currentFilter = 'all'; // 'all', 'morsside', 'farsside', 'both'
+let currentSort = 'newest'; // Sort option
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup form
     setupForm();
     loadMyContributions();
+    
+    // Setup search and filter
+    setupSearchAndFilter();
 });
 
 // Setup form handlers
@@ -142,20 +148,117 @@ async function submitForm() {
     loadMyContributions();
 }
 
+// Setup search and filter
+function setupSearchAndFilter() {
+    const searchInput = document.getElementById('contributionsSearch');
+    const sortSelect = document.getElementById('contributionsSort');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            filterAndDisplayContributions();
+        });
+    }
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            currentSort = sortSelect.value;
+            filterAndDisplayContributions();
+        });
+    }
+}
+
 // Load my contributions
 function loadMyContributions() {
     const user = getCurrentUser();
     if (!user) return;
     
-    const myPersons = getPersonsByCreator(user.username);
-    const container = document.getElementById('myContributions');
+    allContributions = getPersonsByCreator(user.username);
+    filterAndDisplayContributions();
+}
+
+// Filter and display contributions
+function filterAndDisplayContributions() {
+    const searchInput = document.getElementById('contributionsSearch');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
     
-    if (myPersons.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: var(--gray-dark);">You haven\'t added any ancestors yet.</p>';
+    // Filter by search term
+    let filtered = allContributions.filter(person => {
+        return person.name.toLowerCase().includes(searchTerm);
+    });
+    
+    // Filter by side (morsside/farsside)
+    if (currentFilter === 'morsside') {
+        filtered = filtered.filter(person => 
+            person.tags && person.tags.includes('morsside')
+        );
+    } else if (currentFilter === 'farsside') {
+        filtered = filtered.filter(person => 
+            person.tags && person.tags.includes('farsside')
+        );
+    } else if (currentFilter === 'both') {
+        filtered = filtered.filter(person => 
+            person.tags && 
+            (person.tags.includes('morsside') || person.tags.includes('farsside'))
+        );
+    }
+    // 'all' shows everything
+    
+    // Sort
+    filtered.sort((a, b) => {
+        switch(currentSort) {
+            case 'newest':
+                // Sort by creation date (newest first) - use ID timestamp if available
+                return (b.id || '').localeCompare(a.id || '');
+            case 'oldest':
+                return (a.id || '').localeCompare(b.id || '');
+            case 'name-asc':
+                return (a.name || '').localeCompare(b.name || '');
+            case 'name-desc':
+                return (b.name || '').localeCompare(a.name || '');
+            case 'year-asc':
+                const yearA = a.birthYear || 0;
+                const yearB = b.birthYear || 0;
+                return yearA - yearB;
+            case 'year-desc':
+                const yearA2 = a.birthYear || 0;
+                const yearB2 = b.birthYear || 0;
+                return yearB2 - yearA2;
+            default:
+                return 0;
+        }
+    });
+    
+    // Update count
+    const countDiv = document.getElementById('contributionsCount');
+    if (countDiv) {
+        const total = allContributions.length;
+        const showing = filtered.length;
+        countDiv.textContent = `Showing ${showing} of ${total} ${total === 1 ? 'ancestor' : 'ancestors'}`;
+    }
+    
+    // Display
+    const container = document.getElementById('myContributions');
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--gray-dark);">No ancestors found matching your filters.</p>';
         return;
     }
     
-    container.innerHTML = myPersons.map(person => createPersonCard(person)).join('');
+    container.innerHTML = filtered.map(person => createPersonCard(person)).join('');
+}
+
+// Filter contributions by side
+window.filterContributions = function(filter) {
+    currentFilter = filter;
+    
+    // Update button states
+    document.querySelectorAll('.profile-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === filter) {
+            btn.classList.add('active');
+        }
+    });
+    
+    filterAndDisplayContributions();
 }
 
 // Create person card HTML
@@ -299,3 +402,4 @@ window.importData = function(event) {
 
 // Make functions globally available
 window.viewPerson = viewPerson;
+
