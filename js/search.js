@@ -162,5 +162,19 @@ window.viewPerson = viewPerson;
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     updateNavigation();
+    
+    // Load search history
+    loadSearchHistory();
+    
+    // Check URL params for search query
     checkUrlParams();
+    
+    // Setup Enter key handlers
+    document.querySelectorAll('.search-filters input').forEach(input => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    });
 });

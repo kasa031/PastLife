@@ -437,21 +437,25 @@ window.quickAddToTree = function(personId) {
     const person = getPersonById(personId);
     if (!person) return;
     
-    // Get existing tree data
-    const treeDataKey = 'pastlife_family_tree_data';
+    // Get existing tree data (use same key as family-tree.js)
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const treeDataKey = `pastlife_tree_${user.username}`;
     const savedTree = localStorage.getItem(treeDataKey);
-    let treeData = { persons: [], relationships: [] };
+    let allTreePersons = [];
     
     if (savedTree) {
         try {
-            treeData = JSON.parse(savedTree);
+            allTreePersons = JSON.parse(savedTree);
         } catch (e) {
             console.error('Error loading tree:', e);
+            allTreePersons = [];
         }
     }
     
     // Check if already in tree
-    const alreadyInTree = (treeData.persons || []).some(p => 
+    const alreadyInTree = allTreePersons.some(p => 
         p.name === person.name && 
         (!person.birthYear || !p.birthYear || p.birthYear === person.birthYear)
     );
@@ -473,11 +477,10 @@ window.quickAddToTree = function(personId) {
         generation: 0
     };
     
-    if (!treeData.persons) treeData.persons = [];
-    treeData.persons.push(treePerson);
+    allTreePersons.push(treePerson);
     
     // Save tree
-    localStorage.setItem(treeDataKey, JSON.stringify(treeData));
+    localStorage.setItem(treeDataKey, JSON.stringify(allTreePersons));
     
     showMessage('Person added to family tree! Redirecting...', 'success');
     setTimeout(() => {
