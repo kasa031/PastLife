@@ -60,7 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (apiKeyInput) {
         // Use saved key if exists, otherwise use default
         const keyToUse = localStorage.getItem(API_KEY_STORAGE) || DEFAULT_API_KEY;
+        // Force set value and remove placeholder
         apiKeyInput.value = keyToUse;
+        apiKeyInput.removeAttribute('placeholder');
         // Auto-save default key if not already saved
         if (!localStorage.getItem(API_KEY_STORAGE)) {
             saveApiKey(DEFAULT_API_KEY);
@@ -70,6 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const maskedKey = keyToUse.substring(0, 10) + '...' + keyToUse.substring(keyToUse.length - 4);
             apiKeyStatus.innerHTML = `✅ API-nøkkel er lastet (${maskedKey}) og klar til bruk! Du kan overskrive den hvis du vil bruke en annen.`;
         }
+        // Ensure buttons are enabled
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const mergeBtn = document.getElementById('mergeBtn');
+        if (analyzeBtn) analyzeBtn.disabled = false;
+        if (mergeBtn) mergeBtn.disabled = false;
     }
     
     // Save API key when changed
