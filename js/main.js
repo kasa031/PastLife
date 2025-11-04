@@ -21,14 +21,14 @@ function loadRecentPersons() {
     container.innerHTML = recentPersons.map(person => createPersonCard(person)).join('');
 }
 
-// Create person card HTML
+// Create person card HTML with lazy loading
 function createPersonCard(person) {
     const photo = person.photo || 'assets/images/oldphoto2.jpg';
     const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
     
     return `
         <div class="person-card" onclick="viewPerson('${person.id}')">
-            <img src="${photo}" alt="${person.name}" class="person-card-image" onerror="this.src='assets/images/oldphoto2.jpg'">
+            <img src="assets/images/oldphoto2.jpg" data-src="${photo}" alt="${person.name}" class="person-card-image lazy-load" onerror="this.src='assets/images/oldphoto2.jpg'">
             <div class="person-card-info">
                 <h3>${escapeHtml(person.name)}</h3>
                 ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
@@ -38,6 +38,32 @@ function createPersonCard(person) {
             </div>
         </div>
     `;
+}
+
+// Lazy load images
+function setupLazyLoading() {
+    const lazyImages = document.querySelectorAll('img.lazy-load');
+    
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazy-load');
+                    imageObserver.unobserve(img);
+                }
+            });
+        });
+        
+        lazyImages.forEach(img => imageObserver.observe(img));
+    } else {
+        // Fallback for browsers without IntersectionObserver
+        lazyImages.forEach(img => {
+            img.src = img.dataset.src;
+            img.classList.remove('lazy-load');
+        });
+    }
 }
 
 // View person details
@@ -92,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRecentPersons();
     updateNavigation();
     preloadHeroImage(); // Preload hero image
+    setupLazyLoading(); // Setup lazy loading for images
     
     // Handle Enter key in hero search
     const heroSearch = document.getElementById('heroSearch');

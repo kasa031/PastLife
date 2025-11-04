@@ -21,10 +21,10 @@
 ## 🔄 Høy prioritet - Performance & UX
 
 ### 1. Bildeloading og optimalisering
+- [x] Implementer lazy loading for bilder som ikke er "above the fold" - implementert
+- [x] Optimaliser bildestørrelser (resize før lagring) - implementert (maxWidth 800px, quality 0.7)
 - [ ] Konverter bilder til WebP format for bedre komprimering
-- [ ] Implementer lazy loading for bilder som ikke er "above the fold"
 - [ ] Legg til skeleton loaders for bilder som lastes
-- [ ] Optimaliser bildestørrelser (resize før lagring)
 
 ### 2. Responsiv design
 - [x] Optimaliser navigasjon for små skjermer (hamburger menu) - implementert
@@ -43,7 +43,7 @@
 - [x] Mer detaljerte feilmeldinger med forslag til løsning - implementert
 - [x] Bedre validering av input (f.eks. datoer, år) - implementert
 - [x] Visuelle indikatorer for påkrevde felt - implementert (rød *)
-- [ ] Kontekstuelle hjelpetekster
+- [x] Kontekstuelle hjelpetekster - implementert (help-text på form-felt)
 
 ## 🎨 Medium prioritet - Funksjonalitet
 
@@ -52,11 +52,11 @@
 - [x] Esc for å lukke modaler/dropdowns (implementert)
 - [x] Ctrl/Cmd + K for quick search (implementert på index)
 - [x] Ctrl/Cmd + / for å fokusere søkefelt (implementert på search)
-- [ ] Piltaster for navigasjon i søkeresultater
+- [x] Piltaster for navigasjon i søkeresultater - implementert (↑↓ for navigasjon, Enter for å velge)
 
 ### 6. Bulk-operasjoner
+- [x] Bulk-import fra JSON - implementert
 - [ ] Bulk-import fra CSV/Excel fil
-- [ ] Bulk-import fra JSON
 - [ ] Bulk-edit (endre flere personer samtidig)
 - [ ] Bulk-export (eksporter flere personer)
 

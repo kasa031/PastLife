@@ -46,6 +46,9 @@ function performSearch() {
     
     const results = searchPersons(filters);
     displaySearchResults(results);
+    
+    // Reset navigation index
+    currentResultIndex = -1;
 }
 
 // Clear all filters
@@ -111,14 +114,14 @@ window.applySorting = function() {
     container.innerHTML = sorted.map(person => createPersonCard(person)).join('');
 }
 
-// Create person card HTML
+// Create person card HTML with lazy loading
 function createPersonCard(person) {
     const photo = person.photo || 'assets/images/oldphoto2.jpg';
     const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
     
     return `
         <div class="person-card" onclick="viewPerson('${person.id}')">
-            <img src="${photo}" alt="${person.name}" class="person-card-image" onerror="this.src='assets/images/oldphoto2.jpg'">
+            <img src="assets/images/oldphoto2.jpg" data-src="${photo}" alt="${person.name}" class="person-card-image lazy-load" onerror="this.src='assets/images/oldphoto2.jpg'">
             <div class="person-card-info">
                 <h3>${escapeHtml(person.name)}</h3>
                 ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
@@ -130,6 +133,42 @@ function createPersonCard(person) {
             </div>
         </div>
     `;
+}
+
+let currentResultIndex = -1;
+
+// Setup keyboard navigation for search results
+function setupResultNavigation() {
+    document.addEventListener('keydown', (e) => {
+        const results = document.querySelectorAll('.person-card');
+        if (results.length === 0) return;
+        
+        // Only navigate if search results are visible and user is not typing in input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentResultIndex = Math.min(currentResultIndex + 1, results.length - 1);
+            results[currentResultIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            results[currentResultIndex].style.outline = '3px solid var(--turquoise-primary)';
+            // Remove outline from previous
+            if (currentResultIndex > 0) {
+                results[currentResultIndex - 1].style.outline = '';
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentResultIndex = Math.max(currentResultIndex - 1, 0);
+            results[currentResultIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            results[currentResultIndex].style.outline = '3px solid var(--turquoise-primary)';
+            // Remove outline from next
+            if (currentResultIndex < results.length - 1) {
+                results[currentResultIndex + 1].style.outline = '';
+            }
+        } else if (e.key === 'Enter' && currentResultIndex >= 0) {
+            e.preventDefault();
+            results[currentResultIndex].click();
+        }
+    });
 }
 
 // View person details
@@ -283,12 +322,41 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Setup lazy loading for images
+function setupLazyLoading() {
+    const lazyImages = document.querySelectorAll('img.lazy-load');
+    
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazy-load');
+                    imageObserver.unobserve(img);
+                }
+            });
+        });
+        
+        lazyImages.forEach(img => imageObserver.observe(img));
+    } else {
+        // Fallback for browsers without IntersectionObserver
+        lazyImages.forEach(img => {
+            img.src = img.dataset.src;
+            img.classList.remove('lazy-load');
+        });
+    }
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     updateNavigation();
     
     // Setup autocomplete
     setupAutocomplete();
+    
+    // Setup result navigation
+    setupResultNavigation();
     
     // Load search history
     loadSearchHistory();
@@ -305,6 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
+    // Setup lazy loading after results are displayed
+    setTimeout(() => setupLazyLoading(), 100);
+    
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         // Esc key - clear search
@@ -318,6 +389,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (suggestionsDiv) {
                 suggestionsDiv.classList.remove('show');
             }
+            // Reset result navigation
+            currentResultIndex = -1;
+            document.querySelectorAll('.person-card').forEach(card => {
+                card.style.outline = '';
+            });
         }
         
         // Ctrl/Cmd + / to focus search name field
@@ -330,3 +406,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Update displaySearchResults to trigger lazy loading
+const originalDisplayResults = displaySearchResults;
+window.displaySearchResults = function(results) {
+    originalDisplayResults(results);
+    setTimeout(() => setupLazyLoading(), 100);
+    currentResultIndex = -1; // Reset navigation index
+};
