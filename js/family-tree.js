@@ -391,8 +391,14 @@ CRITICAL INSTRUCTIONS FOR ACCURACY:
    - "bror" (brother) means sharing BOTH parents
    - Only mark relationships as "sibling" if explicitly stated or clearly implied
    - Verify parent-child relationships are correct (not reversed)
-4. CONTEXT AWARENESS: Consider surrounding text to understand ambiguous references
-5. VALIDATION: Only include information that is clearly stated or can be reasonably inferred from context
+4. DATE VALIDATION: CRITICAL - Validate all dates:
+   - Death year CANNOT be before birth year
+   - If person is "born 1500", they cannot have "died 1499"
+   - If person is "born 1800", they cannot have "died 1799"
+   - Ages should be reasonable (typically 0-120 years)
+   - If dates don't make sense, set deathYear to null rather than guessing
+5. CONTEXT AWARENESS: Consider surrounding text to understand ambiguous references
+6. VALIDATION: Only include information that is clearly stated or can be reasonably inferred from context
 
 Return a JSON object with this structure:
 {
