@@ -216,6 +216,25 @@ export function searchPersons(filters) {
             matches = matches && yearMatch;
         }
         
+        // Search in description
+        if (filters.description) {
+            const descSearch = filters.description.toLowerCase().trim();
+            const personDesc = (person.description || '').toLowerCase();
+            if (!personDesc.includes(descSearch)) {
+                matches = false;
+            }
+        }
+        
+        // Search by tags
+        if (filters.tags && Array.isArray(filters.tags) && filters.tags.length > 0) {
+            const personTags = (person.tags || []).map(t => t.toLowerCase());
+            const searchTags = filters.tags.map(t => t.toLowerCase());
+            const hasMatchingTag = searchTags.some(st => personTags.some(pt => pt.includes(st) || st.includes(pt)));
+            if (!hasMatchingTag) {
+                matches = false;
+            }
+        }
+        
         // Legacy single year search (for backwards compatibility)
         if (filters.year && !filters.yearFrom && !filters.yearTo) {
             const year = parseInt(filters.year);
