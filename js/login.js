@@ -37,7 +37,7 @@ function loadTheme() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadTheme(); () => {
+    loadTheme();
     updateNavigation();
     
     // Setup forms
