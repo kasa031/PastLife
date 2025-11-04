@@ -1418,6 +1418,85 @@ window.exportTree = function() {
     showMessage('Tree exported!', 'success');
 };
 
+// Print tree
+window.printTree = function() {
+    // Create print-friendly version
+    const printWindow = window.open('', '_blank');
+    const user = getCurrentUser();
+    const treeTitle = user ? `${user.username}'s Family Tree` : 'Family Tree';
+    
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${treeTitle}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h1 { color: #008B8B; }
+                .tree-node { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+                .node-name { font-weight: bold; font-size: 1.1em; }
+                .node-info { margin: 5px 0; color: #666; }
+                .generation { background: #f0f0f0; padding: 5px; margin: 10px 0; font-weight: bold; }
+                @media print {
+                    body { padding: 10px; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <h1>${treeTitle}</h1>
+            <p>Generated: ${new Date().toLocaleDateString('no-NO')}</p>
+            <hr>
+    `;
+    
+    // Group by generation
+    const byGeneration = {};
+    allTreeData.forEach(person => {
+        const gen = person.generation || 0;
+        if (!byGeneration[gen]) byGeneration[gen] = [];
+        byGeneration[gen].push(person);
+    });
+    
+    // Sort generations
+    const sortedGens = Object.keys(byGeneration).sort((a, b) => parseInt(a) - parseInt(b));
+    
+    sortedGens.forEach(gen => {
+        html += `<div class="generation">${getGenerationLabel(parseInt(gen))}</div>`;
+        byGeneration[gen].forEach(person => {
+            html += `
+                <div class="tree-node">
+                    <div class="node-name">${escapeHtml(person.name)}</div>
+                    ${person.birthYear ? `<div class="node-info">Born: ${person.birthYear}</div>` : ''}
+                    ${person.deathYear ? `<div class="node-info">Died: ${person.deathYear}</div>` : ''}
+                    ${person.birthPlace ? `<div class="node-info">Birth Place: ${escapeHtml(person.birthPlace)}</div>` : ''}
+                    ${person.country ? `<div class="node-info">Country: ${escapeHtml(person.country)}</div>` : ''}
+                    ${person.description ? `<div class="node-info">${escapeHtml(person.description.substring(0, 200))}${person.description.length > 200 ? '...' : ''}</div>` : ''}
+                </div>
+            `;
+        });
+    });
+    
+    html += `
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+        printWindow.print();
+    }, 500);
+};
+
+// Escape HTML helper
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Import tree
 window.importTree = function() {
     const input = document.createElement('input');

@@ -109,9 +109,10 @@
                     </div>
                 </div>
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-            <button class="btn-edit" onclick="saveTree()" title="Save tree data to your profile contributions">💾 Save Tree to Profile</button>
-            <button class="btn-share" onclick="exportTree()" title="Export tree as JSON file for backup">📥 Export Tree (JSON)</button>
-            <button class="btn-import" onclick="importTree()" title="Import tree from JSON file">📤 Import Tree (JSON)</button>
+                <button class="btn-edit" onclick="saveTree()" title="Save tree data to your profile contributions">💾 Save Tree to Profile</button>
+                <button class="btn-share" onclick="exportTree()" title="Export tree as JSON file for backup">📥 Export Tree (JSON)</button>
+                <button class="btn-share" onclick="printTree()" title="Print family tree (opens print dialog)" style="background: var(--orange-primary);">🖨️ Print Tree</button>
+                <button class="btn-import" onclick="importTree()" title="Import tree from JSON file">📤 Import Tree (JSON)</button>
             <div style="display: flex; gap: 0.5rem; align-items: center; margin-left: auto;">
                 <button class="btn-edit" onclick="zoomIn()" title="Zoom in to see details">🔍+ Zoom In</button>
                 <button class="btn-edit" onclick="zoomOut()" title="Zoom out to see more">🔍- Zoom Out</button>

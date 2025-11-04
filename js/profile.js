@@ -338,6 +338,7 @@ function createPersonCard(person) {
                 <div class="person-tags">${tags}</div>
                 ${isOwner ? `
                     <div class="action-buttons">
+                        <input type="checkbox" class="person-checkbox" data-person-id="${person.id}" style="margin-right: 0.5rem;" title="Select for bulk export">
                         <button class="btn-edit" onclick="editPerson('${person.id}')" title="Edit this ancestor's information">✏️ Edit</button>
                         <button class="btn-edit" onclick="quickAddToTree('${person.id}')" title="Quick add to family tree" style="background: var(--turquoise-primary);">🌳 Add to Tree</button>
                         <button class="btn-delete" onclick="deletePersonConfirm('${person.id}')" title="⚠️ Delete this ancestor (will ask for confirmation)">🗑️ Delete</button>
@@ -515,6 +516,34 @@ window.quickAddToTree = function(personId) {
     setTimeout(() => {
         window.location.href = 'family-tree.html';
     }, 1500);
+};
+
+// Bulk export selected persons
+window.bulkExportSelected = function() {
+    const checkboxes = document.querySelectorAll('.person-checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+        showMessage('Please select at least one person to export', 'error');
+        return;
+    }
+    
+    const selectedIds = Array.from(checkboxes).map(cb => cb.dataset.personId);
+    const allPersons = getAllPersons();
+    const selectedPersons = allPersons.filter(p => selectedIds.includes(p.id));
+    
+    const dataStr = JSON.stringify(selectedPersons, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `selected-ancestors-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showMessage(`Exported ${selectedPersons.length} person(s)`, 'success');
+    
+    // Uncheck all
+    checkboxes.forEach(cb => cb.checked = false);
 };
 
 // Make functions globally available

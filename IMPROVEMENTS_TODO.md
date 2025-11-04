@@ -56,20 +56,20 @@
 
 ### 6. Bulk-operasjoner
 - [x] Bulk-import fra JSON - implementert
+- [x] Bulk-export (eksporter flere personer) - implementert (checkbox-select)
 - [ ] Bulk-import fra CSV/Excel fil
 - [ ] Bulk-edit (endre flere personer samtidig)
-- [ ] Bulk-export (eksporter flere personer)
 
 ### 7. Familietre-forbedringer
+- [x] Print-variant av familietre - implementert (print-funksjon)
 - [ ] Eksport til PDF med bedre layout
 - [ ] Eksport til PNG/SVG (høy oppløsning)
 - [ ] Timeline-visning (tidslinje med fødselsår)
-- [ ] Print-variant av familietre
 - [ ] Del familietre med andre (via link)
 - [ ] Automatisk layout-forbedringer (mindre overlapping)
 
 ### 8. AI-forbedringer
-- [ ] Forbedret dato-validering (f.eks. "født 1500" ikke "dødd 1499")
+- [x] Forbedret dato-validering (f.eks. "født 1500" ikke "dødd 1499") - implementert i AI prompt
 - [ ] Stedsnavn-validering mot faktiske steder
 - [ ] Relasjons-validering (f.eks. "far" kan ikke være yngre enn "barn")
 - [ ] Flerspråklig støtte (norsk/engelsk)
