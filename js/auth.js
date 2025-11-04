@@ -76,6 +76,52 @@ export function logoutUser() {
 }
 
 // Update navigation based on auth status
+// Check for notifications and show badge
+export function checkAndShowNotifications() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    // Get user's persons
+    const personsKey = 'pastlife_persons';
+    const allPersons = JSON.parse(localStorage.getItem(personsKey) || '[]');
+    const myPersons = allPersons.filter(p => p.createdBy === user.username);
+    const lastCheckKey = `pastlife_notifications_lastcheck_${user.username}`;
+    const lastCheck = localStorage.getItem(lastCheckKey);
+    
+    // Get all comments
+    const commentsKey = 'pastlife_comments';
+    const allComments = JSON.parse(localStorage.getItem(commentsKey) || '[]');
+    
+    // Find new comments on user's persons since last check
+    const myPersonIds = myPersons.map(p => p.id);
+    const newComments = allComments.filter(comment => {
+        if (!myPersonIds.includes(comment.personId)) return false;
+        if (comment.author === user.username) return false;
+        
+        if (lastCheck) {
+            return new Date(comment.createdAt) > new Date(lastCheck);
+        }
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return new Date(comment.createdAt) > oneDayAgo;
+    });
+    
+    if (newComments.length > 0) {
+        const profileLink = document.getElementById('profileLink');
+        if (profileLink) {
+            // Remove existing badge
+            const existing = profileLink.querySelector('#notificationBadge');
+            if (existing) existing.remove();
+            
+            const badge = document.createElement('span');
+            badge.id = 'notificationBadge';
+            badge.textContent = newComments.length > 9 ? '9+' : newComments.length;
+            badge.style.cssText = 'position: absolute; background: #c62828; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; margin-left: -10px; margin-top: -5px; z-index: 1000;';
+            profileLink.style.position = 'relative';
+            profileLink.appendChild(badge);
+        }
+    }
+}
+
 export function updateNavigation() {
     const isLogged = isLoggedIn();
     const loginLink = document.getElementById('loginLink');

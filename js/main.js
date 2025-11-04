@@ -113,8 +113,37 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Dark mode toggle
+window.toggleDarkMode = function() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('pastlife_theme', newTheme);
+    
+    // Update toggle button
+    const toggles = document.querySelectorAll('.theme-toggle');
+    toggles.forEach(toggle => {
+        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+    });
+};
+
+// Load saved theme
+function loadTheme() {
+    const savedTheme = localStorage.getItem('pastlife_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Update toggle buttons
+    const toggles = document.querySelectorAll('.theme-toggle');
+    toggles.forEach(toggle => {
+        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+    });
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    loadTheme(); // Load saved theme
     loadRecentPersons();
     updateNavigation();
     preloadHeroImage(); // Preload hero image

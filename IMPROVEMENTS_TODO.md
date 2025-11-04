@@ -94,9 +94,9 @@
 ## 🚀 Lav prioritet - Nice to have
 
 ### 11. Dark mode
-- [ ] Dark mode toggle
+- [x] Dark mode toggle - implementert (🌙/☀️ knapp i navigasjon)
+- [x] Lagre brukerpreferanse - implementert (lagres i localStorage)
 - [ ] Automatisk dark mode basert på system-innstillinger
-- [ ] Lagre brukerpreferanse
 
 ### 12. Eksport/import forbedringer
 - [ ] Eksport til GEDCOM format (standard for slektsforskning)

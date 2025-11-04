@@ -9,8 +9,34 @@ let allContributions = []; // Store all user contributions
 let currentFilter = 'all'; // 'all', 'morsside', 'farsside', 'both'
 let currentSort = 'newest'; // Sort option
 
+// Dark mode functions (shared)
+window.toggleDarkMode = function() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('pastlife_theme', newTheme);
+    
+    const toggles = document.querySelectorAll('.theme-toggle');
+    toggles.forEach(toggle => {
+        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+    });
+};
+
+function loadTheme() {
+    const savedTheme = localStorage.getItem('pastlife_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    const toggles = document.querySelectorAll('.theme-toggle');
+    toggles.forEach(toggle => {
+        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+    });
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    loadTheme();
     updateNavigation();
     
     // Check if user is logged in
