@@ -21,11 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     loadPersonDetails();
     loadComments();
+    updateFavoriteButton();
     
     // Setup comment form
     const commentForm = document.getElementById('commentFormSection');
     if (!isLoggedIn()) {
         commentForm.innerHTML = '<p style="text-align: center; color: var(--gray-dark);">Please <a href="login.html">login</a> to leave comments.</p>';
+        const favoriteBtn = document.getElementById('favoriteBtn');
+        if (favoriteBtn) favoriteBtn.style.display = 'none';
     }
 });
 
@@ -109,26 +112,68 @@ window.deleteCommentConfirm = function(commentId) {
     }
 };
 
-// Share person
+// Share person (smart - uses native share if available, otherwise copies)
 window.sharePerson = function() {
     const url = window.location.href;
+    const personName = document.querySelector('.person-detail-info h1')?.textContent || 'Ancestor';
+    
     if (navigator.share) {
         navigator.share({
-            title: document.querySelector('.person-detail-info h1')?.textContent || 'Ancestor',
-            text: 'Check out this ancestor on PastLife',
+            title: personName,
+            text: `Check out ${personName} on F³ - Family Tree`,
             url: url
         }).catch(() => {
             copyToClipboard(url);
+            showMessage('Link copied to clipboard!', 'success');
         });
     } else {
         copyToClipboard(url);
+        showMessage('Link copied to clipboard!', 'success');
     }
 };
 
-// Copy person link
-window.copyPersonLink = function() {
-    copyToClipboard(window.location.href);
+// Toggle favorite
+window.toggleFavorite = function() {
+    if (!isLoggedIn()) {
+        showMessage('Please login to add favorites', 'error');
+        return;
+    }
+    
+    const user = getCurrentUser();
+    const favoritesKey = `pastlife_favorites_${user.username}`;
+    let favorites = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+    const btn = document.getElementById('favoriteBtn');
+    
+    if (favorites.includes(currentPersonId)) {
+        favorites = favorites.filter(id => id !== currentPersonId);
+        btn.textContent = '⭐ Favorite';
+        btn.title = 'Add to favorites';
+        showMessage('Removed from favorites', 'info');
+    } else {
+        favorites.push(currentPersonId);
+        btn.textContent = '★ Favorited';
+        btn.title = 'Remove from favorites';
+        showMessage('Added to favorites!', 'success');
+    }
+    
+    localStorage.setItem(favoritesKey, JSON.stringify(favorites));
+    updateFavoriteButton();
 };
+
+// Update favorite button state
+function updateFavoriteButton() {
+    if (!isLoggedIn()) return;
+    
+    const user = getCurrentUser();
+    const favoritesKey = `pastlife_favorites_${user.username}`;
+    const favorites = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+    const btn = document.getElementById('favoriteBtn');
+    
+    if (btn && favorites.includes(currentPersonId)) {
+        btn.textContent = '★ Favorited';
+        btn.title = 'Remove from favorites';
+    }
+}
 
 // Submit comment
 window.submitComment = function() {

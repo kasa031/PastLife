@@ -4,19 +4,58 @@ import { updateNavigation } from './auth.js';
 
 let currentResults = [];
 
+// Save search history
+function saveSearchHistory(filters) {
+    const historyKey = 'pastlife_search_history';
+    let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    
+    // Create search string
+    const searchStr = Object.entries(filters)
+        .filter(([k, v]) => v && v.trim())
+        .map(([k, v]) => `${k}:${v}`)
+        .join(', ');
+    
+    if (searchStr) {
+        // Remove if exists, add to front
+        history = history.filter(h => h !== searchStr);
+        history.unshift(searchStr);
+        // Keep only last 10
+        history = history.slice(0, 10);
+        localStorage.setItem(historyKey, JSON.stringify(history));
+    }
+}
+
 // Perform search
 function performSearch() {
     const filters = {
         name: document.getElementById('searchName').value.trim(),
         country: document.getElementById('searchCountry').value.trim(),
         city: document.getElementById('searchCity').value.trim(),
-        year: document.getElementById('searchYear').value.trim(),
+        yearFrom: document.getElementById('searchYearFrom').value.trim(),
+        yearTo: document.getElementById('searchYearTo').value.trim(),
         tags: document.getElementById('searchTags').value.trim(),
         description: document.getElementById('searchDescription').value.trim()
     };
     
+    // Save to history
+    saveSearchHistory(filters);
+    
     const results = searchPersons(filters);
     displaySearchResults(results);
+}
+
+// Clear all filters
+window.clearAllFilters = function() {
+    document.getElementById('searchName').value = '';
+    document.getElementById('searchCountry').value = '';
+    document.getElementById('searchCity').value = '';
+    document.getElementById('searchYearFrom').value = '';
+    document.getElementById('searchYearTo').value = '';
+    document.getElementById('searchTags').value = '';
+    document.getElementById('searchDescription').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('resultsTitle').textContent = '';
+    showMessage('All filters cleared', 'info');
 }
 
 // Display search results

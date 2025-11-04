@@ -140,7 +140,33 @@ export function searchPersons(filters) {
             matches = matches && cityMatch;
         }
         
-        if (filters.year) {
+        // Date range search (from year - to year)
+        if (filters.yearFrom || filters.yearTo) {
+            const yearFrom = filters.yearFrom ? parseInt(filters.yearFrom) : null;
+            const yearTo = filters.yearTo ? parseInt(filters.yearTo) : null;
+            
+            let yearMatch = false;
+            
+            if (yearFrom && yearTo) {
+                // Search in range - matches if person lived during any part of range
+                yearMatch = (person.birthYear && person.birthYear <= yearTo && (!person.deathYear || person.deathYear >= yearFrom)) ||
+                           (person.deathYear && person.deathYear >= yearFrom && (!person.birthYear || person.birthYear <= yearTo)) ||
+                           (person.birthYear && person.deathYear && person.birthYear <= yearTo && person.deathYear >= yearFrom);
+            } else if (yearFrom) {
+                // From year onwards
+                yearMatch = (person.birthYear && person.birthYear >= yearFrom) ||
+                           (person.deathYear && person.deathYear >= yearFrom);
+            } else if (yearTo) {
+                // Up to year
+                yearMatch = (person.birthYear && person.birthYear <= yearTo) ||
+                           (person.deathYear && person.deathYear <= yearTo);
+            }
+            
+            matches = matches && yearMatch;
+        }
+        
+        // Legacy single year search (for backwards compatibility)
+        if (filters.year && !filters.yearFrom && !filters.yearTo) {
             const year = parseInt(filters.year);
             const yearMatch = (person.birthYear && person.birthYear === year) ||
                              (person.deathYear && person.deathYear === year) ||

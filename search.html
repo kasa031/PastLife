@@ -43,9 +43,15 @@
                     <label for="searchCity">City</label>
                     <input type="text" id="searchCity" placeholder="e.g., Christiania">
                 </div>
-                <div class="filter-group">
-                    <label for="searchYear">Year</label>
-                    <input type="number" id="searchYear" placeholder="e.g., 1910">
+                <div class="filter-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label for="searchYearFrom">From Year</label>
+                        <input type="number" id="searchYearFrom" placeholder="e.g., 1880">
+                    </div>
+                    <div>
+                        <label for="searchYearTo">To Year</label>
+                        <input type="number" id="searchYearTo" placeholder="e.g., 1920">
+                    </div>
                 </div>
                 <div class="filter-group">
                     <label for="searchTags">Tags</label>
@@ -55,7 +61,10 @@
                     <label for="searchDescription">Search in Description</label>
                     <input type="text" id="searchDescription" placeholder="Search in biography...">
                 </div>
-                <button class="submit-btn" onclick="performSearch()" style="width: 100%; margin-top: 1rem;">Search</button>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="submit-btn" onclick="performSearch()" style="flex: 1;" title="Search for ancestors matching all criteria">🔍 Search</button>
+                    <button class="btn-import" onclick="clearAllFilters()" style="padding: 15px 30px;" title="Clear all search filters">🗑️ Clear Filters</button>
+                </div>
             </div>
 
             <div class="search-results">

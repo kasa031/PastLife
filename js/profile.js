@@ -1,5 +1,5 @@
 // Profile page functionality
-import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById } from './data.js';
+import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById, getAllPersons } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
 import { showMessage, showLoading, hideLoading } from './utils.js';
 
@@ -86,6 +86,25 @@ window.removeTag = function(index) {
     updateTagsDisplay();
 };
 
+// Check for duplicate person
+function checkDuplicate(personData) {
+    const allPersons = getAllPersons();
+    const nameLower = personData.name.toLowerCase().trim();
+    
+    return allPersons.find(p => {
+        const pNameLower = p.name.toLowerCase().trim();
+        const nameSimilar = pNameLower === nameLower || 
+                           pNameLower.includes(nameLower) || 
+                           nameLower.includes(pNameLower);
+        
+        // Check if birth year matches (if provided)
+        const yearMatch = !personData.birthYear || !p.birthYear || 
+                         personData.birthYear === p.birthYear;
+        
+        return nameSimilar && yearMatch;
+    });
+}
+
 // Submit form
 async function submitForm() {
     const user = getCurrentUser();
@@ -108,8 +127,20 @@ async function submitForm() {
     };
     
     if (!formData.name) {
-        showMessage('Name is required', 'error');
+        showMessage('Name is required. Please enter the ancestor\'s full name.', 'error');
         return;
+    }
+    
+    // Check for duplicates (skip if editing)
+    const editingId = window.currentEditingId;
+    if (!editingId) {
+        const duplicate = checkDuplicate(formData);
+        if (duplicate) {
+            const confirmMsg = `A similar person already exists: "${duplicate.name}"${duplicate.birthYear ? ` (born ${duplicate.birthYear})` : ''}.\n\nDo you want to continue anyway?`;
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+        }
     }
     
     // Handle photo
