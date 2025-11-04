@@ -743,6 +743,108 @@ function showNotificationBadge(count) {
     }
 }
 
+// Backup all user data
+window.backupAllData = function() {
+    const user = getCurrentUser();
+    if (!user) {
+        showMessage('Please login to create a backup', 'error');
+        return;
+    }
+    
+    const backup = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        username: user.username,
+        data: {
+            persons: getAllPersons().filter(p => p.createdBy === user.username),
+            favorites: JSON.parse(localStorage.getItem(`pastlife_favorites_${user.username}`) || '[]'),
+            tree: localStorage.getItem(`pastlife_tree_${user.username}`) ? JSON.parse(localStorage.getItem(`pastlife_tree_${user.username}`)) : null,
+            searchHistory: JSON.parse(localStorage.getItem(`pastlife_search_history_${user.username}`) || '[]'),
+            notifications: localStorage.getItem(`pastlife_notifications_lastcheck_${user.username}`) || null
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `F3_backup_${user.username}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showMessage('Backup created successfully!', 'success');
+};
+
+// Restore from backup
+window.restoreBackup = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const user = getCurrentUser();
+    if (!user) {
+        showMessage('Please login to restore a backup', 'error');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+            
+            if (!backup.version || !backup.data) {
+                showMessage('Invalid backup file format', 'error');
+                return;
+            }
+            
+            if (!confirm(`This will restore data from backup created on ${backup.timestamp ? new Date(backup.timestamp).toLocaleDateString() : 'unknown date'}. This may overwrite existing data. Continue?`)) {
+                return;
+            }
+            
+            // Restore persons
+            if (backup.data.persons && Array.isArray(backup.data.persons)) {
+                const existingPersons = getAllPersons();
+                const otherPersons = existingPersons.filter(p => p.createdBy !== user.username);
+                const allPersons = [...otherPersons, ...backup.data.persons];
+                localStorage.setItem('pastlife_persons', JSON.stringify(allPersons));
+            }
+            
+            // Restore favorites
+            if (backup.data.favorites) {
+                localStorage.setItem(`pastlife_favorites_${user.username}`, JSON.stringify(backup.data.favorites));
+            }
+            
+            // Restore tree
+            if (backup.data.tree) {
+                localStorage.setItem(`pastlife_tree_${user.username}`, JSON.stringify(backup.data.tree));
+            }
+            
+            // Restore search history
+            if (backup.data.searchHistory) {
+                localStorage.setItem(`pastlife_search_history_${user.username}`, JSON.stringify(backup.data.searchHistory));
+            }
+            
+            // Restore notifications timestamp
+            if (backup.data.notifications) {
+                localStorage.setItem(`pastlife_notifications_lastcheck_${user.username}`, backup.data.notifications);
+            }
+            
+            showMessage('Backup restored successfully! Refreshing page...', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Restore error:', error);
+            showMessage('Error restoring backup: ' + error.message, 'error');
+        }
+    };
+    
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
+};
+
 // Make functions globally available
 window.viewPerson = viewPerson;
 

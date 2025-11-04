@@ -98,13 +98,13 @@
 ### 11. Dark mode
 - [x] Dark mode toggle - implementert (🌙/☀️ knapp i navigasjon)
 - [x] Lagre brukerpreferanse - implementert (lagres i localStorage)
-- [x] Automatisk dark mode basert på system-innstillinger - implementert (detekterer system-preferanse og oppdaterer automatisk)
+- [x] Automatisk dark mode basert på system-innstillinger - implementert (detekterer system-preferanse ved første besøk og lytter til endringer)
 
 ### 12. Eksport/import forbedringer
+- [x] Backup/restore funksjonalitet - implementert (komplett backup av alle brukerdata: personer, favoritter, tre, søkehistorikk)
 - [ ] Eksport til GEDCOM format (standard for slektsforskning)
 - [ ] Import fra GEDCOM
 - [ ] Eksport til Excel med alle detaljer
-- [ ] Backup/restore funksjonalitet
 
 ### 13. Søk i tekst
 - [ ] Fulltekst-søk i beskrivelser

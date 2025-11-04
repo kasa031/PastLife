@@ -119,6 +119,7 @@ window.toggleDarkMode = function() {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('pastlife_theme', newTheme);
+    localStorage.setItem('pastlife_theme_manual', 'true'); // Mark as manually set
     
     // Update toggle button
     const toggles = document.querySelectorAll('.theme-toggle');
