@@ -15,8 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Handle login
 function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
+    const usernameInput = document.getElementById('loginUsername');
+    const passwordInput = document.getElementById('loginPassword');
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
     
     const messageDiv = document.getElementById('loginMessage');
     
@@ -27,11 +29,14 @@ function handleLogin(e) {
     
     if (loginUser(username, password)) {
         showMessage(messageDiv, 'Login successful! Redirecting...', 'success');
+        // Don't clear fields on success - let user see they logged in
         setTimeout(() => {
             window.location.href = 'profile.html';
         }, 1000);
     } else {
         showMessage(messageDiv, 'Invalid username or password', 'error');
+        // Only clear password field on error, keep username for retry
+        passwordInput.value = '';
     }
 }
 
