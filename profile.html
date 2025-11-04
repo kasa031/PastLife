@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - PastLife</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PastLife</h1>
+                <p class="tagline">Journey through time, discover your ancestors</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="search.html">Search</a></li>
+                <li><a href="profile.html" class="active">Profile</a></li>
+                <li><a href="family-tree.html">Family Tree</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Profile Container -->
+    <section class="profile-container">
+        <div class="container">
+            <div class="profile-header">
+                <h1>Add Ancestor Information</h1>
+                <p>Share photos and information about your ancestors to help others discover their past</p>
+            </div>
+
+            <div class="upload-section">
+                <h2>New Ancestor Entry</h2>
+                <form id="ancestorForm">
+                    <div class="form-group">
+                        <label for="personName">Full Name *</label>
+                        <input type="text" id="personName" required placeholder="e.g., Edvard Jensen">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthYear">Birth Year</label>
+                        <input type="number" id="birthYear" placeholder="e.g., 1885">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deathYear">Death Year</label>
+                        <input type="number" id="deathYear" placeholder="e.g., 1950">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthPlace">Birth Place</label>
+                        <input type="text" id="birthPlace" placeholder="e.g., Christiania, Norway">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deathPlace">Death Place</label>
+                        <input type="text" id="deathPlace" placeholder="e.g., Oslo, Norway">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <input type="text" id="country" placeholder="e.g., Norway">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" placeholder="e.g., Christiania">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description / Biography</label>
+                        <textarea id="description" placeholder="Additional information about this person..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photo">Photo</label>
+                        <input type="file" id="photo" accept="image/*">
+                        <div id="photoPreview" style="margin-top: 1rem;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tagsInput">Tags (separate with commas)</label>
+                        <input type="text" id="tagsInput" placeholder="e.g., Christiania, 1910, family">
+                        <div id="tagsDisplay" class="tags-input"></div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Ancestor Information</button>
+                </form>
+            </div>
+
+            <div class="upload-section" style="margin-top: 3rem;">
+                <h2>My Contributions</h2>
+                <div id="myContributions" class="persons-grid">
+                    <!-- Dynamically loaded -->
+                </div>
+            </div>
+
+            <div class="data-actions">
+                <button class="btn-export" onclick="exportData()">Export My Data</button>
+                <button class="btn-import" onclick="document.getElementById('importFile').click()">Import Data</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/profile.js"></script>
+</body>
+</html>

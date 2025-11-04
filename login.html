@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PastLife</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PastLife</h1>
+                <p class="tagline">Journey through time, discover your ancestors</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="search.html">Search</a></li>
+                <li><a href="profile.html" id="profileLink">Profile</a></li>
+                <li><a href="family-tree.html">Family Tree</a></li>
+                <li><a href="login.html" class="active">Login</a></li>
+                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Auth Container -->
+    <section class="auth-container">
+        <div class="container">
+            <div class="auth-box" id="loginBox">
+                <h2>Login</h2>
+                <div id="loginMessage"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+                <div class="auth-switch">
+                    Don't have an account? <a href="#" onclick="showRegister()">Register here</a>
+                </div>
+            </div>
+
+            <div class="auth-box hidden" id="registerBox">
+                <h2>Register</h2>
+                <div id="registerMessage"></div>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="registerUsername">Username</label>
+                        <input type="text" id="registerUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPasswordConfirm">Confirm Password</label>
+                        <input type="password" id="registerPasswordConfirm" required>
+                    </div>
+                    <button type="submit">Register</button>
+                </form>
+                <div class="auth-switch">
+                    Already have an account? <a href="#" onclick="showLogin()">Login here</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/login.js"></script>
+</body>
+</html>

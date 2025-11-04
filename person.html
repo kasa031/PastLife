@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Person Details - PastLife</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PastLife</h1>
+                <p class="tagline">Journey through time, discover your ancestors</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="search.html">Search</a></li>
+                <li><a href="profile.html" id="profileLink">Profile</a></li>
+                <li><a href="family-tree.html">Family Tree</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Person Detail -->
+    <section class="person-detail">
+        <div class="container">
+            <div id="personDetailContent">
+                <!-- Dynamically loaded -->
+            </div>
+
+            <div class="comments-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="color: var(--turquoise-dark); margin: 0;">Comments</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-share" onclick="sharePerson()">Share</button>
+                        <button class="btn-copy" onclick="copyPersonLink()">Copy Link</button>
+                    </div>
+                </div>
+                
+                <div class="comment-form" id="commentFormSection">
+                    <textarea id="commentText" placeholder="Write a comment..."></textarea>
+                    <button onclick="submitComment()">Post Comment</button>
+                </div>
+
+                <div id="commentsContainer">
+                    <!-- Dynamically loaded -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/person.js"></script>
+</body>
+</html>

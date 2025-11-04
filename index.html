@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PastLife - Discover Your Ancestors</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PastLife</h1>
+                <p class="tagline">Journey through time, discover your ancestors</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="search.html">Search</a></li>
+                <li><a href="profile.html" id="profileLink">Profile</a></li>
+                <li><a href="family-tree.html">Family Tree</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="container hero-content">
+            <h2>Connect with the Past</h2>
+            <p>Search, share, and discover stories of ancestors from around the world</p>
+            <div class="search-box-hero">
+                <input type="text" id="heroSearch" placeholder="Search by name, place, or year...">
+                <button onclick="handleHeroSearch()">Search</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="assets/images/generationhands.jpg" alt="Generations">
+                    </div>
+                    <h3>Search Ancestors</h3>
+                    <p>Find information about deceased relatives by name, location, or time period</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="assets/images/oldphoto.jpg" alt="Old Photos">
+                    </div>
+                    <h3>Share Memories</h3>
+                    <p>Upload photos and information about your ancestors to help others discover their past</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <img src="assets/images/tree.png" alt="Family Tree">
+                    </div>
+                    <h3>Connect Stories</h3>
+                    <p>Comment and connect with others who share information about the same people</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Additions -->
+    <section class="recent">
+        <div class="container">
+            <h2>Recently Added</h2>
+            <div id="recentPersons" class="persons-grid">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

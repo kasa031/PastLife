@@ -1,0 +1,262 @@
+/* Family Tree Styles */
+.family-tree-container {
+    padding: 3rem 0;
+    background: var(--white);
+    min-height: 80vh;
+}
+
+.tree-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 80vh;
+    padding: 2rem;
+    background: var(--gray-light);
+    border-radius: 10px;
+    position: relative;
+}
+
+.tree-container {
+    min-width: 100%;
+    min-height: 400px;
+    position: relative;
+}
+
+/* Tree Node Styles */
+.tree-node {
+    position: absolute;
+    background: var(--white);
+    border: 2px solid var(--turquoise-primary);
+    border-radius: 8px;
+    padding: 1rem;
+    min-width: 200px;
+    max-width: 250px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: move;
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.tree-node:hover {
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+    z-index: 100;
+}
+
+.tree-node.selected {
+    border-color: var(--orange-primary);
+    border-width: 3px;
+    z-index: 1000;
+}
+
+.tree-node-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+.tree-node-name {
+    font-weight: bold;
+    color: var(--turquoise-dark);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.tree-node-actions {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.tree-node-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--gray-dark);
+    transition: color 0.3s;
+}
+
+.tree-node-btn:hover {
+    color: var(--orange-primary);
+}
+
+.tree-node-info {
+    font-size: 0.9rem;
+    color: var(--gray-dark);
+    margin: 0.3rem 0;
+}
+
+.tree-node-info strong {
+    color: var(--turquoise-dark);
+}
+
+/* Tree Connections */
+.tree-connection {
+    position: absolute;
+    background: var(--turquoise-primary);
+    z-index: 1;
+}
+
+.tree-connection.horizontal {
+    height: 2px;
+}
+
+.tree-connection.vertical {
+    width: 2px;
+}
+
+/* Tree Generation Buttons */
+.tree-generation {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid var(--gray-medium);
+}
+
+.tree-generation-header {
+    font-weight: bold;
+    color: var(--turquoise-dark);
+    margin-bottom: 0.5rem;
+}
+
+/* Tree Layout Options */
+.tree-layout-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.tree-layout-btn {
+    padding: 0.5rem 1rem;
+    background: var(--turquoise-primary);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.tree-layout-btn:hover {
+    background: var(--turquoise-dark);
+}
+
+.tree-layout-btn.active {
+    background: var(--orange-primary);
+}
+
+/* Person Details Modal */
+.person-detail-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+
+.person-detail-modal.show {
+    display: flex;
+}
+
+.person-detail-modal-content {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.person-detail-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.person-detail-modal-header h2 {
+    color: var(--turquoise-dark);
+    margin: 0;
+}
+
+.person-detail-modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--gray-dark);
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    line-height: 1;
+}
+
+.person-detail-modal-close:hover {
+    color: var(--orange-primary);
+}
+
+/* Auto-layout Tree */
+.tree-auto-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.tree-generation-level {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Drag and Drop */
+.tree-node.dragging {
+    opacity: 0.5;
+    z-index: 10000;
+}
+
+.tree-drop-zone {
+    border: 2px dashed var(--turquoise-primary);
+    background: rgba(0, 206, 209, 0.1);
+    border-radius: 8px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--turquoise-dark);
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tree-node {
+        min-width: 150px;
+        max-width: 180px;
+        padding: 0.8rem;
+    }
+    
+    .tree-wrapper {
+        padding: 1rem;
+    }
+    
+    .tree-layout-options {
+        flex-direction: column;
+    }
+    
+    .tree-layout-btn {
+        width: 100%;
+    }
+}

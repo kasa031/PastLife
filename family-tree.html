@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Tree Builder - PastLife</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/family-tree.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PastLife</h1>
+                <p class="tagline">Journey through time, discover your ancestors</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="search.html">Search</a></li>
+                <li><a href="profile.html" id="profileLink">Profile</a></li>
+                <li><a href="family-tree.html" class="active">Family Tree</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Family Tree Container -->
+    <section class="family-tree-container">
+        <div class="container">
+            <h1 style="text-align: center; color: var(--turquoise-dark); margin-bottom: 2rem;">AI-Powered Family Tree Builder</h1>
+            
+            <!-- Text Upload Section -->
+            <div class="upload-section">
+                <h2>Upload Family Information</h2>
+                <p style="margin-bottom: 1.5rem; color: var(--gray-dark);">
+                    Paste or type information about your family (up to 10,000+ words). 
+                    Our AI will analyze the text and help build your family tree automatically.
+                </p>
+                
+                <div class="form-group">
+                    <label for="familyText">Family Information</label>
+                    <textarea id="familyText" rows="15" placeholder="Enter information about your family members, their relationships, dates, places, etc. The AI will extract person details and relationships automatically..."></textarea>
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                        <span id="wordCount" style="color: var(--gray-dark); font-size: 0.9rem;">0 words</span>
+                        <span style="color: var(--gray-dark); font-size: 0.9rem;">Max: 10,000+ words</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiKey">OpenRouter API Key (Optional - for AI analysis)</label>
+                    <input type="password" id="apiKey" placeholder="sk-or-...">
+                    <small style="color: var(--gray-dark);">If provided, AI will analyze your text and extract family relationships</small>
+                </div>
+                
+                <button class="submit-btn" onclick="analyzeFamilyText()" id="analyzeBtn">Analyze with AI & Build Tree</button>
+                <button class="submit-btn" style="background: var(--turquoise-primary); margin-left: 1rem;" onclick="buildTreeFromExisting()">Use Existing Data</button>
+            </div>
+
+            <!-- AI Processing Status -->
+            <div id="aiStatus" class="hidden" style="margin-top: 2rem; padding: 1.5rem; background: var(--gray-light); border-radius: 10px;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="spinner"></div>
+                    <div>
+                        <strong>AI is analyzing your text...</strong>
+                        <p style="margin: 0.5rem 0 0 0; color: var(--gray-dark);" id="aiStatusText">Extracting family members and relationships</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tree Controls -->
+            <div class="tree-controls" id="treeControls" style="display: none; margin-top: 2rem; padding: 1.5rem; background: var(--gray-light); border-radius: 10px;">
+                <h3 style="color: var(--turquoise-dark); margin-bottom: 1rem;">Tree Controls</h3>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn-edit" onclick="saveTree()">Save Tree</button>
+                    <button class="btn-share" onclick="exportTree()">Export Tree</button>
+                    <button class="btn-import" onclick="importTree()">Import Tree</button>
+                    <button class="btn-delete" onclick="clearTree()">Clear Tree</button>
+                </div>
+            </div>
+
+            <!-- Family Tree Visualization -->
+            <div class="tree-wrapper" id="treeWrapper" style="display: none; margin-top: 3rem;">
+                <div class="tree-container" id="treeContainer">
+                    <!-- Tree will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/family-tree.js"></script>
+</body>
+</html>
