@@ -309,8 +309,8 @@ function createPersonCard(person) {
                 <div class="person-tags">${tags}</div>
                 ${isOwner ? `
                     <div class="action-buttons">
-                        <button class="btn-edit" onclick="editPerson('${person.id}')">Edit</button>
-                        <button class="btn-delete" onclick="deletePersonConfirm('${person.id}')">Delete</button>
+                        <button class="btn-edit" onclick="editPerson('${person.id}')" title="Edit this ancestor's information">✏️ Edit</button>
+                        <button class="btn-delete" onclick="deletePersonConfirm('${person.id}')" title="⚠️ Delete this ancestor (will ask for confirmation)">🗑️ Delete</button>
                     </div>
                 ` : ''}
             </div>
