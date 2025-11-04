@@ -22,8 +22,8 @@
 }
 
 .tree-container {
-    min-width: 2000px;
-    min-height: 5000px;
+    min-width: 2500px;
+    min-height: 12000px;
     position: relative;
     transform-origin: top left;
     transition: transform 0.1s ease-out;

@@ -760,8 +760,10 @@ function renderTree() {
     // Calculate container size based on tree bounds
     const bounds = calculateTreeBounds();
     // Use stored width or calculate from bounds
-    const containerWidth = window.treeContainerWidth || Math.max(bounds.maxX + 400, 2000);
-    const containerHeight = Math.max(bounds.maxY + 300, 5000); // Very tall for deep trees
+    const containerWidth = window.treeContainerWidth || Math.max(bounds.maxX + 600, 2500);
+    // Very tall for trees going back to 1200s (30+ generations possible)
+    // Estimate: ~30 generations * 350px spacing = ~10,500px minimum
+    const containerHeight = Math.max(bounds.maxY + 500, 12000); // Minimum 12000px height
     
     container.style.width = `${containerWidth}px`;
     container.style.height = `${containerHeight}px`;
@@ -927,6 +929,24 @@ function getGenerationLabel(generation) {
     if (genNum === 7) return 'Generasjon 7';
     if (genNum === 8) return 'Generasjon 8';
     if (genNum === 9) return 'Generasjon 9';
+    if (genNum === 10) return 'Generasjon 10';
+    if (genNum === 11) return 'Generasjon 11';
+    if (genNum === 12) return 'Generasjon 12';
+    if (genNum === 13) return 'Generasjon 13';
+    if (genNum === 14) return 'Generasjon 14';
+    if (genNum === 15) return 'Generasjon 15';
+    if (genNum === 16) return 'Generasjon 16';
+    if (genNum === 17) return 'Generasjon 17';
+    if (genNum === 18) return 'Generasjon 18';
+    if (genNum === 19) return 'Generasjon 19';
+    if (genNum === 20) return 'Generasjon 20';
+    if (genNum === 21) return 'Generasjon 21';
+    if (genNum === 22) return 'Generasjon 22';
+    if (genNum === 23) return 'Generasjon 23';
+    if (genNum === 24) return 'Generasjon 24';
+    if (genNum === 25) return 'Generasjon 25';
+    if (genNum >= 26 && genNum <= 30) return `Generasjon ${genNum} (1200-tallet?)`;
+    if (genNum > 30) return `Generasjon ${genNum}`;
     return `Generasjon ${genNum}`;
 }
 
@@ -1049,13 +1069,14 @@ function layoutTree() {
     // Sort generations (0 = user at top, increasing numbers go down)
     const genNumbers = Object.keys(generations).map(Number).sort((a, b) => a - b);
     
-    // Vertical spacing between generations (much larger for deep trees)
+    // Vertical spacing between generations (much larger for very deep trees - 1200s+)
     const verticalSpacing = 350; // Large vertical spacing for scrolling down
     const horizontalSpacing = 300; // Horizontal spacing between persons in same generation
     
     // Calculate container width needed (for many persons per generation)
     const maxPersonsInGen = Math.max(...genNumbers.map(gen => generations[gen].length), 1);
-    const containerWidth = Math.max(2000, maxPersonsInGen * horizontalSpacing + 400); // Minimum 2000px, more if needed
+    // Minimum 2500px width for very wide trees, scale up if needed
+    const containerWidth = Math.max(2500, maxPersonsInGen * horizontalSpacing + 600);
     
     // Center each generation horizontally
     genNumbers.forEach((gen, genIndex) => {
