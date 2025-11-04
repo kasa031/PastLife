@@ -77,15 +77,17 @@
 - [ ] Batch-analyse (analyser flere tekster samtidig)
 
 ### 9. Notifikasjoner og sosiale funksjoner
-- [ ] Notifikasjoner for nye kommentarer på dine personer
+- [x] Notifikasjoner for nye kommentarer på dine personer - implementert (badge på profil-link)
 - [ ] Notifikasjoner når noen favoriserer dine personer
 - [ ] Notifikasjoner for nye personer med samme navn
 - [ ] E-post-notifikasjoner (fremtidig backend-integrasjon)
 
 ### 10. Statistikk og visualiseringer
+- [x] Statistikk over antall personer per land/by - implementert (antall land/byer vises)
+- [x] Forbedret statistikk-dashboard - implementert (totalt, med bilder, morsside/farsside, år-område, land/by)
+- [x] My Favorites visning - implementert (viser favoritter på profil)
 - [ ] Grafer for fødselsår-fordeling
 - [ ] Kart-visning av fødselssteder
-- [ ] Statistikk over antall personer per land/by
 - [ ] Generasjon-fordeling
 - [ ] Aktivitet-overview (siste måned, år, etc.)
 

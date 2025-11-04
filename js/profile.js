@@ -22,9 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup form
     setupForm();
     loadMyContributions();
+    loadUserStatistics();
+    loadMyFavorites();
     
     // Setup search and filter
     setupSearchAndFilter();
+    
+    // Check for notifications
+    checkNotifications();
 });
 
 // Setup form handlers
@@ -545,6 +550,172 @@ window.bulkExportSelected = function() {
     // Uncheck all
     checkboxes.forEach(cb => cb.checked = false);
 };
+
+// Load user statistics
+function loadUserStatistics() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const myPersons = getPersonsByCreator(user.username);
+    const statsContainer = document.getElementById('userStatistics');
+    if (!statsContainer) return;
+    
+    // Calculate statistics
+    const total = myPersons.length;
+    const withPhotos = myPersons.filter(p => p.photo).length;
+    const withBirthYear = myPersons.filter(p => p.birthYear).length;
+    const withDeathYear = myPersons.filter(p => p.deathYear).length;
+    const withDescription = myPersons.filter(p => p.description && p.description.trim()).length;
+    const morsside = myPersons.filter(p => p.tags && p.tags.includes('morsside')).length;
+    const farsside = myPersons.filter(p => p.tags && p.tags.includes('farsside')).length;
+    
+    // Calculate date range
+    const years = myPersons.filter(p => p.birthYear).map(p => parseInt(p.birthYear));
+    const earliestYear = years.length > 0 ? Math.min(...years) : null;
+    const latestYear = years.length > 0 ? Math.max(...years) : null;
+    
+    // Countries
+    const countries = [...new Set(myPersons.filter(p => p.country).map(p => p.country))];
+    
+    // Cities
+    const cities = [...new Set(myPersons.filter(p => p.city).map(p => p.city))];
+    
+    statsContainer.innerHTML = `
+        <div class="stat-card" style="background: linear-gradient(135deg, var(--turquoise-primary), var(--turquoise-dark)); color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: bold;">${total}</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Total Ancestors</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark)); color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: bold;">${withPhotos}</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">With Photos</div>
+        </div>
+        <div class="stat-card" style="background: var(--turquoise-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--turquoise-primary);">
+            <div style="font-size: 2rem; font-weight: bold; color: var(--turquoise-dark);">${morsside}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">👩 Mother's Side</div>
+        </div>
+        <div class="stat-card" style="background: var(--orange-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--orange-primary);">
+            <div style="font-size: 2rem; font-weight: bold; color: var(--orange-dark);">${farsside}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">👨 Father's Side</div>
+        </div>
+        ${earliestYear ? `
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 1.8rem; font-weight: bold; color: var(--text-dark);">${earliestYear}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">Earliest Birth Year</div>
+        </div>
+        ` : ''}
+        ${latestYear ? `
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 1.8rem; font-weight: bold; color: var(--text-dark);">${latestYear}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">Latest Birth Year</div>
+        </div>
+        ` : ''}
+        ${countries.length > 0 ? `
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-bottom: 0.5rem;">${countries.length}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">Countries Represented</div>
+            <div style="font-size: 0.8rem; color: var(--gray-dark); margin-top: 0.5rem;">${countries.slice(0, 3).join(', ')}${countries.length > 3 ? '...' : ''}</div>
+        </div>
+        ` : ''}
+        ${cities.length > 0 ? `
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-bottom: 0.5rem;">${cities.length}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">Cities Represented</div>
+            <div style="font-size: 0.8rem; color: var(--gray-dark); margin-top: 0.5rem;">${cities.slice(0, 3).join(', ')}${cities.length > 3 ? '...' : ''}</div>
+        </div>
+        ` : ''}
+    `;
+}
+
+// Load my favorites
+function loadMyFavorites() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const favoritesKey = `pastlife_favorites_${user.username}`;
+    const favoriteIds = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+    const allPersons = getAllPersons();
+    const favorites = allPersons.filter(p => favoriteIds.includes(p.id));
+    
+    const container = document.getElementById('myFavorites');
+    if (!container) return;
+    
+    if (favorites.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--gray-dark);">No favorites yet. Click the ⭐ button on any person page to add them.</p>';
+        return;
+    }
+    
+    container.innerHTML = favorites.slice(0, 6).map(person => {
+        const photo = person.photo || 'assets/images/oldphoto2.jpg';
+        const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+        
+        return `
+            <div class="person-card" onclick="viewPerson('${person.id}')">
+                <img src="${photo}" alt="${person.name}" class="person-card-image" onerror="this.src='assets/images/oldphoto2.jpg'" style="cursor: pointer;">
+                <div class="person-card-info">
+                    <h3 onclick="viewPerson('${person.id}')" style="cursor: pointer;">${escapeHtml(person.name)}</h3>
+                    ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
+                    ${person.birthPlace ? `<p><span class="info-label">From:</span> ${escapeHtml(person.birthPlace)}</p>` : ''}
+                    <div class="person-tags">${tags}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Check for notifications (new comments on user's persons)
+function checkNotifications() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const myPersons = getPersonsByCreator(user.username);
+    const lastCheckKey = `pastlife_notifications_lastcheck_${user.username}`;
+    const lastCheck = localStorage.getItem(lastCheckKey);
+    
+    // Get all comments
+    const commentsKey = 'pastlife_comments';
+    const allComments = JSON.parse(localStorage.getItem(commentsKey) || '[]');
+    
+    // Find new comments on user's persons since last check
+    const myPersonIds = myPersons.map(p => p.id);
+    const newComments = allComments.filter(comment => {
+        if (!myPersonIds.includes(comment.personId)) return false;
+        if (comment.author === user.username) return false; // Don't notify about own comments
+        
+        if (lastCheck) {
+            return new Date(comment.createdAt) > new Date(lastCheck);
+        }
+        // First time checking - only show comments from last 24 hours
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return new Date(comment.createdAt) > oneDayAgo;
+    });
+    
+    // Update last check time
+    localStorage.setItem(lastCheckKey, new Date().toISOString());
+    
+    // Show notification if there are new comments
+    if (newComments.length > 0) {
+        showNotificationBadge(newComments.length);
+        // Don't show message on every page load - just show badge
+    }
+}
+
+// Show notification badge
+function showNotificationBadge(count) {
+    // Remove existing badge
+    const existing = document.getElementById('notificationBadge');
+    if (existing) existing.remove();
+    
+    // Add badge to profile link in nav
+    const profileLink = document.getElementById('profileLink');
+    if (profileLink) {
+        const badge = document.createElement('span');
+        badge.id = 'notificationBadge';
+        badge.textContent = count > 9 ? '9+' : count;
+        badge.style.cssText = 'position: absolute; background: #c62828; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; margin-left: -10px; margin-top: -5px;';
+        profileLink.style.position = 'relative';
+        profileLink.appendChild(badge);
+    }
+}
 
 // Make functions globally available
 window.viewPerson = viewPerson;
