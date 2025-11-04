@@ -101,8 +101,33 @@ body {
     background-image: url('../assets/images/doors.jpg');
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     opacity: 0.3;
     z-index: 1;
+    /* Prevent flash of background color */
+    will-change: opacity;
+    transition: opacity 0.3s ease-in;
+}
+
+/* Ensure image is loaded before showing */
+.hero-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--orange-light) 0%, var(--orange-primary) 100%);
+    z-index: -1;
+}
+
+/* Hide background until image loads */
+.hero:not(.image-loaded) .hero-background {
+    opacity: 0;
+}
+
+.hero.image-loaded .hero-background {
+    opacity: 0.3;
 }
 
 .hero-content {

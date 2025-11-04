@@ -1,0 +1,172 @@
+# F³ - Forbedringer og Utvidelser TODO Liste
+
+## ✅ Ferdig implementert
+- [x] Preload kritiske bilder (doors.jpg, etc.) - forhindrer FOUC
+- [x] Forbedret hero-seksjon bilde-loading
+- [x] View in Family Tree knapp på person-siden
+- [x] Add to Family Tree knapp på person-siden
+- [x] Søkehistorikk dropdown
+- [x] Relaterte personer visning
+- [x] Quick-add til familietre fra profil
+- [x] Tooltips på alle knapper
+- [x] Favoritter-system
+- [x] Statistikk-dashboard
+- [x] Duplikat-deteksjon
+- [x] Dato-intervall søk
+
+## 🔄 Høy prioritet - Performance & UX
+
+### 1. Bildeloading og optimalisering
+- [ ] Konverter bilder til WebP format for bedre komprimering
+- [ ] Implementer lazy loading for bilder som ikke er "above the fold"
+- [ ] Legg til skeleton loaders for bilder som lastes
+- [ ] Optimaliser bildestørrelser (resize før lagring)
+
+### 2. Responsiv design
+- [ ] Test og forbedre mobil-opplevelse på alle sider
+- [ ] Forbedre touch-gestures for familietre (drag, zoom)
+- [ ] Optimaliser navigasjon for små skjermer (hamburger menu?)
+- [ ] Test på tablets og forskjellige skjermstørrelser
+
+### 3. Søk og filtrering
+- [ ] Fuzzy search forbedringer (f.eks. "Edvard" finner "Edward")
+- [ ] Autocomplete/forslag mens bruker skriver
+- [ ] Avansert søk med flere kriterier samtidig
+- [ ] Søk i relasjoner (f.eks. "finn alle søsken av X")
+- [ ] Søk-suggestions basert på tidligere søk
+
+### 4. Feilmeldinger og validering
+- [ ] Mer detaljerte feilmeldinger med forslag til løsning
+- [ ] Bedre validering av input (f.eks. datoer, år)
+- [ ] Visuelle indikatorer for påkrevde felt
+- [ ] Kontekstuelle hjelpetekster
+
+## 🎨 Medium prioritet - Funksjonalitet
+
+### 5. Keyboard shortcuts
+- [ ] Enter for å søke (delvis implementert)
+- [ ] Esc for å lukke modaler/dropdowns
+- [ ] Ctrl/Cmd + K for quick search
+- [ ] Piltaster for navigasjon i søkeresultater
+
+### 6. Bulk-operasjoner
+- [ ] Bulk-import fra CSV/Excel fil
+- [ ] Bulk-import fra JSON
+- [ ] Bulk-edit (endre flere personer samtidig)
+- [ ] Bulk-export (eksporter flere personer)
+
+### 7. Familietre-forbedringer
+- [ ] Eksport til PDF med bedre layout
+- [ ] Eksport til PNG/SVG (høy oppløsning)
+- [ ] Timeline-visning (tidslinje med fødselsår)
+- [ ] Print-variant av familietre
+- [ ] Del familietre med andre (via link)
+- [ ] Automatisk layout-forbedringer (mindre overlapping)
+
+### 8. AI-forbedringer
+- [ ] Forbedret dato-validering (f.eks. "født 1500" ikke "dødd 1499")
+- [ ] Stedsnavn-validering mot faktiske steder
+- [ ] Relasjons-validering (f.eks. "far" kan ikke være yngre enn "barn")
+- [ ] Flerspråklig støtte (norsk/engelsk)
+- [ ] Batch-analyse (analyser flere tekster samtidig)
+
+### 9. Notifikasjoner og sosiale funksjoner
+- [ ] Notifikasjoner for nye kommentarer på dine personer
+- [ ] Notifikasjoner når noen favoriserer dine personer
+- [ ] Notifikasjoner for nye personer med samme navn
+- [ ] E-post-notifikasjoner (fremtidig backend-integrasjon)
+
+### 10. Statistikk og visualiseringer
+- [ ] Grafer for fødselsår-fordeling
+- [ ] Kart-visning av fødselssteder
+- [ ] Statistikk over antall personer per land/by
+- [ ] Generasjon-fordeling
+- [ ] Aktivitet-overview (siste måned, år, etc.)
+
+## 🚀 Lav prioritet - Nice to have
+
+### 11. Dark mode
+- [ ] Dark mode toggle
+- [ ] Automatisk dark mode basert på system-innstillinger
+- [ ] Lagre brukerpreferanse
+
+### 12. Eksport/import forbedringer
+- [ ] Eksport til GEDCOM format (standard for slektsforskning)
+- [ ] Import fra GEDCOM
+- [ ] Eksport til Excel med alle detaljer
+- [ ] Backup/restore funksjonalitet
+
+### 13. Søk i tekst
+- [ ] Fulltekst-søk i beskrivelser
+- [ ] Søk i kommentarer
+- [ ] Søk i tags (fuzzy)
+
+### 14. Person-relasjoner
+- [ ] Vis relasjons-graf (hvem er relatert til hvem)
+- [ ] Beregn slektsforhold (f.eks. "2. kusine")
+- [ ] Vis alle slektninger på én side
+- [ ] "Slektninger" filter på person-siden
+
+### 15. Bilder og media
+- [ ] Støtte for flere bilder per person
+- [ ] Bildgalleri
+- [ ] Støtte for video (fremtidig)
+- [ ] Bildetagger (hvem er på bildet)
+
+### 16. Søk-algoritmer
+- [ ] Søk basert på likhet (f.eks. "Edvard Jensen" finner "Edward Jensen")
+- [ ] Søk basert på plassering (radius-søk)
+- [ ] Søk basert på tidsperiode (f.eks. "alle født mellom 1800-1900")
+- [ ] Kombinert søk (navn + sted + år)
+
+### 17. Brukervennlighet
+- [ ] Onboarding-tutorial for nye brukere
+- [ ] Tooltips med eksempler
+- [ ] Contextual help
+- [ ] FAQ-seksjon
+- [ ] Video-tutorials
+
+### 18. Tekniske forbedringer
+- [ ] Service Worker for offline-støtte
+- [ ] Caching-strategi
+- [ ] Performance-optimalisering (lazy load komponenter)
+- [ ] Code splitting
+- [ ] Error boundary/error handling
+- [ ] Logging og analytics
+
+## 📋 Framtidige utvidelser (krever backend)
+
+### 19. Backend-integrasjon
+- [ ] Server-side lagring (ikke bare localStorage)
+- [ ] Multi-device sync
+- [ ] Cloud backup
+- [ ] Bruker-autentisering med OAuth
+- [ ] API for tredjeparts-integrasjoner
+
+### 20. Avanserte funksjoner
+- [ ] DNA-integrasjon (f.eks. 23andMe, Ancestry)
+- [ ] Integrasjon med andre slektsforsknings-verktøy
+- [ ] Automatisk matching (finn lignende personer)
+- [ ] Kollaborativ slektsforskning
+- [ ] Versjonskontroll for endringer
+- [ ] Historikk for endringer (hvem endret hva, når)
+
+## 🐛 Bugs å fikse
+- [ ] Sjekk alle formateringsfeil i datoer
+- [ ] Test edge cases (tomme felter, spesialtegn)
+- [ ] Test med store mengder data (1000+ personer)
+- [ ] Test på langsomme nettverk
+- [ ] Test CORS-issues på GitHub Pages
+
+## 📝 Dokumentasjon
+- [ ] Oppdater README med alle nye funksjoner
+- [ ] Legg til screenshots i README
+- [ ] Opprett brukerveiledning (video eller tekst)
+- [ ] Dokumenter API (hvis backend legges til)
+- [ ] CONTRIBUTING.md for åpne kilder
+
+---
+
+**Status oppdatert:** 2025-01-XX
+**Neste review:** Etter implementering av høy-prioritets oppgaver
+

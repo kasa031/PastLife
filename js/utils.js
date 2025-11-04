@@ -1,5 +1,5 @@
 // Utility functions
-export function showMessage(message, type = 'info', duration = 3000) {
+export function showMessage(message, type = 'info', duration = 3000, details = null) {
     // Remove existing message
     const existing = document.getElementById('globalMessage');
     if (existing) existing.remove();
@@ -7,7 +7,20 @@ export function showMessage(message, type = 'info', duration = 3000) {
     const messageDiv = document.createElement('div');
     messageDiv.id = 'globalMessage';
     messageDiv.className = `global-message ${type}`;
-    messageDiv.textContent = message;
+    
+    // Create message content
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.textContent = message;
+    messageDiv.appendChild(messageContent);
+    
+    // Add details if provided
+    if (details) {
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'message-details';
+        detailsDiv.textContent = details;
+        messageDiv.appendChild(detailsDiv);
+    }
     
     document.body.appendChild(messageDiv);
     
@@ -21,6 +34,62 @@ export function showMessage(message, type = 'info', duration = 3000) {
     }, duration);
     
     return messageDiv;
+}
+
+// Enhanced error messages with suggestions
+export function showErrorWithSuggestion(error, suggestion = null) {
+    return showMessage(error, 'error', 5000, suggestion);
+}
+
+// Validation helpers
+export function validateYear(year, fieldName = 'Year') {
+    if (!year) return { valid: true }; // Optional field
+    
+    const yearNum = parseInt(year);
+    if (isNaN(yearNum)) {
+        return {
+            valid: false,
+            message: `${fieldName} must be a valid number`,
+            suggestion: 'Please enter a year (e.g., 1880)'
+        };
+    }
+    
+    if (yearNum < 1000 || yearNum > new Date().getFullYear() + 10) {
+        return {
+            valid: false,
+            message: `${fieldName} seems invalid`,
+            suggestion: `Please enter a year between 1000 and ${new Date().getFullYear() + 10}`
+        };
+    }
+    
+    return { valid: true };
+}
+
+export function validateDateRange(birthYear, deathYear) {
+    if (!birthYear || !deathYear) return { valid: true };
+    
+    const birth = parseInt(birthYear);
+    const death = parseInt(deathYear);
+    
+    if (isNaN(birth) || isNaN(death)) return { valid: true };
+    
+    if (death < birth) {
+        return {
+            valid: false,
+            message: 'Death year cannot be before birth year',
+            suggestion: 'Please check the dates and correct them'
+        };
+    }
+    
+    if (death - birth > 150) {
+        return {
+            valid: false,
+            message: 'Age seems unusually high',
+            suggestion: 'Please verify the birth and death years are correct'
+        };
+    }
+    
+    return { valid: true };
 }
 
 export function showLoading(element) {

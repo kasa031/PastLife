@@ -58,10 +58,23 @@ window.handleHeroSearch = function() {
 }
 
 
+// Preload hero background image to prevent FOUC
+function preloadHeroImage() {
+    const hero = document.querySelector('.hero');
+    if (!hero) return;
+    
+    const img = new Image();
+    img.onload = function() {
+        hero.classList.add('image-loaded');
+    };
+    img.src = 'assets/images/doors.jpg';
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     loadRecentPersons();
     updateNavigation();
+    preloadHeroImage(); // Preload hero image
     
     // Handle Enter key in hero search
     const heroSearch = document.getElementById('heroSearch');

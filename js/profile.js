@@ -1,7 +1,7 @@
 // Profile page functionality
 import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById, getAllPersons } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { showMessage, showLoading, hideLoading } from './utils.js';
+import { showMessage, showLoading, hideLoading, validateYear, validateDateRange, showErrorWithSuggestion } from './utils.js';
 
 let tags = [];
 let photoFile = null;
@@ -127,8 +127,37 @@ async function submitForm() {
     };
     
     if (!formData.name) {
-        showMessage('Name is required. Please enter the ancestor\'s full name.', 'error');
+        showErrorWithSuggestion(
+            'Name is required',
+            'Please enter the ancestor\'s full name (e.g., "Edvard Jensen")'
+        );
         return;
+    }
+    
+    // Validate years
+    if (formData.birthYear) {
+        const birthValidation = validateYear(formData.birthYear, 'Birth year');
+        if (!birthValidation.valid) {
+            showErrorWithSuggestion(birthValidation.message, birthValidation.suggestion);
+            return;
+        }
+    }
+    
+    if (formData.deathYear) {
+        const deathValidation = validateYear(formData.deathYear, 'Death year');
+        if (!deathValidation.valid) {
+            showErrorWithSuggestion(deathValidation.message, deathValidation.suggestion);
+            return;
+        }
+    }
+    
+    // Validate date range
+    if (formData.birthYear && formData.deathYear) {
+        const dateValidation = validateDateRange(formData.birthYear, formData.deathYear);
+        if (!dateValidation.valid) {
+            showErrorWithSuggestion(dateValidation.message, dateValidation.suggestion);
+            return;
+        }
     }
     
     // Check for duplicates (skip if editing)
