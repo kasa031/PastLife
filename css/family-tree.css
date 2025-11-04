@@ -6,19 +6,25 @@
 }
 
 .tree-wrapper {
-    overflow-x: auto;
-    overflow-y: auto;
+    overflow: auto;
     max-height: 80vh;
     padding: 2rem;
     background: var(--gray-light);
     border-radius: 10px;
     position: relative;
+    cursor: grab;
+}
+
+.tree-wrapper.panning {
+    cursor: grabbing;
 }
 
 .tree-container {
     min-width: 100%;
     min-height: 400px;
     position: relative;
+    transform-origin: top left;
+    transition: transform 0.1s ease-out;
 }
 
 /* Tree Node Styles */
@@ -241,6 +247,46 @@
 }
 
 /* Responsive */
+/* Zoom controls */
+.zoom-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.zoom-info {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--gray-dark);
+}
+
+/* Better scrollbar */
+.tree-wrapper::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.tree-wrapper::-webkit-scrollbar-track {
+    background: var(--gray-light);
+    border-radius: 10px;
+}
+
+.tree-wrapper::-webkit-scrollbar-thumb {
+    background: var(--turquoise-primary);
+    border-radius: 10px;
+}
+
+.tree-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--turquoise-dark);
+}
+
 @media (max-width: 768px) {
     .tree-node {
         min-width: 150px;
