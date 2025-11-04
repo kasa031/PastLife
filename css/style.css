@@ -688,6 +688,20 @@ body {
     color: var(--white);
 }
 
+.message-content {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.message-details {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 /* Loading Spinner */
 .loading-spinner {
     position: absolute;
