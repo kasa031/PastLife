@@ -1,6 +1,13 @@
 // Login page functionality
 import { loginUser, registerUser, updateNavigation } from './auth.js';
 
+// Helper to access localStorage (for checking if user exists)
+function initUsers() {
+    if (!localStorage.getItem('pastlife_users')) {
+        localStorage.setItem('pastlife_users', JSON.stringify([]));
+    }
+}
+
 let isLoginMode = true;
 
 // Initialize page
@@ -27,6 +34,11 @@ function handleLogin(e) {
         return;
     }
     
+    // Check if user exists in database
+    initUsers();
+    const users = JSON.parse(localStorage.getItem('pastlife_users') || '[]');
+    const userExists = users.some(u => u.username === username || u.email === username);
+    
     if (loginUser(username, password)) {
         showMessage(messageDiv, 'Login successful! Redirecting...', 'success');
         // Don't clear fields on success - let user see they logged in
@@ -34,7 +46,12 @@ function handleLogin(e) {
             window.location.href = 'profile.html';
         }, 1000);
     } else {
-        showMessage(messageDiv, 'Invalid username or password', 'error');
+        // Give more helpful error message
+        if (!userExists) {
+            showMessage(messageDiv, 'User not found. Please register first or check your username/email.', 'error');
+        } else {
+            showMessage(messageDiv, 'Invalid password. Please try again.', 'error');
+        }
         // Only clear password field on error, keep username for retry
         passwordInput.value = '';
     }

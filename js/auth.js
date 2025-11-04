@@ -23,11 +23,15 @@ export function isLoggedIn() {
     return getCurrentUser() !== null;
 }
 
-// Login user
-export function loginUser(username, password) {
+// Login user (accepts both username and email)
+export function loginUser(usernameOrEmail, password) {
     initUsers();
     const users = JSON.parse(localStorage.getItem(USERS_KEY));
-    const user = users.find(u => u.username === username && u.password === password);
+    // Try to find user by username OR email
+    const user = users.find(u => 
+        (u.username === usernameOrEmail || u.email === usernameOrEmail) && 
+        u.password === password
+    );
     
     if (user) {
         localStorage.setItem(AUTH_KEY, JSON.stringify({ username: user.username, email: user.email }));
