@@ -214,18 +214,27 @@ window.analyzeAndMerge = async function() {
 // Perform analysis (internal function)
 async function performAnalysis(mergeMode = false) {
     const text = document.getElementById('familyText').value.trim();
-    let apiKey = document.getElementById('apiKey').value.trim();
+    let apiKeyInput = document.getElementById('apiKey');
+    let apiKey = apiKeyInput ? apiKeyInput.value.trim() : '';
     
     // If no API key in input, try saved one
-    if (!apiKey) {
+    if (!apiKey || apiKey === 'sk-or-...') {
         apiKey = getSavedApiKey();
-        if (apiKey) {
-            document.getElementById('apiKey').value = apiKey;
+        if (apiKey && apiKeyInput) {
+            apiKeyInput.value = apiKey;
             showMessage('Bruker lagret API-nøkkel', 'info', 2000);
         }
     } else {
         // Save the API key if entered
         saveApiKey(apiKey);
+    }
+    
+    // Final fallback: if still no key, use default
+    if (!apiKey || apiKey === 'sk-or-...') {
+        apiKey = DEFAULT_API_KEY;
+        if (apiKeyInput) {
+            apiKeyInput.value = apiKey;
+        }
     }
     
     if (!text) {
