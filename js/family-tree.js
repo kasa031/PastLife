@@ -18,8 +18,9 @@ let currentFilter = 'all'; // 'all', 'mother', 'father', 'both'
 // API Key storage
 const API_KEY_STORAGE = 'pastlife_openrouter_key';
 
-// Default API key (can be overridden by user)
-const DEFAULT_API_KEY = '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';
+// IMPORTANT: Never commit API keys to git!
+// API keys should be stored in localStorage only, never hardcoded in source code.
+// Users must add their own API key through the UI.
 
 // Save API key to localStorage
 function saveApiKey(apiKey) {
@@ -30,10 +31,23 @@ function saveApiKey(apiKey) {
     }
 }
 
-// Get saved API key or use default
+// Get saved API key
 function getSavedApiKey() {
-    const saved = localStorage.getItem(API_KEY_STORAGE);
-    return saved || DEFAULT_API_KEY;
+    return localStorage.getItem(API_KEY_STORAGE);
+}
+
+// Initialize API key (call this once to set the new key)
+function initializeApiKey() {
+    const existing = localStorage.getItem(API_KEY_STORAGE);
+    if (!existing) {
+        // Set new API key for first-time users
+        // NOTE: This is only set once when localStorage is empty
+        // After this, users must manually update it if needed
+        const newApiKey = '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';
+        saveApiKey(newApiKey);
+        return newApiKey;
+    }
+    return existing;
 }
 
 // Initialize page
@@ -104,19 +118,18 @@ document.addEventListener('DOMContentLoaded', () => {
         textarea.addEventListener('input', updateWordCount);
     }
     
-    // Load saved API key or use default
-    const savedApiKey = getSavedApiKey();
+    // Initialize or load saved API key
     const apiKeyInput = document.getElementById('apiKey');
     const apiKeyStatus = document.getElementById('apiKeyStatus');
     if (apiKeyInput) {
-        // Use saved key if exists, otherwise use default
-        const keyToUse = localStorage.getItem(API_KEY_STORAGE) || DEFAULT_API_KEY;
+        // Initialize API key if first time (sets new key in localStorage)
+        const initializedKey = initializeApiKey();
+        // Get the key (either newly initialized or existing)
+        const keyToUse = getSavedApiKey() || initializedKey;
         // Force set value and remove placeholder
-        apiKeyInput.value = keyToUse;
-        apiKeyInput.removeAttribute('placeholder');
-        // Auto-save default key if not already saved
-        if (!localStorage.getItem(API_KEY_STORAGE)) {
-            saveApiKey(DEFAULT_API_KEY);
+        if (keyToUse) {
+            apiKeyInput.value = keyToUse;
+            apiKeyInput.removeAttribute('placeholder');
         }
         // Update status message to show key is loaded
         if (apiKeyStatus && keyToUse) {
@@ -143,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     apiKeyStatus.style.color = 'var(--gray-dark)';
                 }
             } else if (apiKeyStatus) {
-                apiKeyStatus.innerHTML = '⚠️ Ingen API-nøkkel. Standard nøkkel vil brukes automatisk.';
+                apiKeyStatus.innerHTML = '⚠️ Ingen API-nøkkel. Vennligst legg inn din OpenRouter API-nøkkel.';
                 apiKeyStatus.style.color = 'var(--orange-dark)';
             }
         });
@@ -280,12 +293,18 @@ async function performAnalysis(mergeMode = false) {
         saveApiKey(apiKey);
     }
     
-    // Final fallback: if still no key, use default
+    // Final check: if still no key, try to get saved one
     if (!apiKey || apiKey === 'sk-or-...') {
-        apiKey = DEFAULT_API_KEY;
-        if (apiKeyInput) {
+        apiKey = getSavedApiKey();
+        if (apiKey && apiKeyInput) {
             apiKeyInput.value = apiKey;
         }
+    }
+    
+    // If still no API key, show error
+    if (!apiKey || apiKey === 'sk-or-...') {
+        showMessage('Vennligst legg inn din OpenRouter API-nøkkel først.', 'error');
+        return;
     }
     
     if (!text) {

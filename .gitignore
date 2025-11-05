@@ -33,6 +33,10 @@ yarn-error.log*
 config.js
 secrets.js
 *.key
+*api*key*.js
+*secret*.js
+.env.local
+.env.production
 
 # Temporary files
 *.tmp

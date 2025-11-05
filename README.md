@@ -95,6 +95,10 @@ PastLife/
 - For production use, consider migrating to a proper database and backend
 - AI features require OpenRouter API key (optional - basic analysis available without)
 
+## 🔒 Security
+
+**IMPORTANT**: Never commit API keys, passwords, or other sensitive information to git. See [SECURITY.md](SECURITY.md) for detailed security guidelines.
+
 ## Recent Updates
 
 - ✨ AI-powered family tree builder with text analysis

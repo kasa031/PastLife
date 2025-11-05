@@ -11,7 +11,8 @@
 
 ### Steg 3: Lim inn API-nøkkel (Første gang)
 1. Klikk på **"📋 Lim inn"** knappen ved API Key-feltet
-2. Lim inn din API-nøkkel: `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`
+2. Lim inn din OpenRouter API-nøkkel (starter med `sk-or-...`)
+   - Hvis du ikke har en nøkkel, gå til https://openrouter.ai/keys og opprett en
 3. Nøkkelen lagres automatisk i nettleseren din!
 
 **Eller:** Lim direkte inn i feltet - den lagres automatisk når du klikker utenfor feltet.
