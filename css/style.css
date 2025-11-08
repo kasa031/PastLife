@@ -1359,15 +1359,46 @@ img.loading {
         display: block;
         align-self: flex-end;
         margin-top: -3rem;
+        background: var(--turquoise-primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1.5rem;
+        z-index: 1001;
+        position: relative;
+        transition: all 0.3s;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    
+    .menu-toggle:active {
+        transform: scale(0.95);
+    }
+    
+    .menu-toggle.active {
+        background: var(--turquoise-dark);
     }
     
     .nav-menu {
         display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--white);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
         width: 100%;
     }
     
     .nav-menu.active {
         display: flex;
+        max-height: 500px;
     }
     
     .data-actions {
