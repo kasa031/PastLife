@@ -271,42 +271,96 @@ export function searchPersons(filters) {
 }
 
 // Search for persons by relationship (e.g., find all siblings of X)
-export function searchByRelationship(personName, relationshipType) {
+export function searchByRelationship(personName, relationshipType = 'all') {
     const allPersons = getAllPersons();
     const targetPerson = allPersons.find(p => p.name.toLowerCase() === personName.toLowerCase());
     
     if (!targetPerson) return [];
     
-    // For now, we'll search by tags that indicate relationships
-    // In a full implementation, we'd use the relationships array from family tree
     const results = [];
+    const foundIds = new Set();
     
     // Try to find relationships from family tree data
     const user = JSON.parse(localStorage.getItem('pastlife_auth') || 'null');
     if (user) {
         const treeKey = `pastlife_tree_${user.username}`;
-        const treeData = JSON.parse(localStorage.getItem(treeKey) || '[]');
+        const savedTree = localStorage.getItem(treeKey);
         
-        // This is a simplified version - in a full implementation,
-        // we'd need to store relationships in the main persons data
-        // For now, return persons with similar last names or tags
-        const lastName = targetPerson.name.split(' ').pop()?.toLowerCase() || '';
-        if (lastName) {
-            return allPersons.filter(p => {
-                if (p.id === targetPerson.id) return false;
-                const pLastName = p.name.split(' ').pop()?.toLowerCase() || '';
+        if (savedTree) {
+            try {
+                const treeInfo = JSON.parse(savedTree);
+                const relationships = treeInfo.relationships || [];
+                const treePersons = Array.isArray(treeInfo) ? treeInfo : (treeInfo.persons || []);
                 
-                // Same last name could indicate family relationship
-                if (pLastName === lastName) return true;
+                // Find target person in tree (by name match)
+                const targetInTree = treePersons.find(p => 
+                    p.name.toLowerCase() === personName.toLowerCase() ||
+                    (targetPerson.birthYear && p.birthYear && p.birthYear === targetPerson.birthYear && 
+                     p.name.toLowerCase().includes(personName.toLowerCase().split(' ')[0]))
+                );
                 
-                // Same tags (excluding morsside/farsside)
-                const targetTags = (targetPerson.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
-                const pTags = (p.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
-                if (targetTags.length > 0 && pTags.some(t => targetTags.includes(t))) return true;
-                
-                return false;
-            });
+                if (targetInTree) {
+                    // Find all relationships for this person
+                    const personRelations = relationships.filter(rel => 
+                        rel.person1 === targetInTree.name || rel.person2 === targetInTree.name
+                    );
+                    
+                    // Find related persons based on relationship type
+                    personRelations.forEach(rel => {
+                        const relatedName = rel.person1 === targetInTree.name ? rel.person2 : rel.person1;
+                        const relType = rel.type;
+                        
+                        // Filter by relationship type if specified
+                        if (relationshipType === 'all' || 
+                            (relationshipType === 'sibling' && (relType === 'sibling' || relType === 'half-sibling')) ||
+                            (relationshipType === 'parent' && relType === 'parent') ||
+                            (relationshipType === 'child' && relType === 'child') ||
+                            (relationshipType === 'spouse' && relType === 'spouse')) {
+                            
+                            // Find person in main database
+                            const relatedPerson = allPersons.find(p => 
+                                p.name.toLowerCase() === relatedName.toLowerCase() ||
+                                (p.name.toLowerCase().includes(relatedName.toLowerCase().split(' ')[0]) &&
+                                 relatedName.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]))
+                            );
+                            
+                            if (relatedPerson && !foundIds.has(relatedPerson.id)) {
+                                results.push(relatedPerson);
+                                foundIds.add(relatedPerson.id);
+                            }
+                        }
+                    });
+                    
+                    // If we found relationships, return them
+                    if (results.length > 0) {
+                        return results;
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing tree data:', e);
+            }
         }
+    }
+    
+    // Fallback: search by last name and tags if no tree relationships found
+    const lastName = targetPerson.name.split(' ').pop()?.toLowerCase() || '';
+    if (lastName) {
+        const fallbackResults = allPersons.filter(p => {
+            if (p.id === targetPerson.id || foundIds.has(p.id)) return false;
+            const pLastName = p.name.split(' ').pop()?.toLowerCase() || '';
+            
+            // Same last name could indicate family relationship
+            if (pLastName === lastName) return true;
+            
+            // Same tags (excluding morsside/farsside)
+            const targetTags = (targetPerson.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
+            const pTags = (p.tags || []).filter(t => t !== 'morsside' && t !== 'farsside');
+            if (targetTags.length > 0 && pTags.some(t => targetTags.includes(t))) return true;
+            
+            return false;
+        });
+        
+        return [...results, ...fallbackResults];
     }
     
     return results;

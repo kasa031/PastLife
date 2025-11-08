@@ -29,17 +29,28 @@ function saveSearchHistory(filters) {
 // Perform search
 function performSearch() {
     const relationshipName = document.getElementById('searchRelationship') ? document.getElementById('searchRelationship').value.trim() : '';
+    const relationshipType = document.getElementById('relationshipType') ? document.getElementById('relationshipType').value : 'all';
     
     // If searching by relationship, use that instead
     if (relationshipName) {
-        const relatedResults = searchByRelationship(relationshipName, 'all');
+        const relatedResults = searchByRelationship(relationshipName, relationshipType);
         if (relatedResults.length === 0) {
-            showMessage(`No related persons found for "${relationshipName}"`, 'info');
+            const typeLabel = relationshipType === 'all' ? 'related persons' : 
+                             relationshipType === 'sibling' ? 'siblings' :
+                             relationshipType === 'parent' ? 'parents' :
+                             relationshipType === 'child' ? 'children' :
+                             relationshipType === 'spouse' ? 'spouses' : 'relatives';
+            showMessage(`No ${typeLabel} found for "${relationshipName}"`, 'info');
             document.getElementById('searchResults').innerHTML = '';
             document.getElementById('resultsTitle').textContent = '';
         } else {
             displaySearchResults(relatedResults);
-            document.getElementById('resultsTitle').textContent = `Found ${relatedResults.length} related person${relatedResults.length > 1 ? 's' : ''} for "${relationshipName}"`;
+            const typeLabel = relationshipType === 'all' ? 'related persons' : 
+                             relationshipType === 'sibling' ? 'siblings' :
+                             relationshipType === 'parent' ? 'parents' :
+                             relationshipType === 'child' ? 'children' :
+                             relationshipType === 'spouse' ? 'spouses' : 'relatives';
+            document.getElementById('resultsTitle').textContent = `Found ${relatedResults.length} ${typeLabel} for "${relationshipName}"`;
         }
         currentResultIndex = -1;
         return;
