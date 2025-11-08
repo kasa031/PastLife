@@ -63,7 +63,8 @@ function performSearch() {
         yearFrom: document.getElementById('searchYearFrom').value.trim(),
         yearTo: document.getElementById('searchYearTo').value.trim(),
         tags: document.getElementById('searchTags') ? document.getElementById('searchTags').value.trim().split(',').map(t => t.trim()).filter(t => t) : [],
-        description: document.getElementById('searchDescription').value.trim()
+        description: document.getElementById('searchDescription').value.trim(),
+        comments: document.getElementById('searchComments') ? document.getElementById('searchComments').value.trim() : ''
     };
     
     // Save to history

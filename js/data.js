@@ -266,6 +266,19 @@ export function searchPersons(filters) {
             matches = matches && descMatch;
         }
         
+        // Search in comments (full-text search)
+        if (filters.comments) {
+            const commentSearch = filters.comments.toLowerCase().trim();
+            const personComments = getCommentsForPerson(person.id);
+            const commentMatch = personComments.some(comment => 
+                comment.text.toLowerCase().includes(commentSearch) ||
+                (comment.author && comment.author.toLowerCase().includes(commentSearch))
+            );
+            if (!commentMatch) {
+                matches = false;
+            }
+        }
+        
         return matches;
     });
 }
