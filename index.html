@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F³ - Discover Your Ancestors</title>
+    <title>PastLife - Discover Your Ancestors</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
     <!-- Preload critical images to prevent FOUC -->
@@ -17,8 +17,11 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
-                <h1>F³</h1>
-                <p class="tagline">Family Tree - Journey through time, discover your ancestors</p>
+                <img src="assets/images/PastLifeLogo.jpg" alt="PastLife Logo" style="height: 50px; margin-right: 1rem; border-radius: 5px;">
+                <div>
+                    <h1>PastLife</h1>
+                    <p class="tagline">Journey through time, discover your ancestors</p>
+                </div>
             </div>
             <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">☰</button>
             <ul class="nav-menu" id="navMenu">
@@ -26,6 +29,7 @@
                 <li><a href="search.html">Search</a></li>
                 <li><a href="profile.html" id="profileLink">Profile</a></li>
                 <li><a href="family-tree.html">Family Tree</a></li>
+                <li><a href="about.html">Om Meg</a></li>
                 <li><button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" style="background: none; border: none; color: var(--white); cursor: pointer; padding: 0.5rem 1rem; font-size: 1.2rem;">🌙</button></li>
                 <li><a href="login.html" id="loginLink">Login</a></li>
                 <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
@@ -88,7 +92,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 F³. Connecting generations through time.</p>
+            <p>&copy; 2025 PastLife. Connecting generations through time.</p>
         </div>
     </footer>
 

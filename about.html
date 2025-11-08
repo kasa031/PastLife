@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Om Meg - PastLife</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="assets/images/PastLifeLogo.jpg" alt="PastLife Logo" style="height: 50px; margin-right: 1rem; border-radius: 5px;">
+                <div>
+                    <h1>PastLife</h1>
+                    <p class="tagline">Journey through time, discover your ancestors</p>
+                </div>
+            </div>
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">☰</button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="search.html">Search</a></li>
+                <li><a href="profile.html" id="profileLink">Profile</a></li>
+                <li><a href="family-tree.html">Family Tree</a></li>
+                <li><a href="about.html" class="active">Om Meg</a></li>
+                <li><button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" style="background: none; border: none; color: var(--white); cursor: pointer; padding: 0.5rem 1rem; font-size: 1.2rem;">🌙</button></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- About Section -->
+    <section class="about-section" style="padding: 4rem 0; background: var(--white);">
+        <div class="container">
+            <div style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+                <h1 style="color: var(--turquoise-dark); text-align: center; margin-bottom: 2rem; font-size: 2.5rem;">Om Meg</h1>
+                
+                <div style="background: var(--gray-light); padding: 3rem; border-radius: 15px; margin-bottom: 2.5rem; line-height: 1.8; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                    <h2 style="color: var(--primary-dark); margin-bottom: 2rem; font-size: 2rem;">👋 Velkommen til PastLife</h2>
+                    <p style="font-size: 1.15rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+                        PastLife er et prosjekt jeg har utviklet for å hjelpe folk med å oppdage, dele og bevare informasjon om sine forfedre. 
+                        Som en entusiastisk slektsforsker har jeg alltid vært fascinert av historien vår og hvordan vi er koblet sammen gjennom generasjoner.
+                    </p>
+                    <p style="font-size: 1.15rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+                        Dette prosjektet kombinerer min lidenskap for slektsforskning med moderne teknologi, inkludert AI-drevet analyse for å hjelpe deg med å bygge familietrær fra tekst. 
+                        Jeg tror på at hver person har en unik historie som fortjener å bli bevart og delt.
+                    </p>
+                    <p style="font-size: 1.15rem; margin-bottom: 1.5rem; color: var(--text-dark);">
+                        Målet mitt er å gjøre slektsforskning mer tilgjengelig, sosialt og engasjerende for alle, uavhengig av hvor mye erfaring du har.
+                    </p>
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--gray-medium);">
+                        <h3 style="color: var(--primary-dark); margin-bottom: 1rem; font-size: 1.4rem;">📖 Min Bakgrunn</h3>
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-dark);">
+                            Jeg har jobbet med slektsforskning i mange år og har opplevd hvor vanskelig det kan være å organisere og dele informasjon om forfedre. 
+                            PastLife er resultatet av min egen behov for et verktøy som gjør dette enklere og mer visuelt.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-dark);">
+                            Med bakgrunn innen teknologi og en dyp interesse for historie, har jeg kombinert disse to lidenskapene for å skape noe som hjelper andre 
+                            med å oppdage sine røtter og koble sammen historiske fortellinger.
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); padding: 3rem; border-radius: 15px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 2rem;">📧 Kontakt</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                        Har du spørsmål, forslag eller vil du dele din egen slektshistorie?<br>
+                        Jeg er alltid interessert i å høre fra brukere og forbedre PastLife basert på deres behov.
+                    </p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin: 2rem 0;">
+                        <p style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem;">
+                            <a href="mailto:ms.tery@icloud.com" style="color: white; text-decoration: none; transition: all 0.3s; display: inline-block; padding: 0.5rem 1rem; border-radius: 5px; background: rgba(255,255,255,0.2);" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">
+                                📧 ms.tery@icloud.com
+                            </a>
+                        </p>
+                    </div>
+                    <p style="font-size: 1rem; margin-top: 1.5rem; opacity: 0.9;">
+                        Jeg setter pris på all tilbakemelding og ser frem til å høre fra deg!
+                    </p>
+                </div>
+                
+                <div style="margin-top: 3rem; padding: 2rem; background: var(--gray-light); border-radius: 15px; text-align: center;">
+                    <h3 style="color: var(--turquoise-dark); margin-bottom: 1rem;">🌳 Om Prosjektet</h3>
+                    <p style="color: var(--text-dark); line-height: 1.8;">
+                        PastLife er bygget med ren HTML, CSS og JavaScript, og bruker localStorage for datalagring. 
+                        Prosjektet er designet for å være enkel å bruke, men kraftig nok til å håndtere komplekse familietrær med hundrevis av personer.
+                    </p>
+                    <p style="color: var(--text-dark); line-height: 1.8; margin-top: 1rem;">
+                        Alle funksjoner er utviklet med fokus på brukervennlighet, responsivt design og moderne web-teknologi.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { updateNavigation } from './js/auth.js';
+        
+        // Dark mode functions (shared)
+        window.toggleDarkMode = function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('pastlife_theme', newTheme);
+            localStorage.setItem('pastlife_theme_manual', 'true');
+            
+            const toggles = document.querySelectorAll('.theme-toggle');
+            toggles.forEach(toggle => {
+                toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+                toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+            });
+        };
+        
+        function loadTheme() {
+            let savedTheme = localStorage.getItem('pastlife_theme');
+            const manualOverride = localStorage.getItem('pastlife_theme_manual');
+            
+            if (!savedTheme || manualOverride === null) {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    savedTheme = 'dark';
+                } else {
+                    savedTheme = 'light';
+                }
+                localStorage.setItem('pastlife_theme', savedTheme);
+                localStorage.setItem('pastlife_theme_manual', 'false');
+            }
+            
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const toggles = document.querySelectorAll('.theme-toggle');
+            toggles.forEach(toggle => {
+                toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+                toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
+            });
+        }
+        
+        function toggleMobileMenu() {
+            const navMenu = document.getElementById('navMenu');
+            navMenu.classList.toggle('active');
+        }
+        
+        window.toggleMobileMenu = toggleMobileMenu;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            updateNavigation();
+        });
+    </script>
+</body>
+</html>
+

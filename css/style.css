@@ -1,16 +1,29 @@
-/* Color Palette: Turquoise and Orange */
+/* Color Palette: Warm, earthy tones inspired by vintage photos */
 :root {
-    --turquoise-primary: #00CED1;
-    --turquoise-dark: #008B8B;
-    --turquoise-light: #AFEEEE;
-    --orange-primary: #FF8C00;
-    --orange-dark: #FF6347;
-    --orange-light: #FFA500;
+    /* Primary colors - warm sepia/brown tones */
+    --primary-color: #8B6F47;        /* Warm brown */
+    --primary-dark: #6B4E2F;         /* Darker brown */
+    --primary-light: #B8956A;        /* Lighter brown */
+    
+    /* Accent colors - complementary warm tones */
+    --accent-color: #C9A961;         /* Golden/amber */
+    --accent-dark: #A6894F;          /* Darker amber */
+    --accent-light: #E5C97A;        /* Light amber */
+    
+    /* Legacy turquoise/orange for compatibility - now warmer */
+    --turquoise-primary: #8B6F47;    /* Warm brown */
+    --turquoise-dark: #6B4E2F;      /* Darker brown */
+    --turquoise-light: #B8956A;      /* Lighter brown */
+    --orange-primary: #C9A961;       /* Golden */
+    --orange-dark: #A6894F;          /* Darker golden */
+    --orange-light: #E5C97A;         /* Light golden */
+    
+    /* Neutrals */
     --white: #FFFFFF;
-    --gray-light: #F5F5F5;
-    --gray-medium: #CCCCCC;
-    --gray-dark: #666666;
-    --text-dark: #333333;
+    --gray-light: #F8F6F3;           /* Warm off-white */
+    --gray-medium: #D4C4B0;          /* Warm gray */
+    --gray-dark: #6B5D4F;           /* Warm dark gray */
+    --text-dark: #3D3529;            /* Warm dark text */
 }
 
 /* Required field indicator */
@@ -108,7 +121,7 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 2rem;
 }
 
 /* Navigation */
@@ -436,7 +449,7 @@ body {
 
 /* Person Detail Page */
 .person-detail {
-    padding: 3rem 0;
+    padding: 4rem 0;
     background: var(--white);
 }
 
@@ -445,6 +458,9 @@ body {
     grid-template-columns: 1fr 2fr;
     gap: 3rem;
     margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--gray-light);
+    border-radius: 15px;
 }
 
 .person-detail-image {
@@ -459,8 +475,83 @@ body {
 }
 
 .person-detail-info p {
-    margin: 0.8rem 0;
+    margin: 1rem 0;
     font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Sources section */
+.sources-section {
+    margin-top: 2.5rem;
+    padding: 2rem;
+    background: var(--gray-light);
+    border-radius: 12px;
+    border-left: 5px solid var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.sources-section h3 {
+    color: var(--primary-dark);
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+}
+
+.source-item {
+    margin: 1rem 0;
+    padding: 1rem 1.2rem;
+    background: var(--white);
+    border-radius: 8px;
+    word-wrap: break-word;
+    border: 1px solid var(--gray-medium);
+    transition: all 0.3s ease;
+}
+
+.source-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.source-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+    word-break: break-all;
+    font-weight: 500;
+    display: inline-block;
+    padding: 0.2rem 0;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.source-item a:hover {
+    text-decoration: underline;
+}
+
+/* Image gallery */
+.image-gallery {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.gallery-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    border: 2px solid var(--gray-medium);
+}
+
+.gallery-image:hover {
+    transform: scale(1.05);
+    border-color: var(--turquoise-primary);
+}
+
+.gallery-image.main {
+    border-color: var(--orange-primary);
+    border-width: 3px;
 }
 
 .info-label {
@@ -907,6 +998,44 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .person-detail-header {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .person-detail {
+        padding: 2rem 0;
+    }
+    
+    .person-detail-image {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .person-detail-info {
+        text-align: center;
+    }
+    
+    .sources-section {
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .image-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.8rem;
+    }
+    
+    .gallery-image {
+        height: 120px;
+    }
+    
     .nav-menu {
         flex-direction: column;
         gap: 0.5rem;
@@ -924,10 +1053,6 @@ body {
 
     .search-box-hero {
         flex-direction: column;
-    }
-
-    .person-detail-header {
-        grid-template-columns: 1fr;
     }
 
     .feature-grid {
@@ -948,13 +1073,6 @@ body {
         flex-direction: column;
     }
     
-    .nav-menu {
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-        margin-top: 1rem;
-    }
-    
     .nav-menu li {
         width: 100%;
     }
@@ -963,6 +1081,7 @@ body {
         display: block;
         width: 100%;
         text-align: center;
+        padding: 0.8rem;
     }
     
     .navbar .container {
@@ -987,5 +1106,61 @@ body {
     
     .data-actions {
         flex-direction: column;
+    }
+    
+    .comments-section {
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .upload-section {
+        padding: 1.5rem;
+    }
+    
+    .search-filters {
+        padding: 1.5rem;
+    }
+    
+    .nav-brand {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .nav-brand img {
+        height: 40px !important;
+        margin-right: 0.5rem !important;
+    }
+    
+    .nav-brand h1 {
+        font-size: 1.5rem;
+    }
+    
+    .tagline {
+        font-size: 0.8rem;
+    }
+    
+    .about-section {
+        padding: 2rem 0 !important;
+    }
+    
+    .about-section > div > div {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        padding: 0 1.5rem;
+    }
+    
+    .person-detail-header {
+        gap: 2rem;
+        padding: 2rem;
+    }
+    
+    .nav-brand img {
+        height: 45px !important;
     }
 }

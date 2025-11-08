@@ -30,16 +30,19 @@ export function savePerson(personData, personId = null) {
             persons[index] = {
                 ...persons[index],
                 name: personData.name,
-                birthYear: personData.birthYear || null,
-                deathYear: personData.deathYear || null,
-                birthPlace: personData.birthPlace || '',
-                deathPlace: personData.deathPlace || '',
-                country: personData.country || '',
-                city: personData.city || '',
-                description: personData.description || '',
+                birthYear: personData.birthYear !== undefined ? personData.birthYear : persons[index].birthYear,
+                deathYear: personData.deathYear !== undefined ? personData.deathYear : persons[index].deathYear,
+                birthPlace: personData.birthPlace !== undefined ? personData.birthPlace : persons[index].birthPlace,
+                deathPlace: personData.deathPlace !== undefined ? personData.deathPlace : persons[index].deathPlace,
+                country: personData.country !== undefined ? personData.country : persons[index].country,
+                city: personData.city !== undefined ? personData.city : persons[index].city,
+                description: personData.description !== undefined ? personData.description : persons[index].description,
                 photo: personData.photo !== undefined ? personData.photo : persons[index].photo,
-                tags: personData.tags || [],
-                updatedAt: new Date().toISOString()
+                images: personData.images !== undefined ? personData.images : (persons[index].images || (persons[index].photo ? [persons[index].photo] : [])),
+                mainImage: personData.mainImage !== undefined ? personData.mainImage : (persons[index].mainImage || persons[index].photo),
+                sources: personData.sources !== undefined ? personData.sources : (persons[index].sources || []),
+                tags: personData.tags !== undefined ? personData.tags : persons[index].tags,
+                lastModified: new Date().toISOString()
             };
             localStorage.setItem(PERSONS_KEY, JSON.stringify(persons));
             return persons[index];
@@ -58,9 +61,13 @@ export function savePerson(personData, personId = null) {
         city: personData.city || '',
         description: personData.description || '',
         photo: personData.photo || null,
+        images: personData.images || (personData.photo ? [personData.photo] : []), // Support multiple images
+        mainImage: personData.mainImage || personData.photo || null, // Main image for display
+        sources: personData.sources || [], // Sources array
         tags: personData.tags || [],
         createdBy: personData.createdBy,
-        createdAt: new Date().toISOString()
+        createdAt: personData.createdAt || new Date().toISOString(),
+        lastModified: new Date().toISOString()
     };
     
     persons.push(person);

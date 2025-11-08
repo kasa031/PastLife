@@ -1269,6 +1269,18 @@ function createTreeNode(person) {
     const generation = person.generation !== undefined ? person.generation : 0;
     const generationText = getGenerationLabel(generation);
     
+    // Get person image (mainImage or photo)
+    const personImage = person.mainImage || person.photo;
+    const imageHtml = personImage ? `
+        <div style="margin: 0.5rem 0; text-align: center;">
+            <img src="${personImage}" alt="${escapeHtml(person.name)}" style="width: 100%; max-width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--turquoise-primary); cursor: pointer;" onclick="changeTreeNodeImage('${person.id}')" onerror="this.style.display='none'" title="Klikk for å endre bilde">
+        </div>
+    ` : `
+        <div style="margin: 0.5rem 0; text-align: center;">
+            <button class="tree-node-btn" onclick="changeTreeNodeImage('${person.id}')" title="Legg til bilde" style="width: 100%; padding: 0.5rem; background: var(--gray-light); border: 2px dashed var(--gray-medium); border-radius: 5px; cursor: pointer;">📷 Legg til bilde</button>
+        </div>
+    `;
+    
     node.innerHTML = `
         <div class="tree-node-header">
             <div>
@@ -1277,9 +1289,11 @@ function createTreeNode(person) {
             </div>
             <div class="tree-node-actions">
                 <button class="tree-node-btn" onclick="editTreeNode('${person.id}')" title="Edit">✏️</button>
+                <button class="tree-node-btn" onclick="changeTreeNodeImage('${person.id}')" title="Endre bilde">📷</button>
                 <button class="tree-node-btn" onclick="deleteTreeNode('${person.id}')" title="Delete">🗑️</button>
             </div>
         </div>
+        ${imageHtml}
         ${person.birthYear ? `<div class="tree-node-info"><strong>Born:</strong> ${person.birthYear}</div>` : ''}
         ${person.birthPlace ? `<div class="tree-node-info"><strong>From:</strong> ${escapeHtml(person.birthPlace)}</div>` : ''}
         ${person.country ? `<div class="tree-node-info"><strong>Country:</strong> ${escapeHtml(person.country)}</div>` : ''}
@@ -1519,6 +1533,105 @@ window.editTreeNode = function(nodeId) {
         window.location.href = `profile.html?edit=${nodeId}`;
     }
 };
+
+// Change tree node image
+window.changeTreeNodeImage = function(nodeId) {
+    const person = allTreeData.find(p => p.id === nodeId);
+    if (!person) return;
+    
+    // Create file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            // Compress and convert to base64
+            const compressed = await compressImage(file, 800, 0.7);
+            const base64 = await fileToBase64(compressed);
+            
+            // Update person in tree data
+            person.photo = base64;
+            person.mainImage = base64;
+            if (!person.images) person.images = [];
+            if (!person.images.includes(base64)) {
+                person.images.push(base64);
+            }
+            
+            // Update in both arrays
+            const allIndex = allTreeData.findIndex(p => p.id === nodeId);
+            if (allIndex !== -1) allTreeData[allIndex] = person;
+            
+            const treeIndex = treeData.findIndex(p => p.id === nodeId);
+            if (treeIndex !== -1) treeData[treeIndex] = person;
+            
+            // Also update person in main database if exists
+            const { getAllPersons, savePerson } = await import('./data.js');
+            const allPersons = getAllPersons();
+            const mainPersonIndex = allPersons.findIndex(p => p.id === nodeId || p.name === person.name);
+            if (mainPersonIndex !== -1) {
+                const mainPerson = allPersons[mainPersonIndex];
+                mainPerson.photo = base64;
+                mainPerson.mainImage = base64;
+                if (!mainPerson.images) mainPerson.images = [];
+                if (!mainPerson.images.includes(base64)) {
+                    mainPerson.images.push(base64);
+                }
+                savePerson(mainPerson, mainPerson.id);
+            }
+            
+            // Save and re-render
+            saveTreeToStorage();
+            renderTree();
+            showMessage('Bilde oppdatert og lagret på personens profil!', 'success');
+        } catch (error) {
+            console.error('Error updating image:', error);
+            showMessage('Feil ved oppdatering av bilde', 'error');
+        }
+    };
+    input.click();
+};
+
+// Helper: compress image
+function compressImage(file, maxWidth, quality) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob(resolve, 'image/jpeg', quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Helper: file to base64
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
 // Delete tree node
 window.deleteTreeNode = function(nodeId) {

@@ -202,12 +202,46 @@ function loadPersonDetails() {
         return;
     }
     
-    const photo = person.photo || 'assets/images/oldphoto2.jpg';
-    const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+    // Use mainImage if available, otherwise photo, otherwise default
+    const mainPhoto = person.mainImage || person.photo || 'assets/images/oldphoto2.jpg';
+    const allImages = person.images && person.images.length > 0 ? person.images : (person.photo ? [person.photo] : []);
+    const tags = (person.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('');
+    
+    // Format date
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('no-NO', options);
+    };
+    
+    const createdAt = person.createdAt ? formatDate(person.createdAt) : '';
+    const addedByText = person.createdBy ? `${escapeHtml(person.createdBy)}${createdAt ? ` - ${createdAt}` : ''}` : '';
+    
+    // Format sources
+    const sourcesHtml = person.sources && person.sources.length > 0 ? `
+        <div class="sources-section">
+            <h3>📚 Kilder</h3>
+            ${person.sources.map(source => {
+                const isUrl = source.startsWith('http://') || source.startsWith('https://');
+                return `<div class="source-item">${isUrl ? `<a href="${escapeHtml(source)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source)}</a>` : escapeHtml(source)}</div>`;
+            }).join('')}
+        </div>
+    ` : '';
+    
+    // Image gallery
+    const galleryHtml = allImages.length > 1 ? `
+        <div class="image-gallery" style="margin-top: 2rem;">
+            ${allImages.map((img, idx) => {
+                const isMain = img === mainPhoto || (idx === 0 && !person.mainImage);
+                return `<img src="${img}" alt="${escapeHtml(person.name)} - Image ${idx + 1}" class="gallery-image ${isMain ? 'main' : ''}" onclick="setMainImage('${img}', '${currentPersonId}')" onerror="this.src='assets/images/oldphoto2.jpg'">`;
+            }).join('')}
+        </div>
+    ` : '';
     
     const html = `
         <div class="person-detail-header">
-            <img src="${photo}" alt="${escapeHtml(person.name)}" class="person-detail-image" onerror="this.src='assets/images/oldphoto2.jpg'">
+            <img src="${mainPhoto}" alt="${escapeHtml(person.name)}" class="person-detail-image" onerror="this.src='assets/images/oldphoto2.jpg'">
             <div class="person-detail-info">
                 <h1>${escapeHtml(person.name)}</h1>
                 ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
@@ -216,13 +250,15 @@ function loadPersonDetails() {
                 ${person.deathPlace ? `<p><span class="info-label">Death Place:</span> ${escapeHtml(person.deathPlace)}</p>` : ''}
                 ${person.country ? `<p><span class="info-label">Country:</span> ${escapeHtml(person.country)}</p>` : ''}
                 ${person.city ? `<p><span class="info-label">City:</span> ${escapeHtml(person.city)}</p>` : ''}
-                ${person.description ? `<div style="margin-top: 1.5rem;"><p><span class="info-label">About:</span></p><p>${escapeHtml(person.description)}</p></div>` : ''}
-                <div class="person-tags" style="margin-top: 1.5rem;">${tags}</div>
-                <p style="margin-top: 1.5rem; color: var(--gray-dark); font-size: 0.9rem;">
-                    <span class="info-label">Added by:</span> ${escapeHtml(person.createdBy)}
-                </p>
+                ${person.description ? `<div style="margin-top: 1.5rem;"><p><span class="info-label">About:</span></p><p style="line-height: 1.6;">${escapeHtml(person.description)}</p></div>` : ''}
+                ${tags ? `<div class="person-tags" style="margin-top: 1.5rem;">${tags}</div>` : ''}
+                ${addedByText ? `<p style="margin-top: 1.5rem; color: var(--gray-dark); font-size: 0.9rem;">
+                    <span class="info-label">Added by:</span> ${addedByText}
+                </p>` : ''}
             </div>
         </div>
+        ${galleryHtml}
+        ${sourcesHtml}
     `;
     
     document.getElementById('personDetailContent').innerHTML = html;
@@ -385,6 +421,26 @@ function getRelatedPersons(person) {
         return false;
     }).slice(0, 10); // Limit to 10
 }
+
+// Set main image
+window.setMainImage = function(imageUrl, personId) {
+    const person = getPersonById(personId);
+    if (!person) return;
+    
+    // Update person with new main image
+    const updatedPerson = {
+        ...person,
+        mainImage: imageUrl,
+        photo: imageUrl // Also update photo for backward compatibility
+    };
+    
+    // Save updated person
+    import('./data.js').then(({ savePerson }) => {
+        savePerson(updatedPerson, personId);
+        showMessage('Hovedbilde oppdatert!', 'success');
+        loadPersonDetails(); // Reload to show new main image
+    });
+};
 
 // Get all persons (helper)
 function getAllPersons() {
