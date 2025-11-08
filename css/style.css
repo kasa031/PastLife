@@ -59,6 +59,9 @@
     cursor: pointer;
     border-bottom: 1px solid var(--gray-light);
     transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .autocomplete-suggestion:hover,
@@ -68,6 +71,41 @@
 
 .autocomplete-suggestion:last-child {
     border-bottom: none;
+}
+
+.suggestion-group-header {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--gray-dark);
+    background: var(--gray-light);
+    border-bottom: 1px solid var(--gray-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.suggestion-text {
+    flex: 1;
+}
+
+.suggestion-hint {
+    font-size: 0.75rem;
+    color: var(--gray-dark);
+    font-style: italic;
+    margin-left: 0.5rem;
+}
+
+.suggestion-history {
+    background: var(--orange-light);
+}
+
+.suggestion-history:hover {
+    background: var(--orange-primary);
+    color: var(--white);
+}
+
+.suggestion-history:hover .suggestion-hint {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .filter-group {

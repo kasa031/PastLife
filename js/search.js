@@ -234,16 +234,30 @@ function setupAutocomplete() {
             return;
         }
         
-        // Get suggestions from search history first
+        const allPersons = getAllPersons();
+        
+        // Get suggestions from search history first (prioritize recent searches)
         const historyKey = 'pastlife_search_history';
         const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
         const historySuggestions = history
-            .filter(h => h.toLowerCase().includes(value.toLowerCase()))
+            .filter(h => {
+                // Extract name from history string (format: "name:value, ...")
+                const nameMatch = h.match(/name:([^,]+)/);
+                if (nameMatch) {
+                    const historyName = nameMatch[1].trim().toLowerCase();
+                    return historyName.includes(value.toLowerCase());
+                }
+                return h.toLowerCase().includes(value.toLowerCase());
+            })
             .slice(0, 3)
-            .map(h => ({ text: h, type: 'history' }));
+            .map(h => {
+                // Extract name from history string
+                const nameMatch = h.match(/name:([^,]+)/);
+                const displayName = nameMatch ? nameMatch[1].trim() : h;
+                return { text: displayName, type: 'history', fullHistory: h };
+            });
         
         // Get all unique names from persons
-        const allPersons = getAllPersons();
         const uniqueNames = [...new Set(allPersons.map(p => p.name))];
         
         // Filter names that match (fuzzy)
@@ -254,10 +268,30 @@ function setupAutocomplete() {
                 return nameLower.includes(valueLower) || 
                        nameLower.split(' ').some(part => part.startsWith(valueLower));
             })
-            .slice(0, 5 - historySuggestions.length)
+            .slice(0, 7 - historySuggestions.length)
             .map(name => ({ text: name, type: 'name' }));
         
-        suggestions = [...historySuggestions, ...nameSuggestions];
+        // Get country suggestions if input looks like a country
+        const countries = [...new Set(allPersons.map(p => p.country).filter(c => c))];
+        const countrySuggestions = countries
+            .filter(country => country.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 2)
+            .map(country => ({ text: country, type: 'country' }));
+        
+        // Get city suggestions
+        const cities = [...new Set(allPersons.map(p => p.city).filter(c => c))];
+        const citySuggestions = cities
+            .filter(city => city.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 2)
+            .map(city => ({ text: city, type: 'city' }));
+        
+        // Combine all suggestions (history first, then names, then locations)
+        suggestions = [
+            ...historySuggestions,
+            ...nameSuggestions,
+            ...countrySuggestions,
+            ...citySuggestions
+        ].slice(0, 10); // Limit to 10 total
         
         if (suggestions.length > 0) {
             displaySuggestions(suggestions);
@@ -295,15 +329,64 @@ function displaySuggestions(suggestions) {
     const suggestionsDiv = document.getElementById('nameSuggestions');
     if (!suggestionsDiv) return;
     
-    suggestionsDiv.innerHTML = suggestions.map((item, index) => {
-        const icon = item.type === 'history' ? '🕐 ' : '👤 ';
-        return `<div class="autocomplete-suggestion" data-index="${index}">${icon}${escapeHtml(item.text)}</div>`;
-    }).join('');
+    // Group suggestions by type
+    const grouped = {
+        history: suggestions.filter(s => s.type === 'history'),
+        name: suggestions.filter(s => s.type === 'name'),
+        country: suggestions.filter(s => s.type === 'country'),
+        city: suggestions.filter(s => s.type === 'city')
+    };
+    
+    let html = '';
+    let globalIndex = 0;
+    
+    // History suggestions
+    if (grouped.history.length > 0) {
+        html += `<div class="suggestion-group-header">🕐 Recent Searches</div>`;
+        grouped.history.forEach(item => {
+            html += `<div class="autocomplete-suggestion suggestion-history" data-index="${globalIndex++}">
+                <span class="suggestion-text">${escapeHtml(item.text)}</span>
+                <span class="suggestion-hint">Click to reuse search</span>
+            </div>`;
+        });
+    }
+    
+    // Name suggestions
+    if (grouped.name.length > 0) {
+        html += `<div class="suggestion-group-header">👤 Names</div>`;
+        grouped.name.forEach(item => {
+            html += `<div class="autocomplete-suggestion suggestion-name" data-index="${globalIndex++}">${escapeHtml(item.text)}</div>`;
+        });
+    }
+    
+    // Country suggestions
+    if (grouped.country.length > 0) {
+        html += `<div class="suggestion-group-header">🌍 Countries</div>`;
+        grouped.country.forEach(item => {
+            html += `<div class="autocomplete-suggestion suggestion-country" data-index="${globalIndex++}">${escapeHtml(item.text)}</div>`;
+        });
+    }
+    
+    // City suggestions
+    if (grouped.city.length > 0) {
+        html += `<div class="suggestion-group-header">📍 Cities</div>`;
+        grouped.city.forEach(item => {
+            html += `<div class="autocomplete-suggestion suggestion-city" data-index="${globalIndex++}">${escapeHtml(item.text)}</div>`;
+        });
+    }
+    
+    suggestionsDiv.innerHTML = html;
     
     // Add click handlers
     suggestionsDiv.querySelectorAll('.autocomplete-suggestion').forEach((suggestion, index) => {
         suggestion.addEventListener('click', () => {
-            selectSuggestion(suggestions[index].text);
+            const item = suggestions[index];
+            if (item.type === 'history' && item.fullHistory) {
+                // Load full search from history
+                loadSearchFromHistoryString(item.fullHistory);
+            } else {
+                selectSuggestion(item.text);
+            }
         });
     });
     
@@ -324,9 +407,12 @@ function updateSuggestionSelection() {
     });
 }
 
-function selectSuggestion(name) {
+function selectSuggestion(nameOrItem) {
     const nameInput = document.getElementById('searchName');
     const suggestionsDiv = document.getElementById('nameSuggestions');
+    
+    // Handle both string and object
+    const name = typeof nameOrItem === 'string' ? nameOrItem : nameOrItem.text;
     
     if (nameInput) {
         nameInput.value = name;
@@ -336,6 +422,38 @@ function selectSuggestion(name) {
     }
     selectedSuggestionIndex = -1;
     suggestions = [];
+}
+
+// Load search from history string
+function loadSearchFromHistoryString(historyString) {
+    // Parse history string (format: "name:value, country:value, ...")
+    const parts = historyString.split(', ');
+    const filters = {};
+    
+    parts.forEach(part => {
+        const [key, ...valueParts] = part.split(':');
+        if (key && valueParts.length > 0) {
+            filters[key.trim()] = valueParts.join(':').trim();
+        }
+    });
+    
+    // Fill in form fields
+    if (filters.name) document.getElementById('searchName').value = filters.name;
+    if (filters.country) document.getElementById('searchCountry').value = filters.country;
+    if (filters.city) document.getElementById('searchCity').value = filters.city;
+    if (filters.yearFrom) document.getElementById('searchYearFrom').value = filters.yearFrom;
+    if (filters.yearTo) document.getElementById('searchYearTo').value = filters.yearTo;
+    if (filters.tags) document.getElementById('searchTags').value = filters.tags;
+    if (filters.description) document.getElementById('searchDescription').value = filters.description;
+    
+    // Hide suggestions
+    const suggestionsDiv = document.getElementById('nameSuggestions');
+    if (suggestionsDiv) {
+        suggestionsDiv.classList.remove('show');
+    }
+    
+    // Perform search
+    performSearch();
 }
 
 // Get all persons (helper)
