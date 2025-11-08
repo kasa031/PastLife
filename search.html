@@ -74,10 +74,19 @@
                     <input type="text" id="searchTags" placeholder="e.g., morsside, farsside, farmer">
                     <small class="help-text">Search by tags (separate multiple tags with commas)</small>
                 </div>
-                <div class="filter-group">
+                <div class="filter-group" style="grid-column: 1 / -1;">
                     <label for="searchRelationship">Find Related Persons</label>
-                    <input type="text" id="searchRelationship" placeholder="Enter person name to find relatives">
-                    <small class="help-text">Find persons with same last name or related tags</small>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" id="searchRelationship" placeholder="Enter person name to find relatives" style="flex: 1; min-width: 200px;">
+                        <select id="relationshipType" style="padding: 0.5rem; border: 2px solid var(--turquoise-primary); border-radius: 5px; background: var(--white);">
+                            <option value="all">All Relations</option>
+                            <option value="sibling">Siblings</option>
+                            <option value="parent">Parents</option>
+                            <option value="child">Children</option>
+                            <option value="spouse">Spouse</option>
+                        </select>
+                    </div>
+                    <small class="help-text">Enter a person's name and select relationship type to find specific relatives from family tree</small>
                 </div>
                 <div class="filter-group">
                     <label for="searchDescription">Search in Description</label>
