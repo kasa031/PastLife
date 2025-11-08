@@ -47,7 +47,7 @@
 - [ ] Touch-gestures for bedre mobil-opplevelse (allerede delvis implementert)
 
 ### Søk og Filtrering
-- [ ] Søk i relasjoner (f.eks. "finn alle søsken av X")
+- [x] Søk i relasjoner (f.eks. "finn alle søsken av X") - Implementert med relasjonsdata fra familietreet, støtte for søsken, foreldre, barn, ektefelle
 - [x] Søk-suggestions basert på tidligere søk - Implementert med grupperte suggestions (historikk, navn, land, byer), klikk for å gjenbruke søk
 - [ ] Fulltekst-søk i kommentarer
 - [ ] Søk basert på plassering (radius-søk)
