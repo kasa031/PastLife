@@ -35,10 +35,10 @@
     <!-- About Section -->
     <section class="about-section" style="padding: 4rem 0; background: var(--white);">
         <div class="container">
-            <div style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+            <div style="max-width: 800px; margin: 0 auto; padding: 1rem; box-sizing: border-box;">
                 <h1 style="color: var(--turquoise-dark); text-align: center; margin-bottom: 2rem; font-size: 2.5rem;">Om Meg</h1>
                 
-                <div style="background: var(--gray-light); padding: 3rem; border-radius: 15px; margin-bottom: 2.5rem; line-height: 1.8; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <div style="background: var(--gray-light); padding: 2rem; border-radius: 15px; margin-bottom: 2.5rem; line-height: 1.8; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box; overflow: hidden;">
                     <h2 style="color: var(--primary-dark); margin-bottom: 2rem; font-size: 2rem;">👋 Velkommen til PastLife</h2>
                     <p style="font-size: 1.15rem; margin-bottom: 1.5rem; color: var(--text-dark);">
                         PastLife er et prosjekt jeg har utviklet for å hjelpe folk med å oppdage, dele og bevare informasjon om sine forfedre. 
@@ -64,20 +64,20 @@
                     </div>
                 </div>
                 
-                <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); padding: 3rem; border-radius: 15px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
-                    <h2 style="margin-bottom: 1.5rem; font-size: 2rem;">📧 Kontakt</h2>
-                    <p style="font-size: 1.2rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); padding: 2rem; border-radius: 15px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); max-width: 100%; overflow: hidden;">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.8rem;">📧 Kontakt</h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6; padding: 0 1rem;">
                         Har du spørsmål, forslag eller vil du dele din egen slektshistorie?<br>
                         Jeg er alltid interessert i å høre fra brukere og forbedre PastLife basert på deres behov.
                     </p>
-                    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin: 2rem 0;">
-                        <p style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem;">
-                            <a href="mailto:ms.tery@icloud.com" style="color: white; text-decoration: none; transition: all 0.3s; display: inline-block; padding: 0.5rem 1rem; border-radius: 5px; background: rgba(255,255,255,0.2);" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">
+                    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin: 2rem 0; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; box-sizing: border-box;">
+                        <p style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; word-break: break-all; padding: 0 0.5rem;">
+                            <a href="mailto:ms.tery@icloud.com" style="color: white; text-decoration: none; transition: all 0.3s; display: inline-block; padding: 0.5rem 1rem; border-radius: 5px; background: rgba(255,255,255,0.2); word-break: break-all; max-width: 100%; box-sizing: border-box;" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">
                                 📧 ms.tery@icloud.com
                             </a>
                         </p>
                     </div>
-                    <p style="font-size: 1rem; margin-top: 1.5rem; opacity: 0.9;">
+                    <p style="font-size: 1rem; margin-top: 1.5rem; opacity: 0.9; padding: 0 1rem;">
                         Jeg setter pris på all tilbakemelding og ser frem til å høre fra deg!
                     </p>
                 </div>
@@ -144,12 +144,42 @@
             });
         }
         
-        function toggleMobileMenu() {
+        function toggleMobileMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             const navMenu = document.getElementById('navMenu');
-            navMenu.classList.toggle('active');
+            const toggle = document.querySelector('.menu-toggle');
+            if (navMenu) {
+                navMenu.classList.toggle('active');
+                if (toggle) {
+                    toggle.classList.toggle('active');
+                }
+            }
         }
         
         window.toggleMobileMenu = toggleMobileMenu;
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const navMenu = document.getElementById('navMenu');
+            const toggle = document.querySelector('.menu-toggle');
+            if (navMenu && toggle && !navMenu.contains(e.target) && !toggle.contains(e.target)) {
+                navMenu.classList.remove('active');
+                toggle.classList.remove('active');
+            }
+        });
+        
+        // Close menu when clicking on a link
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navMenu = document.getElementById('navMenu');
+                const toggle = document.querySelector('.menu-toggle');
+                if (navMenu) navMenu.classList.remove('active');
+                if (toggle) toggle.classList.remove('active');
+            });
+        });
         
         document.addEventListener('DOMContentLoaded', () => {
             loadTheme();

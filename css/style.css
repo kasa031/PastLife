@@ -1206,6 +1206,62 @@ img.loading {
     background: var(--orange-dark);
 }
 
+/* Dark Mode */
+:root[data-theme="dark"] {
+    --white: #1a1a1a;
+    --gray-light: #2d2d2d;
+    --gray-medium: #404040;
+    --gray-dark: #b0b0b0;
+    --text-dark: #e0e0e0;
+    --primary-color: #a6895f;
+    --primary-dark: #8b6f47;
+    --primary-light: #c9a961;
+    --turquoise-primary: #a6895f;
+    --turquoise-dark: #8b6f47;
+    --turquoise-light: #c9a961;
+    --orange-primary: #d4b87a;
+    --orange-dark: #b8956a;
+    --orange-light: #e5c97a;
+}
+
+:root[data-theme="dark"] .navbar {
+    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+    border-bottom: 1px solid #404040;
+}
+
+:root[data-theme="dark"] .nav-menu {
+    background: #2d2d2d;
+}
+
+:root[data-theme="dark"] .nav-menu a {
+    color: #e0e0e0;
+}
+
+:root[data-theme="dark"] .nav-menu a:hover {
+    color: var(--orange-light);
+}
+
+:root[data-theme="dark"] body {
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+:root[data-theme="dark"] .person-card,
+:root[data-theme="dark"] .relative-card {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #e0e0e0;
+}
+
+:root[data-theme="dark"] .about-section {
+    background: #1a1a1a;
+}
+
+:root[data-theme="dark"] .footer {
+    background: #2d2d2d;
+    color: #b0b0b0;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {

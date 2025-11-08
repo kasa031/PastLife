@@ -97,10 +97,19 @@ function preloadHeroImage() {
 }
 
 // Toggle mobile menu
-window.toggleMobileMenu = function() {
+window.toggleMobileMenu = function(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
     const menu = document.getElementById('navMenu');
     if (menu) {
         menu.classList.toggle('active');
+        // Add visual feedback
+        const toggle = document.querySelector('.menu-toggle');
+        if (toggle) {
+            toggle.classList.toggle('active');
+        }
     }
 };
 
