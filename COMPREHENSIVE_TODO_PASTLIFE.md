@@ -57,7 +57,7 @@
 ### Person-relasjoner
 - [ ] Vis relasjons-graf (hvem er relatert til hvem)
 - [ ] Beregn slektsforhold (f.eks. "2. kusine")
-- [ ] Vis alle slektninger på én side
+- [x] Vis alle slektninger på én side - Implementert med gruppert visning (foreldre, søsken, barn, ektefelle, andre), klikkbare kort, bruker familietre-relasjonsdata
 - [ ] "Slektninger" filter på person-siden
 
 ### Bulk-operasjoner

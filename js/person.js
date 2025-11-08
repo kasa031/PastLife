@@ -310,9 +310,160 @@ function loadPersonDetails() {
         </div>
         ${galleryHtml}
         ${sourcesHtml}
+        ${loadRelativesSection(person)}
     `;
     
     document.getElementById('personDetailContent').innerHTML = html;
+}
+
+// Load and display relatives section
+function loadRelativesSection(person) {
+    // Get all relatives using searchByRelationship
+    const allRelatives = searchByRelationship(person.name, 'all');
+    
+    if (allRelatives.length === 0) {
+        return `
+            <div class="relatives-section" style="margin-top: 2rem;">
+                <h3 style="color: var(--turquoise-dark); margin-bottom: 1rem;">👨‍👩‍👧‍👦 Slektninger</h3>
+                <p style="color: var(--gray-dark); text-align: center; padding: 2rem;">
+                    Ingen slektninger funnet i familietreet. Legg til relasjoner i familietreet for å se slektninger her.
+                </p>
+            </div>
+        `;
+    }
+    
+    // Group relatives by relationship type
+    const relativesByType = {
+        parents: [],
+        siblings: [],
+        children: [],
+        spouses: [],
+        other: []
+    };
+    
+    // Get relationships from tree data to categorize
+    const user = getCurrentUser();
+    if (user) {
+        const treeKey = `pastlife_tree_${user.username}`;
+        const savedTree = localStorage.getItem(treeKey);
+        
+        if (savedTree) {
+            try {
+                const treeInfo = JSON.parse(savedTree);
+                const relationships = treeInfo.relationships || [];
+                const treePersons = Array.isArray(treeInfo) ? treeInfo : (treeInfo.persons || []);
+                
+                const targetInTree = treePersons.find(p => 
+                    p.name.toLowerCase() === person.name.toLowerCase()
+                );
+                
+                if (targetInTree) {
+                    const personRelations = relationships.filter(rel => 
+                        rel.person1 === targetInTree.name || rel.person2 === targetInTree.name
+                    );
+                    
+                    allRelatives.forEach(relative => {
+                        const rel = personRelations.find(r => {
+                            const relatedName = r.person1 === targetInTree.name ? r.person2 : r.person1;
+                            return relatedName.toLowerCase() === relative.name.toLowerCase() ||
+                                   (relatedName.toLowerCase().includes(relative.name.toLowerCase().split(' ')[0]) &&
+                                    relative.name.toLowerCase().includes(relatedName.toLowerCase().split(' ')[0]));
+                        });
+                        
+                        if (rel) {
+                            const relType = rel.type;
+                            if (relType === 'parent') {
+                                relativesByType.parents.push(relative);
+                            } else if (relType === 'sibling' || relType === 'half-sibling') {
+                                relativesByType.siblings.push(relative);
+                            } else if (relType === 'child') {
+                                relativesByType.children.push(relative);
+                            } else if (relType === 'spouse') {
+                                relativesByType.spouses.push(relative);
+                            } else {
+                                relativesByType.other.push(relative);
+                            }
+                        } else {
+                            relativesByType.other.push(relative);
+                        }
+                    });
+                } else {
+                    // If person not in tree, put all in "other"
+                    allRelatives.forEach(rel => relativesByType.other.push(rel));
+                }
+            } catch (e) {
+                console.error('Error parsing tree data:', e);
+                allRelatives.forEach(rel => relativesByType.other.push(rel));
+            }
+        } else {
+            allRelatives.forEach(rel => relativesByType.other.push(rel));
+        }
+    } else {
+        allRelatives.forEach(rel => relativesByType.other.push(rel));
+    }
+    
+    // Build HTML for each category
+    const buildCategoryHtml = (title, icon, relatives, type) => {
+        if (relatives.length === 0) return '';
+        
+        const typeLabels = {
+            parents: 'Foreldre',
+            siblings: 'Søsken',
+            children: 'Barn',
+            spouses: 'Ektefelle(r)',
+            other: 'Andre slektninger'
+        };
+        
+        return `
+            <div class="relatives-category" style="margin-bottom: 1.5rem;">
+                <h4 style="color: var(--turquoise-dark); margin-bottom: 0.75rem; font-size: 1.1rem;">
+                    ${icon} ${typeLabels[type]} (${relatives.length})
+                </h4>
+                <div class="relatives-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                    ${relatives.map(rel => {
+                        const photo = rel.photo || rel.mainImage || 'assets/images/oldphoto2.jpg';
+                        return `
+                            <div class="relative-card" onclick="viewPerson('${rel.id}')" style="
+                                background: var(--white);
+                                border: 2px solid var(--turquoise-primary);
+                                border-radius: 8px;
+                                padding: 1rem;
+                                cursor: pointer;
+                                transition: all 0.3s;
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                            " onmouseenter="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseleave="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.1)';">
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    <img src="${photo}" alt="${escapeHtml(rel.name)}" 
+                                         style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--turquoise-primary);"
+                                         onerror="this.src='assets/images/oldphoto2.jpg'">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: bold; color: var(--turquoise-dark); margin-bottom: 0.25rem;">
+                                            ${escapeHtml(rel.name)}
+                                        </div>
+                                        ${rel.birthYear ? `<div style="font-size: 0.85rem; color: var(--gray-dark);">Født: ${rel.birthYear}</div>` : ''}
+                                        ${rel.birthPlace ? `<div style="font-size: 0.8rem; color: var(--gray-dark);">📍 ${escapeHtml(rel.birthPlace)}</div>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    };
+    
+    return `
+        <div class="relatives-section" style="margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="color: var(--turquoise-dark); margin: 0;">👨‍👩‍👧‍👦 Slektninger (${allRelatives.length})</h3>
+            </div>
+            ${buildCategoryHtml('Foreldre', '👴👵', relativesByType.parents, 'parents')}
+            ${buildCategoryHtml('Søsken', '👫', relativesByType.siblings, 'siblings')}
+            ${buildCategoryHtml('Barn', '👶', relativesByType.children, 'children')}
+            ${buildCategoryHtml('Ektefelle(r)', '💑', relativesByType.spouses, 'spouses')}
+            ${buildCategoryHtml('Andre slektninger', '🔗', relativesByType.other, 'other')}
+        </div>
+    `;
 }
 
 // Load comments
