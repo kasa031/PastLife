@@ -281,6 +281,62 @@ export function searchPersons(filters) {
             }
         }
         
+        // Location radius search
+        if (filters.locationCenter && filters.locationRadius) {
+            const center = filters.locationCenter.toLowerCase().trim();
+            const radius = filters.locationRadius;
+            
+            let locationMatch = false;
+            
+            // Get person's locations (birth place, death place, city, country)
+            const personLocations = [
+                person.birthPlace?.toLowerCase() || '',
+                person.deathPlace?.toLowerCase() || '',
+                person.city?.toLowerCase() || '',
+                person.country?.toLowerCase() || ''
+            ].filter(loc => loc);
+            
+            if (radius === 'exact') {
+                // Exact match: same city or place name
+                locationMatch = personLocations.some(loc => 
+                    loc === center || 
+                    loc.includes(center) || 
+                    center.includes(loc) ||
+                    loc.split(',').some(part => part.trim() === center) ||
+                    center.split(',').some(part => part.trim() === loc)
+                );
+            } else if (radius === 'nearby') {
+                // Nearby: same country
+                const centerCountry = center.split(',').pop()?.trim() || center;
+                locationMatch = personLocations.some(loc => {
+                    const locCountry = loc.split(',').pop()?.trim() || loc;
+                    return locCountry === centerCountry || 
+                           locCountry.includes(centerCountry) || 
+                           centerCountry.includes(locCountry);
+                });
+            } else if (radius === 'region') {
+                // Region: similar place names (fuzzy match)
+                locationMatch = personLocations.some(loc => {
+                    // Check if any word in center matches any word in location
+                    const centerWords = center.split(/[\s,]+/).filter(w => w.length > 2);
+                    const locWords = loc.split(/[\s,]+/).filter(w => w.length > 2);
+                    
+                    return centerWords.some(cw => 
+                        locWords.some(lw => 
+                            lw.includes(cw) || 
+                            cw.includes(lw) ||
+                            (cw.length >= 4 && lw.length >= 4 && 
+                             cw.slice(0, 4) === lw.slice(0, 4))
+                        )
+                    );
+                });
+            }
+            
+            if (!locationMatch) {
+                matches = false;
+            }
+        }
+        
         return matches;
     });
 }

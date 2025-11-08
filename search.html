@@ -97,6 +97,18 @@
                     <input type="text" id="searchComments" placeholder="Search in comments...">
                     <small class="help-text">Search for text in all comments across all persons</small>
                 </div>
+                <div class="filter-group" style="grid-column: 1 / -1;">
+                    <label for="searchLocationRadius">Location Radius Search</label>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="searchLocationCenter" placeholder="Enter city or place name (e.g., Oslo)" style="flex: 1; min-width: 200px;">
+                        <select id="searchLocationRadius" style="padding: 0.5rem; border: 2px solid var(--turquoise-primary); border-radius: 5px; background: var(--white);">
+                            <option value="exact">Exact match</option>
+                            <option value="nearby">Nearby places (same country)</option>
+                            <option value="region">Same region</option>
+                        </select>
+                    </div>
+                    <small class="help-text">Find persons born in or near the specified location. "Exact match" finds same city, "Nearby" finds same country, "Region" finds similar place names.</small>
+                </div>
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <button class="submit-btn" onclick="performSearch()" style="flex: 1;" title="Search for ancestors matching all criteria">🔍 Search</button>
                     <button class="btn-import" onclick="clearAllFilters()" style="padding: 15px 30px;" title="Clear all search filters">🗑️ Clear Filters</button>
