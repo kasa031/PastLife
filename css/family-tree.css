@@ -98,6 +98,66 @@
 
 .tree-node-info {
     font-size: 0.9rem;
+}
+
+/* Timeline View Styles */
+.timeline-view {
+    padding: 2rem;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.timeline-header {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--gray-light);
+    border-radius: 10px;
+}
+
+.timeline-track {
+    position: relative;
+    min-height: 400px;
+    padding: 2rem 0;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, var(--turquoise-primary), var(--orange-primary));
+    border-radius: 2px;
+}
+
+.timeline-decade {
+    position: absolute;
+    left: -90px;
+    font-weight: bold;
+    color: var(--turquoise-dark);
+    font-size: 1.1rem;
+}
+
+.timeline-person {
+    position: absolute;
+    background: var(--white);
+    border: 2px solid var(--turquoise-primary);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    min-width: 200px;
+    max-width: 250px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.timeline-person:hover {
+    transform: translateX(-50%) scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    z-index: 100 !important;
+    border-color: var(--orange-primary);
+}
     color: var(--gray-dark);
     margin: 0.3rem 0;
 }

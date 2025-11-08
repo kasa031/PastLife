@@ -2023,6 +2023,190 @@ window.exportTreeToPNG = async function() {
     }
 };
 
+// Show timeline view
+window.showTimeline = function() {
+    if (allTreeData.length === 0) {
+        showMessage('Ingen data å vise i timeline. Bygg familietreet først.', 'info');
+        return;
+    }
+    
+    const timelineView = document.getElementById('timelineView');
+    const treeWrapper = document.getElementById('treeWrapper');
+    const timelineContainer = document.getElementById('timelineContainer');
+    
+    // Hide tree view, show timeline
+    if (treeWrapper) treeWrapper.style.display = 'none';
+    if (timelineView) timelineView.style.display = 'block';
+    
+    // Render timeline
+    renderTimeline(timelineContainer);
+};
+
+// Hide timeline view
+window.hideTimeline = function() {
+    const timelineView = document.getElementById('timelineView');
+    const treeWrapper = document.getElementById('treeWrapper');
+    
+    if (timelineView) timelineView.style.display = 'none';
+    if (treeWrapper) treeWrapper.style.display = 'block';
+};
+
+// Render timeline
+function renderTimeline(container) {
+    // Filter persons with birth years
+    const personsWithYears = allTreeData.filter(p => p.birthYear && !isNaN(parseInt(p.birthYear)));
+    
+    if (personsWithYears.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--gray-dark);">
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">📅 Ingen fødselsår registrert</p>
+                <p>Legg til fødselsår for personene i familietreet for å se timeline-visning.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort by birth year
+    personsWithYears.sort((a, b) => parseInt(a.birthYear) - parseInt(b.birthYear));
+    
+    // Calculate date range
+    const minYear = Math.min(...personsWithYears.map(p => parseInt(p.birthYear)));
+    const maxYear = Math.max(...personsWithYears.map(p => parseInt(p.birthYear)));
+    const yearRange = maxYear - minYear;
+    const padding = Math.max(50, yearRange * 0.1); // 10% padding or minimum 50 years
+    
+    const startYear = minYear - padding;
+    const endYear = maxYear + padding;
+    const totalYears = endYear - startYear;
+    
+    // Group by decade for better visualization
+    const decades = {};
+    personsWithYears.forEach(person => {
+        const decade = Math.floor(parseInt(person.birthYear) / 10) * 10;
+        if (!decades[decade]) decades[decade] = [];
+        decades[decade].push(person);
+    });
+    
+    // Build timeline HTML
+    let html = `
+        <div class="timeline-header" style="margin-bottom: 2rem; padding: 1rem; background: var(--gray-light); border-radius: 10px;">
+            <p style="margin: 0.5rem 0; color: var(--gray-dark);">
+                <strong>Periode:</strong> ${startYear} - ${endYear} 
+                <span style="margin-left: 2rem;"><strong>Personer:</strong> ${personsWithYears.length}</span>
+                <span style="margin-left: 2rem;"><strong>Spenn:</strong> ${yearRange} år</span>
+            </p>
+        </div>
+        <div class="timeline-track" style="position: relative; margin-left: 100px;">
+    `;
+    
+    // Create timeline line
+    html += `
+        <div class="timeline-line" style="
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--turquoise-primary), var(--orange-primary));
+            border-radius: 2px;
+        "></div>
+    `;
+    
+    // Add decade markers and persons
+    const sortedDecades = Object.keys(decades).map(Number).sort((a, b) => a - b);
+    let yPosition = 0;
+    const spacing = 120; // Vertical spacing between decades
+    
+    sortedDecades.forEach((decade, index) => {
+        const persons = decades[decade];
+        const decadeYear = startYear;
+        const positionPercent = ((decade - startYear) / totalYears) * 100;
+        
+        // Decade marker
+        html += `
+            <div class="timeline-decade" style="
+                position: absolute;
+                left: -90px;
+                top: ${yPosition}px;
+                font-weight: bold;
+                color: var(--turquoise-dark);
+                font-size: 1.1rem;
+            ">${decade}s</div>
+        `;
+        
+        // Persons in this decade
+        persons.forEach((person, pIndex) => {
+            const personY = yPosition + (pIndex * 80);
+            const birthYear = parseInt(person.birthYear);
+            const positionPercent = ((birthYear - startYear) / totalYears) * 100;
+            
+            html += `
+                <div class="timeline-person" style="
+                    position: absolute;
+                    left: ${positionPercent}%;
+                    top: ${personY}px;
+                    transform: translateX(-50%);
+                    background: var(--white);
+                    border: 2px solid var(--turquoise-primary);
+                    border-radius: 8px;
+                    padding: 0.75rem 1rem;
+                    min-width: 200px;
+                    max-width: 250px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    z-index: ${10 + pIndex};
+                " onclick="selectTimelinePerson('${person.id || person.name}')" onmouseenter="this.style.transform='translateX(-50%) scale(1.05)'; this.style.zIndex='100';" onmouseleave="this.style.transform='translateX(-50%) scale(1)'; this.style.zIndex='${10 + pIndex}';">
+                    <div style="font-weight: bold; color: var(--turquoise-dark); margin-bottom: 0.3rem;">${escapeHtml(person.name)}</div>
+                    <div style="font-size: 0.9rem; color: var(--gray-dark);">
+                        ${person.birthYear ? `Født: ${person.birthYear}` : ''}
+                        ${person.deathYear ? ` - Død: ${person.deathYear}` : ''}
+                    </div>
+                    ${person.birthPlace ? `<div style="font-size: 0.85rem; color: var(--gray-dark); margin-top: 0.3rem;">📍 ${escapeHtml(person.birthPlace)}</div>` : ''}
+                    <div style="position: absolute; left: -8px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: var(--orange-primary); border: 2px solid var(--white); border-radius: 50%;"></div>
+                </div>
+            `;
+        });
+        
+        yPosition += Math.max(spacing, persons.length * 80 + 40);
+    });
+    
+    html += `
+        </div>
+        <div style="margin-top: ${yPosition + 50}px;"></div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// Select person from timeline
+window.selectTimelinePerson = function(personIdOrName) {
+    // Find person in tree data
+    const person = allTreeData.find(p => (p.id === personIdOrName || p.name === personIdOrName));
+    if (!person) return;
+    
+    // Switch to tree view and highlight person
+    hideTimeline();
+    
+    // Find and select node in tree
+    if (person.id) {
+        selectNode(person.id);
+        // Scroll to node
+        const node = document.querySelector(`[data-node-id="${person.id}"]`);
+        if (node) {
+            const wrapper = document.getElementById('treeWrapper');
+            if (wrapper) {
+                const nodeRect = node.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                wrapper.scrollTop = node.offsetTop - wrapperRect.height / 2;
+                wrapper.scrollLeft = node.offsetLeft - wrapperRect.width / 2;
+            }
+        }
+    }
+    
+    showMessage(`Viser ${person.name} i familietreet`, 'success', 2000);
+};
+
 // Escape HTML helper
 function escapeHtml(text) {
     if (!text) return '';
