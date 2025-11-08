@@ -339,7 +339,8 @@ export function getCommentsForPerson(personId) {
 }
 
 // Compress and convert image to base64
-export function imageToBase64(file, maxWidth = 800, quality = 0.7) {
+// Optimized for different use cases: profile photos (800px), thumbnails (300px), full size (1200px)
+export function imageToBase64(file, maxWidth = 800, quality = 0.75) {
     return new Promise((resolve, reject) => {
         // Validate file type
         if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
@@ -347,9 +348,9 @@ export function imageToBase64(file, maxWidth = 800, quality = 0.7) {
             return;
         }
         
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            reject(new Error('Image is too large. Maximum size is 5MB.'));
+        // Validate file size (max 10MB before compression)
+        if (file.size > 10 * 1024 * 1024) {
+            reject(new Error('Image is too large. Maximum size is 10MB before compression.'));
             return;
         }
         
@@ -361,20 +362,36 @@ export function imageToBase64(file, maxWidth = 800, quality = 0.7) {
                 let width = img.width;
                 let height = img.height;
                 
-                // Calculate new dimensions
-                if (width > maxWidth) {
-                    height = (height * maxWidth) / width;
-                    width = maxWidth;
+                // Calculate new dimensions - maintain aspect ratio
+                if (width > maxWidth || height > maxWidth) {
+                    const ratio = Math.min(maxWidth / width, maxWidth / height);
+                    width = width * ratio;
+                    height = height * ratio;
                 }
+                
+                // Ensure dimensions are even numbers for better compression
+                width = Math.round(width / 2) * 2;
+                height = Math.round(height / 2) * 2;
                 
                 canvas.width = width;
                 canvas.height = height;
                 
                 const ctx = canvas.getContext('2d');
+                // Use better image rendering
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
                 
                 // Convert to base64 with compression
+                // Use JPEG for better compression, but preserve quality
                 const compressed = canvas.toDataURL('image/jpeg', quality);
+                
+                // Log compression info (for debugging)
+                const originalSizeKB = (file.size / 1024).toFixed(2);
+                const compressedSizeKB = ((compressed.length * 3) / 4 / 1024).toFixed(2);
+                const compressionRatio = ((1 - (compressed.length * 3) / 4 / file.size) * 100).toFixed(1);
+                console.log(`Image compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${compressionRatio}% reduction)`);
+                
                 resolve(compressed);
             };
             img.onerror = () => reject(new Error('Failed to load image'));

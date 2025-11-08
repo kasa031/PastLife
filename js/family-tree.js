@@ -1548,8 +1548,11 @@ window.changeTreeNodeImage = function(nodeId) {
         if (!file) return;
         
         try {
-            // Compress and convert to base64
-            const compressed = await compressImage(file, 800, 0.7);
+            // Show loading indicator
+            showMessage('Komprimerer og laster opp bilde...', 'info');
+            
+            // Compress and convert to base64 (optimized for tree nodes - smaller size)
+            const compressed = await compressImage(file, 600, 0.75);
             const base64 = await fileToBase64(compressed);
             
             // Update person in tree data
@@ -1594,9 +1597,15 @@ window.changeTreeNodeImage = function(nodeId) {
     input.click();
 };
 
-// Helper: compress image
+// Helper: compress image (optimized version)
 function compressImage(file, maxWidth, quality) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        // Validate file type
+        if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+            reject(new Error('Invalid image format'));
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
@@ -1605,20 +1614,30 @@ function compressImage(file, maxWidth, quality) {
                 let width = img.width;
                 let height = img.height;
                 
-                if (width > maxWidth) {
-                    height = (height * maxWidth) / width;
-                    width = maxWidth;
+                // Calculate new dimensions - maintain aspect ratio
+                if (width > maxWidth || height > maxWidth) {
+                    const ratio = Math.min(maxWidth / width, maxWidth / height);
+                    width = width * ratio;
+                    height = height * ratio;
                 }
+                
+                // Ensure dimensions are even numbers for better compression
+                width = Math.round(width / 2) * 2;
+                height = Math.round(height / 2) * 2;
                 
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
                 
                 canvas.toBlob(resolve, 'image/jpeg', quality);
             };
+            img.onerror = () => reject(new Error('Failed to load image'));
             img.src = e.target.result;
         };
+        reader.onerror = reject;
         reader.readAsDataURL(file);
     });
 }

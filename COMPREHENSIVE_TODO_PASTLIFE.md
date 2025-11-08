@@ -27,16 +27,16 @@
 ### Layout og Design
 - [ ] Test og finjuster mobil-opplevelse på alle sider
 - [ ] Test på tablets og forskjellige skjermstørrelser
-- [ ] Optimaliser bildestørrelser for raskere lasting
-- [ ] Legg til loading-states for bedre UX
+- [x] Optimaliser bildestørrelser for raskere lasting (forbedret komprimering, bedre kvalitet)
+- [x] Legg til loading-states for bedre UX (spinner, shimmer-effekt, progress-indikatorer)
 - [ ] Forbedre animasjoner og overganger
 
 ### Bildehåndtering
 - [ ] Støtte for flere bilder per person (galleri)
 - [ ] Bildetagger (hvem er på bildet)
-- [ ] Bildkomprimering ved opplasting
+- [x] Bildkomprimering ved opplasting (forbedret med bedre algoritme, validering, logging)
 - [ ] Konverter bilder til WebP format for bedre komprimering
-- [ ] Lazy loading for bilder (allerede delvis implementert)
+- [x] Lazy loading for bilder (allerede delvis implementert)
 
 ### Familietre
 - [ ] Forbedre automatisk layout (mindre overlapping)

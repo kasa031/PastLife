@@ -77,19 +77,56 @@ function setupForm() {
         }
     });
     
-    // Photo preview
-    photoInput.addEventListener('change', (e) => {
+    // Photo preview with loading indicator
+    photoInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validate file type
+            if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+                showMessage('Ugyldig bildeformat. Bruk JPEG, PNG, GIF eller WebP.', 'error');
+                photoInput.value = '';
+                return;
+            }
+            
+            // Validate file size
+            if (file.size > 10 * 1024 * 1024) {
+                showMessage('Bildet er for stort. Maksimal størrelse er 10MB.', 'error');
+                photoInput.value = '';
+                return;
+            }
+            
             photoFile = file;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const preview = document.getElementById('photoPreview');
-                preview.innerHTML = `
-                    <img src="${event.target.result}" alt="Preview" style="max-width: 300px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                `;
-            };
-            reader.readAsDataURL(file);
+            const preview = document.getElementById('photoPreview');
+            
+            // Show loading indicator
+            preview.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--gray-light); border-radius: 5px;">
+                    <div class="spinner" style="width: 30px; height: 30px;"></div>
+                    <span>Laster opp og komprimerer bilde...</span>
+                </div>
+            `;
+            
+            try {
+                // Show file size info
+                const fileSizeKB = (file.size / 1024).toFixed(2);
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    preview.innerHTML = `
+                        <div style="margin-top: 0.5rem;">
+                            <img src="${event.target.result}" alt="Preview" style="max-width: 300px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <p style="font-size: 0.85rem; color: var(--gray-dark); margin-top: 0.5rem;">
+                                Original størrelse: ${fileSizeKB} KB<br>
+                                Bildet vil bli komprimert ved lagring
+                            </p>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                preview.innerHTML = '<p style="color: var(--orange-dark);">Feil ved lasting av bilde</p>';
+                console.error('Error loading image preview:', error);
+            }
         }
     });
     
