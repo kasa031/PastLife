@@ -229,15 +229,54 @@ function loadPersonDetails() {
         </div>
     ` : '';
     
-    // Image gallery
-    const galleryHtml = allImages.length > 1 ? `
-        <div class="image-gallery" style="margin-top: 2rem;">
-            ${allImages.map((img, idx) => {
-                const isMain = img === mainPhoto || (idx === 0 && !person.mainImage);
-                return `<img src="${img}" alt="${escapeHtml(person.name)} - Image ${idx + 1}" class="gallery-image ${isMain ? 'main' : ''}" onclick="setMainImage('${img}', '${currentPersonId}')" onerror="this.src='assets/images/oldphoto2.jpg'">`;
-            }).join('')}
+    // Check if user is owner
+    const user = getCurrentUser();
+    const isOwner = user && person.createdBy === user.username;
+    
+    // Image gallery with add/remove functionality
+    const galleryHtml = `
+        <div class="image-gallery-section" style="margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="color: var(--turquoise-dark); margin: 0;">📷 Bildegalleri</h3>
+                ${isOwner ? `
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-edit" onclick="addImageToGallery('${currentPersonId}')" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            ➕ Legg til bilde
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+            ${allImages.length > 0 ? `
+                <div class="image-gallery">
+                    ${allImages.map((img, idx) => {
+                        const isMain = img === mainPhoto || (idx === 0 && !person.mainImage);
+                        // Escape single quotes in image URL for onclick
+                        const escapedImg = img.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        return `
+                            <div class="gallery-item" style="position: relative;">
+                                <img src="${img}" alt="${escapeHtml(person.name)} - Image ${idx + 1}" 
+                                     class="gallery-image ${isMain ? 'main' : ''}" 
+                                     onclick="setMainImage('${escapedImg}', '${currentPersonId}')" 
+                                     onerror="this.src='assets/images/oldphoto2.jpg'"
+                                     title="${isMain ? 'Hovedbilde (klikk for å endre)' : 'Klikk for å sette som hovedbilde'}">
+                                ${isMain ? '<span class="main-badge">Hovedbilde</span>' : ''}
+                                ${isOwner && allImages.length > 1 ? `
+                                    <button class="gallery-delete-btn" onclick="removeImageFromGallery('${escapedImg}', '${currentPersonId}')" title="Slett bilde">
+                                        ✕
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            ` : `
+                <p style="color: var(--gray-dark); text-align: center; padding: 2rem;">
+                    ${isOwner ? 'Ingen bilder ennå. Klikk "Legg til bilde" for å legge til bilder.' : 'Ingen bilder tilgjengelig.'}
+                </p>
+            `}
+            <input type="file" id="galleryImageInput" accept="image/*" multiple style="display: none;" onchange="handleGalleryImageUpload(event, '${currentPersonId}')">
         </div>
-    ` : '';
+    `;
     
     const html = `
         <div class="person-detail-header">
@@ -440,6 +479,140 @@ window.setMainImage = function(imageUrl, personId) {
         showMessage('Hovedbilde oppdatert!', 'success');
         loadPersonDetails(); // Reload to show new main image
     });
+};
+
+// Add image to gallery
+window.addImageToGallery = function(personId) {
+    const input = document.getElementById('galleryImageInput');
+    if (input) {
+        input.click();
+    }
+};
+
+// Handle gallery image upload
+window.handleGalleryImageUpload = async function(event, personId) {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+    
+    const person = getPersonById(personId);
+    if (!person) {
+        showMessage('Person ikke funnet', 'error');
+        return;
+    }
+    
+    // Check if user is owner
+    const user = getCurrentUser();
+    if (!user || person.createdBy !== user.username) {
+        showMessage('Du kan bare legge til bilder til dine egne personer', 'error');
+        return;
+    }
+    
+    try {
+        showMessage(`Laster opp ${files.length} bilde(r)...`, 'info');
+        
+        const { imageToBase64 } = await import('./data.js');
+        const newImages = [];
+        
+        // Process all files
+        for (const file of files) {
+            // Validate file type
+            if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+                showMessage(`Ugyldig bildeformat: ${file.name}. Bruk JPEG, PNG, GIF eller WebP.`, 'error');
+                continue;
+            }
+            
+            // Validate file size
+            if (file.size > 10 * 1024 * 1024) {
+                showMessage(`Bildet ${file.name} er for stort. Maksimal størrelse er 10MB.`, 'error');
+                continue;
+            }
+            
+            // Compress and convert to base64
+            const base64 = await imageToBase64(file, 800, 0.75);
+            newImages.push(base64);
+        }
+        
+        if (newImages.length === 0) {
+            showMessage('Ingen bilder ble lastet opp', 'error');
+            return;
+        }
+        
+        // Update person with new images
+        const currentImages = person.images || (person.photo ? [person.photo] : []);
+        const updatedImages = [...currentImages, ...newImages];
+        
+        const updatedPerson = {
+            ...person,
+            images: updatedImages,
+            // Set first new image as main if no main image exists
+            mainImage: person.mainImage || newImages[0],
+            photo: person.photo || newImages[0] // Also update photo for backward compatibility
+        };
+        
+        // Save updated person
+        const { savePerson } = await import('./data.js');
+        savePerson(updatedPerson, personId);
+        
+        showMessage(`${newImages.length} bilde(r) lagt til i galleriet!`, 'success');
+        loadPersonDetails(); // Reload to show new images
+        
+        // Reset input
+        event.target.value = '';
+    } catch (error) {
+        console.error('Error uploading images:', error);
+        showMessage('Feil ved opplasting av bilder: ' + error.message, 'error');
+    }
+};
+
+// Remove image from gallery
+window.removeImageFromGallery = async function(imageUrl, personId) {
+    if (!confirm('Er du sikker på at du vil slette dette bildet?')) {
+        return;
+    }
+    
+    const person = getPersonById(personId);
+    if (!person) {
+        showMessage('Person ikke funnet', 'error');
+        return;
+    }
+    
+    // Check if user is owner
+    const user = getCurrentUser();
+    if (!user || person.createdBy !== user.username) {
+        showMessage('Du kan bare slette bilder fra dine egne personer', 'error');
+        return;
+    }
+    
+    const currentImages = person.images || (person.photo ? [person.photo] : []);
+    
+    // Don't allow deleting if it's the only image
+    if (currentImages.length <= 1) {
+        showMessage('Du kan ikke slette det eneste bildet. Legg til et nytt bilde først.', 'error');
+        return;
+    }
+    
+    // Remove image from array
+    const updatedImages = currentImages.filter(img => img !== imageUrl);
+    
+    // If deleted image was main image, set first remaining image as main
+    let newMainImage = person.mainImage;
+    if (person.mainImage === imageUrl) {
+        newMainImage = updatedImages[0];
+    }
+    
+    const updatedPerson = {
+        ...person,
+        images: updatedImages,
+        mainImage: newMainImage,
+        photo: newMainImage // Also update photo for backward compatibility
+    };
+    
+    // Save updated person
+    const { savePerson } = await import('./data.js');
+    savePerson(updatedPerson, personId);
+    
+    showMessage('Bilde slettet', 'success');
+    loadPersonDetails(); // Reload to show updated gallery
 };
 
 // Get all persons (helper)
