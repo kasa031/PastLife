@@ -29,7 +29,7 @@
 - [ ] Test på tablets og forskjellige skjermstørrelser
 - [x] Optimaliser bildestørrelser for raskere lasting (forbedret komprimering, bedre kvalitet)
 - [x] Legg til loading-states for bedre UX (spinner, shimmer-effekt, progress-indikatorer)
-- [ ] Forbedre animasjoner og overganger
+- [x] Forbedre animasjoner og overganger - Implementert smooth cubic-bezier easing, fade-in effekter, ripple-effekter på knapper
 
 ### Bildehåndtering
 - [x] Støtte for flere bilder per person (galleri) - Implementert med legg til/slett funksjonalitet, hovedbilde-valg, og forbedret UI
@@ -40,8 +40,8 @@
 
 ### Familietre
 - [x] Forbedre automatisk layout (mindre overlapping) - Implementert overlapping-deteksjon og automatisk justering
-- [ ] Eksport til PDF med bedre layout
-- [ ] Eksport til PNG/SVG (høy oppløsning)
+- [x] Eksport til PDF med bedre layout - Implementert med html2pdf bibliotek
+- [x] Eksport til PNG/SVG (høy oppløsning) - Implementert PNG-eksport med html2canvas (høy oppløsning, scale 2x)
 - [ ] Timeline-visning (tidslinje med fødselsår)
 - [ ] Del familietre med andre (via link)
 - [ ] Touch-gestures for bedre mobil-opplevelse (allerede delvis implementert)
