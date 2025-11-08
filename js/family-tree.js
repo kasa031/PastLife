@@ -1378,6 +1378,7 @@ function selectNode(nodeId) {
 }
 
 // Layout tree automatically - VERTICAL layout (user at top, ancestors below)
+// Improved algorithm to reduce overlapping
 function layoutTree() {
     // Group by generation
     const generations = {};
@@ -1392,33 +1393,144 @@ function layoutTree() {
     // Sort generations (0 = user at top, increasing numbers go down)
     const genNumbers = Object.keys(generations).map(Number).sort((a, b) => a - b);
     
-    // Vertical spacing between generations (much larger for very deep trees - 1200s+)
-    const verticalSpacing = 350; // Large vertical spacing for scrolling down
-    const horizontalSpacing = 300; // Horizontal spacing between persons in same generation
+    // Node dimensions (actual size)
+    const nodeWidth = 250;
+    const nodeHeight = 200; // Increased to account for images and content
+    
+    // Spacing - adjusted to prevent overlapping
+    const verticalSpacing = Math.max(350, nodeHeight + 150); // Ensure no vertical overlap
+    const horizontalSpacing = Math.max(280, nodeWidth + 30); // Ensure no horizontal overlap
     
     // Calculate container width needed (for many persons per generation)
     const maxPersonsInGen = Math.max(...genNumbers.map(gen => generations[gen].length), 1);
     // Minimum 2500px width for very wide trees, scale up if needed
     const containerWidth = Math.max(2500, maxPersonsInGen * horizontalSpacing + 600);
     
-    // Center each generation horizontally
+    // Build relationship map for better positioning
+    const relationshipMap = buildRelationshipMap();
+    
+    // Center each generation horizontally with improved spacing
     genNumbers.forEach((gen, genIndex) => {
         const persons = generations[gen];
         const startY = genIndex * verticalSpacing + 100; // Start 100px from top
         
+        // Sort persons by relationships to keep families together
+        const sortedPersons = sortPersonsByRelationships(persons, relationshipMap, gen, generations);
+        
         // Calculate horizontal centering for this generation
-        const totalWidth = (persons.length - 1) * horizontalSpacing;
+        const totalWidth = (sortedPersons.length - 1) * horizontalSpacing;
         const startX = Math.max(200, (containerWidth - totalWidth) / 2);
         
         // Position persons horizontally in this generation
-        persons.forEach((person, index) => {
+        sortedPersons.forEach((person, index) => {
             person.x = startX + index * horizontalSpacing;
             person.y = startY;
         });
     });
     
+    // Post-process: detect and fix any remaining overlaps
+    fixOverlaps();
+    
     // Store container width for use in renderTree
     window.treeContainerWidth = containerWidth;
+}
+
+// Build a map of relationships for faster lookup
+function buildRelationshipMap() {
+    const map = {};
+    if (!allTreeData || allTreeData.length === 0) return map;
+    
+    // Get relationships from saved tree data or use empty array
+    const savedTree = localStorage.getItem(`pastlife_tree_${getCurrentUser()?.username}`);
+    const treeInfo = savedTree ? JSON.parse(savedTree) : { relationships: [] };
+    const relationships = treeInfo.relationships || [];
+    
+    relationships.forEach(rel => {
+        if (!map[rel.person1]) map[rel.person1] = [];
+        if (!map[rel.person2]) map[rel.person2] = [];
+        map[rel.person1].push({ person: rel.person2, type: rel.type });
+        map[rel.person2].push({ person: rel.person1, type: rel.type });
+    });
+    
+    return map;
+}
+
+// Sort persons in a generation to keep families together
+function sortPersonsByRelationships(persons, relationshipMap, currentGen, allGenerations) {
+    if (persons.length <= 1) return persons;
+    
+    // Try to group by family (spouses, siblings)
+    const sorted = [];
+    const used = new Set();
+    
+    // First, find persons with relationships to previous generation
+    const prevGen = currentGen - 1;
+    if (prevGen >= 0 && allGenerations[prevGen]) {
+        const prevGenNames = new Set(allGenerations[prevGen].map(p => p.name));
+        
+        persons.forEach(person => {
+            if (used.has(person.name)) return;
+            
+            // Check if person has parent in previous generation
+            const rels = relationshipMap[person.name] || [];
+            const hasParentInPrevGen = rels.some(r => 
+                prevGenNames.has(r.person) && (r.type === 'parent' || r.type === 'child')
+            );
+            
+            if (hasParentInPrevGen) {
+                sorted.push(person);
+                used.add(person.name);
+            }
+        });
+    }
+    
+    // Add remaining persons
+    persons.forEach(person => {
+        if (!used.has(person.name)) {
+            sorted.push(person);
+        }
+    });
+    
+    return sorted.length > 0 ? sorted : persons;
+}
+
+// Detect and fix overlapping nodes
+function fixOverlaps() {
+    const nodeWidth = 250;
+    const nodeHeight = 200;
+    const minSpacing = 30; // Minimum spacing between nodes
+    
+    // Check all pairs of nodes
+    for (let i = 0; i < treeData.length; i++) {
+        for (let j = i + 1; j < treeData.length; j++) {
+            const p1 = treeData[i];
+            const p2 = treeData[j];
+            
+            // Check if nodes overlap
+            const overlapX = Math.abs(p1.x - p2.x) < (nodeWidth + minSpacing);
+            const overlapY = Math.abs(p1.y - p2.y) < (nodeHeight + minSpacing);
+            
+            if (overlapX && overlapY) {
+                // Same generation - adjust horizontally
+                if (p1.generation === p2.generation) {
+                    const spacing = nodeWidth + minSpacing;
+                    if (p1.x < p2.x) {
+                        p2.x = p1.x + spacing;
+                    } else {
+                        p1.x = p2.x + spacing;
+                    }
+                } else {
+                    // Different generations - adjust vertically
+                    const spacing = nodeHeight + minSpacing;
+                    if (p1.y < p2.y) {
+                        p2.y = p1.y + spacing;
+                    } else {
+                        p1.y = p2.y + spacing;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Draw connections between related nodes

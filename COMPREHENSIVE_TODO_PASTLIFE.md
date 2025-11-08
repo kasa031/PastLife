@@ -39,7 +39,7 @@
 - [x] Lazy loading for bilder (allerede delvis implementert)
 
 ### Familietre
-- [ ] Forbedre automatisk layout (mindre overlapping)
+- [x] Forbedre automatisk layout (mindre overlapping) - Implementert overlapping-deteksjon og automatisk justering
 - [ ] Eksport til PDF med bedre layout
 - [ ] Eksport til PNG/SVG (høy oppløsning)
 - [ ] Timeline-visning (tidslinje med fødselsår)
