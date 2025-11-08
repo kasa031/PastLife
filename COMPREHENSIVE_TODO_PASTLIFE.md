@@ -42,7 +42,7 @@
 - [x] Forbedre automatisk layout (mindre overlapping) - Implementert overlapping-deteksjon og automatisk justering
 - [x] Eksport til PDF med bedre layout - Implementert med html2pdf bibliotek
 - [x] Eksport til PNG/SVG (høy oppløsning) - Implementert PNG-eksport med html2canvas (høy oppløsning, scale 2x)
-- [ ] Timeline-visning (tidslinje med fødselsår)
+- [x] Timeline-visning (tidslinje med fødselsår) - Implementert interaktiv timeline med fødselsår, tiår-markører, og klikkbare personer
 - [ ] Del familietre med andre (via link)
 - [ ] Touch-gestures for bedre mobil-opplevelse (allerede delvis implementert)
 

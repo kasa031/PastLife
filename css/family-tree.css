@@ -158,9 +158,6 @@
     z-index: 100 !important;
     border-color: var(--orange-primary);
 }
-    color: var(--gray-dark);
-    margin: 0.3rem 0;
-}
 
 .tree-node-info strong {
     color: var(--turquoise-dark);
