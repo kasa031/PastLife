@@ -48,7 +48,7 @@
 
 ### Søk og Filtrering
 - [ ] Søk i relasjoner (f.eks. "finn alle søsken av X")
-- [ ] Søk-suggestions basert på tidligere søk
+- [x] Søk-suggestions basert på tidligere søk - Implementert med grupperte suggestions (historikk, navn, land, byer), klikk for å gjenbruke søk
 - [ ] Fulltekst-søk i kommentarer
 - [ ] Søk basert på plassering (radius-søk)
 - [ ] Søk basert på tidsperiode (f.eks. "alle født mellom 1800-1900")
