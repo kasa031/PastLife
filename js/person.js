@@ -627,6 +627,44 @@ window.removeImageFromGallery = async function(imageUrl, personId) {
     loadPersonDetails(); // Reload to show updated gallery
 };
 
+// Edit image tags
+window.editImageTags = async function(imageUrl, personId) {
+    const person = getPersonById(personId);
+    if (!person) {
+        showMessage('Person ikke funnet', 'error');
+        return;
+    }
+    
+    // Check if user is owner
+    const user = getCurrentUser();
+    if (!user || person.createdBy !== user.username) {
+        showMessage('Du kan bare tagge bilder for dine egne personer', 'error');
+        return;
+    }
+    
+    // Get current tags for this image
+    const currentTags = (person.imageTags && person.imageTags[imageUrl]) || [];
+    const tagsString = currentTags.join(', ');
+    
+    // Prompt for tags
+    const newTagsString = prompt('Hvem er på bildet? (kommaseparert liste av navn):', tagsString);
+    if (newTagsString === null) return; // User cancelled
+    
+    // Parse tags
+    const newTags = newTagsString.split(',').map(t => t.trim()).filter(t => t);
+    
+    // Update person with new image tags
+    if (!person.imageTags) person.imageTags = {};
+    person.imageTags[imageUrl] = newTags;
+    
+    // Save updated person
+    const { savePerson } = await import('./data.js');
+    savePerson(person, personId);
+    
+    showMessage('Bildetagger oppdatert!', 'success');
+    loadPersonDetails(); // Reload to show updated tags
+};
+
 // Get all persons (helper)
 function getAllPersons() {
     const personsKey = 'pastlife_persons';
