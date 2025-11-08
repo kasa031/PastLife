@@ -33,7 +33,7 @@
 
 ### Bildehåndtering
 - [x] Støtte for flere bilder per person (galleri) - Implementert med legg til/slett funksjonalitet, hovedbilde-valg, og forbedret UI
-- [ ] Bildetagger (hvem er på bildet)
+- [x] Bildetagger (hvem er på bildet) - Implementert med tags per bilde, UI for å redigere tags, visning av tags på bilder
 - [x] Bildkomprimering ved opplasting (forbedret med bedre algoritme, validering, logging)
 - [ ] Konverter bilder til WebP format for bedre komprimering
 - [x] Lazy loading for bilder (allerede delvis implementert)

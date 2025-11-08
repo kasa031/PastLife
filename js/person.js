@@ -252,6 +252,12 @@ function loadPersonDetails() {
                         const isMain = img === mainPhoto || (idx === 0 && !person.mainImage);
                         // Escape single quotes in image URL for onclick
                         const escapedImg = img.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        const imageTags = (person.imageTags && person.imageTags[img]) || [];
+                        const tagsDisplay = imageTags.length > 0 ? `
+                            <div class="image-tags-display" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 0.5rem; border-radius: 0 0 8px 8px; color: white; font-size: 0.8rem;">
+                                <strong>På bildet:</strong> ${imageTags.map(tag => escapeHtml(tag)).join(', ')}
+                            </div>
+                        ` : '';
                         return `
                             <div class="gallery-item" style="position: relative;">
                                 <img src="${img}" alt="${escapeHtml(person.name)} - Image ${idx + 1}" 
@@ -260,11 +266,17 @@ function loadPersonDetails() {
                                      onerror="this.src='assets/images/oldphoto2.jpg'"
                                      title="${isMain ? 'Hovedbilde (klikk for å endre)' : 'Klikk for å sette som hovedbilde'}">
                                 ${isMain ? '<span class="main-badge">Hovedbilde</span>' : ''}
+                                ${isOwner ? `
+                                    <button class="gallery-tag-btn" onclick="editImageTags('${escapedImg}', '${currentPersonId}')" title="Tagge hvem som er på bildet" style="position: absolute; bottom: ${imageTags.length > 0 ? '2.5rem' : '0.5rem'}; left: 0.5rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 4px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer; z-index: 20;">
+                                        🏷️ Tag
+                                    </button>
+                                ` : ''}
                                 ${isOwner && allImages.length > 1 ? `
                                     <button class="gallery-delete-btn" onclick="removeImageFromGallery('${escapedImg}', '${currentPersonId}')" title="Slett bilde">
                                         ✕
                                     </button>
                                 ` : ''}
+                                ${tagsDisplay}
                             </div>
                         `;
                     }).join('')}
