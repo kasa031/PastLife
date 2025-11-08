@@ -25,8 +25,8 @@
 ## 🔄 Pågående / Forbedringer
 
 ### Layout og Design
-- [ ] Test og finjuster mobil-opplevelse på alle sider
-- [ ] Test på tablets og forskjellige skjermstørrelser
+- [x] Test og finjuster mobil-opplevelse på alle sider - Forbedret mobil-styling for timeline, søk, familietre, galleri, og alle komponenter
+- [x] Test på tablets og forskjellige skjermstørrelser - Lagt til tablet-styling med 2-kolonners layout hvor passende
 - [x] Optimaliser bildestørrelser for raskere lasting (forbedret komprimering, bedre kvalitet)
 - [x] Legg til loading-states for bedre UX (spinner, shimmer-effekt, progress-indikatorer)
 - [x] Forbedre animasjoner og overganger - Implementert smooth cubic-bezier easing, fade-in effekter, ripple-effekter på knapper
