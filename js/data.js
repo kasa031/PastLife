@@ -39,6 +39,7 @@ export function savePerson(personData, personId = null) {
                 description: personData.description !== undefined ? personData.description : persons[index].description,
                 photo: personData.photo !== undefined ? personData.photo : persons[index].photo,
                 images: personData.images !== undefined ? personData.images : (persons[index].images || (persons[index].photo ? [persons[index].photo] : [])),
+                imageTags: personData.imageTags !== undefined ? personData.imageTags : (persons[index].imageTags || {}),
                 mainImage: personData.mainImage !== undefined ? personData.mainImage : (persons[index].mainImage || persons[index].photo),
                 sources: personData.sources !== undefined ? personData.sources : (persons[index].sources || []),
                 tags: personData.tags !== undefined ? personData.tags : persons[index].tags,
@@ -62,6 +63,7 @@ export function savePerson(personData, personId = null) {
         description: personData.description || '',
         photo: personData.photo || null,
         images: personData.images || (personData.photo ? [personData.photo] : []), // Support multiple images
+        imageTags: personData.imageTags || {}, // Tags per image: { imageUrl: ['person1', 'person2'] }
         mainImage: personData.mainImage || personData.photo || null, // Main image for display
         sources: personData.sources || [], // Sources array
         tags: personData.tags || [],
