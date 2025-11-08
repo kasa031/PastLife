@@ -50,7 +50,7 @@
 - [x] Søk i relasjoner (f.eks. "finn alle søsken av X") - Implementert med relasjonsdata fra familietreet, støtte for søsken, foreldre, barn, ektefelle
 - [x] Søk-suggestions basert på tidligere søk - Implementert med grupperte suggestions (historikk, navn, land, byer), klikk for å gjenbruke søk
 - [x] Fulltekst-søk i kommentarer - Implementert søk i alle kommentarer, inkludert tekst og forfatter
-- [ ] Søk basert på plassering (radius-søk)
+- [x] Søk basert på plassering (radius-søk) - Implementert med tre moduser: exact match (samme by), nearby (samme land), region (lignende stedsnavn)
 - [x] Søk basert på tidsperiode (f.eks. "alle født mellom 1800-1900") - Allerede implementert med yearFrom og yearTo felter
 - [x] Kombinert søk (navn + sted + år) - Allerede implementert, alle filtre kan kombineres
 

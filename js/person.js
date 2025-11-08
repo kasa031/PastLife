@@ -1,5 +1,5 @@
 // Person detail page functionality
-import { getPersonById, getCommentsForPerson, addComment, deleteComment } from './data.js';
+import { getPersonById, getCommentsForPerson, addComment, deleteComment, searchByRelationship } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
 import { copyToClipboard, showMessage, formatDate } from './utils.js';
 
