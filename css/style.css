@@ -1357,6 +1357,112 @@ img.loading {
     .about-section > div > div {
         padding: 1.5rem !important;
     }
+    
+    /* Timeline view on mobile */
+    .timeline-view {
+        padding: 1rem;
+    }
+    
+    .timeline-track {
+        margin-left: 60px;
+    }
+    
+    .timeline-decade {
+        left: -60px;
+        font-size: 0.9rem;
+    }
+    
+    .timeline-person {
+        min-width: 150px;
+        max-width: 180px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    /* Search filters on mobile */
+    .search-filters {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    /* Persons grid on mobile */
+    .persons-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .person-card {
+        margin: 0;
+    }
+    
+    /* Tree controls on mobile */
+    .tree-controls {
+        padding: 1rem;
+    }
+    
+    .tree-controls > div {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .tree-controls button {
+        width: 100%;
+        margin: 0.25rem 0;
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+    
+    /* Comment form on mobile */
+    .comment-form {
+        padding: 1rem;
+    }
+    
+    .comment-form textarea {
+        min-height: 100px;
+    }
+    
+    /* Upload section on mobile */
+    .upload-section {
+        padding: 1rem;
+    }
+    
+    .upload-section textarea {
+        min-height: 150px;
+    }
+    
+    /* Feature cards on mobile */
+    .feature-card {
+        padding: 1.5rem;
+    }
+    
+    /* Autocomplete suggestions on mobile */
+    .autocomplete-suggestions {
+        max-height: 300px;
+        font-size: 0.9rem;
+    }
+    
+    .suggestion-group-header {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    /* Image gallery section on mobile */
+    .image-gallery-section {
+        padding: 1rem;
+    }
+    
+    .image-gallery-section h3 {
+        font-size: 1.1rem;
+    }
+    
+    .image-gallery-section button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
 }
 
 /* Tablet styles */
@@ -1372,5 +1478,23 @@ img.loading {
     
     .nav-brand img {
         height: 45px !important;
+    }
+    
+    .persons-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .search-filters {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .tree-controls button {
+        font-size: 0.9rem;
+        padding: 0.7rem 1.2rem;
+    }
+    
+    .timeline-person {
+        min-width: 180px;
+        max-width: 220px;
     }
 }
