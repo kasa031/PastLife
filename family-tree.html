@@ -117,6 +117,8 @@
                 <button class="btn-edit" onclick="saveTree()" title="Save tree data to your profile contributions">💾 Save Tree to Profile</button>
                 <button class="btn-share" onclick="exportTree()" title="Export tree as JSON file for backup">📥 Export Tree (JSON)</button>
                 <button class="btn-share" onclick="printTree()" title="Print family tree (opens print dialog)" style="background: var(--orange-primary);">🖨️ Print Tree</button>
+                <button class="btn-share" onclick="exportTreeToPDF()" title="Export tree as PDF file" style="background: var(--turquoise-dark);">📄 Export PDF</button>
+                <button class="btn-share" onclick="exportTreeToPNG()" title="Export tree as PNG image" style="background: var(--accent-color);">🖼️ Export PNG</button>
                 <button class="btn-import" onclick="importTree()" title="Import tree from JSON file">📤 Import Tree (JSON)</button>
             <div style="display: flex; gap: 0.5rem; align-items: center; margin-left: auto;">
                 <button class="btn-edit" onclick="zoomIn()" title="Zoom in to see details">🔍+ Zoom In</button>
@@ -144,6 +146,10 @@
         </div>
     </footer>
 
+    <!-- External libraries for PDF/PNG export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script type="module" src="js/family-tree.js"></script>
 </body>
 </html>

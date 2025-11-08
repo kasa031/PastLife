@@ -1944,6 +1944,85 @@ window.printTree = function() {
     }, 500);
 };
 
+// Export tree to PDF
+window.exportTreeToPDF = async function() {
+    try {
+        showMessage('Forbereder PDF-eksport...', 'info');
+        
+        // Use html2pdf library if available, otherwise fallback to print
+        if (typeof html2pdf !== 'undefined') {
+            const wrapper = document.getElementById('treeWrapper');
+            
+            if (!wrapper || treeData.length === 0) {
+                showMessage('Ingen data å eksportere', 'error');
+                return;
+            }
+            
+            // Create a temporary container with the tree
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `family-tree-${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            
+            await html2pdf().set(opt).from(wrapper).save();
+            showMessage('PDF eksportert!', 'success');
+        } else {
+            // Fallback: use print dialog
+            showMessage('PDF-bibliotek ikke tilgjengelig. Bruker utskrift i stedet...', 'info');
+            printTree();
+        }
+    } catch (error) {
+        console.error('Error exporting to PDF:', error);
+        showMessage('Feil ved PDF-eksport: ' + error.message, 'error');
+    }
+};
+
+// Export tree to PNG
+window.exportTreeToPNG = async function() {
+    try {
+        showMessage('Forbereder PNG-eksport...', 'info');
+        
+        const wrapper = document.getElementById('treeWrapper');
+        const container = document.getElementById('treeContainer');
+        
+        if (!wrapper || !container || treeData.length === 0) {
+            showMessage('Ingen data å eksportere', 'error');
+            return;
+        }
+        
+        // Use html2canvas if available
+        if (typeof html2canvas !== 'undefined') {
+            const canvas = await html2canvas(wrapper, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#F8F6F3',
+                width: container.offsetWidth,
+                height: container.offsetHeight
+            });
+            
+            // Convert canvas to blob and download
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `family-tree-${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showMessage('PNG eksportert!', 'success');
+            }, 'image/png');
+        } else {
+            showMessage('PNG-eksport krever html2canvas-bibliotek. Last inn via CDN.', 'error');
+        }
+    } catch (error) {
+        console.error('Error exporting to PNG:', error);
+        showMessage('Feil ved PNG-eksport: ' + error.message, 'error');
+    }
+};
+
 // Escape HTML helper
 function escapeHtml(text) {
     if (!text) return '';
