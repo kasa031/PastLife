@@ -452,18 +452,122 @@ function loadRelativesSection(person) {
         `;
     };
     
-    return `
-        <div class="relatives-section" style="margin-top: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="color: var(--turquoise-dark); margin: 0;">👨‍👩‍👧‍👦 Slektninger (${allRelatives.length})</h3>
-            </div>
-            ${buildCategoryHtml('Foreldre', '👴👵', relativesByType.parents, 'parents')}
-            ${buildCategoryHtml('Søsken', '👫', relativesByType.siblings, 'siblings')}
-            ${buildCategoryHtml('Barn', '👶', relativesByType.children, 'children')}
-            ${buildCategoryHtml('Ektefelle(r)', '💑', relativesByType.spouses, 'spouses')}
-            ${buildCategoryHtml('Andre slektninger', '🔗', relativesByType.other, 'other')}
+    // Filter buttons
+    const filterButtons = `
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <button onclick="filterRelatives('all')" class="relative-filter-btn active" data-filter="all" style="
+                padding: 0.5rem 1rem;
+                border: 2px solid var(--turquoise-primary);
+                background: var(--turquoise-primary);
+                color: white;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s;
+            ">Alle (${allRelatives.length})</button>
+            <button onclick="filterRelatives('parents')" class="relative-filter-btn" data-filter="parents" style="
+                padding: 0.5rem 1rem;
+                border: 2px solid var(--turquoise-primary);
+                background: transparent;
+                color: var(--turquoise-primary);
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s;
+            ">👴👵 Foreldre (${relativesByType.parents.length})</button>
+            <button onclick="filterRelatives('siblings')" class="relative-filter-btn" data-filter="siblings" style="
+                padding: 0.5rem 1rem;
+                border: 2px solid var(--turquoise-primary);
+                background: transparent;
+                color: var(--turquoise-primary);
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s;
+            ">👫 Søsken (${relativesByType.siblings.length})</button>
+            <button onclick="filterRelatives('children')" class="relative-filter-btn" data-filter="children" style="
+                padding: 0.5rem 1rem;
+                border: 2px solid var(--turquoise-primary);
+                background: transparent;
+                color: var(--turquoise-primary);
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s;
+            ">👶 Barn (${relativesByType.children.length})</button>
+            <button onclick="filterRelatives('spouses')" class="relative-filter-btn" data-filter="spouses" style="
+                padding: 0.5rem 1rem;
+                border: 2px solid var(--turquoise-primary);
+                background: transparent;
+                color: var(--turquoise-primary);
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s;
+            ">💑 Ektefelle(r) (${relativesByType.spouses.length})</button>
+            ${relativesByType.other.length > 0 ? `
+            <button onclick="filterRelatives('other')" class="relative-filter-btn" data-filter="other" style="
+                padding: 0.5rem 1rem;
+                border: 2px solid var(--turquoise-primary);
+                background: transparent;
+                color: var(--turquoise-primary);
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s;
+            ">🔗 Andre (${relativesByType.other.length})</button>
+            ` : ''}
         </div>
     `;
+    
+    return `
+        <div class="relatives-section" style="margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <h3 style="color: var(--turquoise-dark); margin: 0;">👨‍👩‍👧‍👦 Slektninger (${allRelatives.length})</h3>
+            </div>
+            ${filterButtons}
+            <div id="relativesContent">
+                ${buildCategoryHtml('Foreldre', '👴👵', relativesByType.parents, 'parents')}
+                ${buildCategoryHtml('Søsken', '👫', relativesByType.siblings, 'siblings')}
+                ${buildCategoryHtml('Barn', '👶', relativesByType.children, 'children')}
+                ${buildCategoryHtml('Ektefelle(r)', '💑', relativesByType.spouses, 'spouses')}
+                ${buildCategoryHtml('Andre slektninger', '🔗', relativesByType.other, 'other')}
+            </div>
+        </div>
+    `;
+}
+
+// Filter relatives by type
+window.filterRelatives = function(filterType) {
+    // Update button states
+    document.querySelectorAll('.relative-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === filterType) {
+            btn.classList.add('active');
+            btn.style.background = 'var(--turquoise-primary)';
+            btn.style.color = 'white';
+        } else {
+            btn.style.background = 'transparent';
+            btn.style.color = 'var(--turquoise-primary)';
+        }
+    });
+    
+    // Show/hide categories
+    const categories = document.querySelectorAll('.relatives-category');
+    categories.forEach(category => {
+        if (filterType === 'all') {
+            category.style.display = 'block';
+        } else {
+            const categoryType = category.querySelector('h4')?.textContent || '';
+            const shouldShow = 
+                (filterType === 'parents' && categoryType.includes('Foreldre')) ||
+                (filterType === 'siblings' && categoryType.includes('Søsken')) ||
+                (filterType === 'children' && categoryType.includes('Barn')) ||
+                (filterType === 'spouses' && categoryType.includes('Ektefelle')) ||
+                (filterType === 'other' && categoryType.includes('Andre'));
+            category.style.display = shouldShow ? 'block' : 'none';
+        }
+    });
 }
 
 // Load comments
