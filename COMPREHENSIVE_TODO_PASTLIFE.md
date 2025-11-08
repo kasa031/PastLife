@@ -32,7 +32,7 @@
 - [ ] Forbedre animasjoner og overganger
 
 ### Bildehåndtering
-- [ ] Støtte for flere bilder per person (galleri)
+- [x] Støtte for flere bilder per person (galleri) - Implementert med legg til/slett funksjonalitet, hovedbilde-valg, og forbedret UI
 - [ ] Bildetagger (hvem er på bildet)
 - [x] Bildkomprimering ved opplasting (forbedret med bedre algoritme, validering, logging)
 - [ ] Konverter bilder til WebP format for bedre komprimering
