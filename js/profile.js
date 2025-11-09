@@ -411,9 +411,10 @@ function createPersonCard(person) {
                 ${isOwner ? `
                     <div class="action-buttons">
                         <input type="checkbox" class="person-checkbox" data-person-id="${person.id}" style="margin-right: 0.5rem;" title="Select for bulk export">
-                        <button class="btn-edit" onclick="editPerson('${person.id}')" title="Edit this ancestor's information">✏️ Edit</button>
-                        <button class="btn-edit" onclick="quickAddToTree('${person.id}')" title="Quick add to family tree" style="background: var(--turquoise-primary);">🌳 Add to Tree</button>
-                        <button class="btn-delete" onclick="deletePersonConfirm('${person.id}')" title="⚠️ Delete this ancestor (will ask for confirmation)">🗑️ Delete</button>
+                        <input type="checkbox" class="person-checkbox" data-person-id="${person.id}" style="margin-right: 0.5rem;" title="Velg for bulk-eksport eller bulk-redigering">
+                        <button class="btn-edit" onclick="editPerson('${person.id}')" title="Rediger denne forfedrens informasjon">✏️ Edit</button>
+                        <button class="btn-edit" onclick="quickAddToTree('${person.id}')" title="Legg raskt til i familietreet" style="background: var(--turquoise-primary);">🌳 Add to Tree</button>
+                        <button class="btn-delete" onclick="deletePersonConfirm('${person.id}')" title="⚠️ Slett denne forfedren (vil spørre om bekreftelse)">🗑️ Delete</button>
                     </div>
                 ` : ''}
             </div>
