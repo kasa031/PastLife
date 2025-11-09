@@ -4,17 +4,35 @@ A social platform for discovering and sharing information about deceased ancesto
 
 ## Features
 
-- **Search Functionality**: Advanced search by name, country, city, year, tags, or description with sorting options
+### Core Functionality
+- **Advanced Search**: Search by name, country, city, year range, tags, description, comments, relationships, and location radius
 - **User Registration & Login**: Secure account system with localStorage-based authentication
-- **Photo Upload**: Upload and compress photos of ancestors with detailed information
-- **Tagging System**: Add tags to make entries easily searchable (e.g., "Christiania 1910")
-- **Social Features**: Comment on entries, share stories, and connect with others
+- **Photo Upload & Gallery**: Upload multiple photos per person, set main image, tag who is in each photo
+- **Tagging System**: Add tags to make entries easily searchable (e.g., "Christiania 1910", "morsside", "farsside")
+- **Social Features**: Comment on entries with @mentions, clickable links, and email links
 - **AI-Powered Family Tree Builder**: Upload large text (10,000+ words) and let AI extract family members and relationships automatically
 - **Edit & Delete**: Manage your own contributions - edit or delete your entries and comments
-- **Export/Import**: Export your data as JSON or import from files
+- **Export/Import**: Export to JSON or CSV/Excel, import from JSON or CSV files
 - **Share & Link**: Share ancestors with others via copy link or native share API
 - **International Support**: Search and discover ancestors from anywhere in the world
-- **Responsive Design**: Works beautifully on both desktop and mobile devices
+- **Responsive Design**: Works beautifully on desktop, tablet, and mobile devices
+
+### Advanced Features
+- **Family Tree Visualization**: Interactive family tree with automatic layout, zoom, pan, and timeline view
+- **Relationship Search**: Find relatives (siblings, parents, children, spouses) based on family tree data
+- **Relatives Display**: View all relatives grouped by relationship type on person pages
+- **Statistics Dashboard**: View comprehensive statistics including birth year distribution graphs
+- **Bulk Operations**: Bulk import from CSV/Excel, bulk edit (tags, country, city), bulk export
+- **Image Gallery**: Multiple images per person with tagging support (who is in the picture)
+- **Profile Settings**: Customize username, bio, and profile picture
+- **Dark Mode**: Toggle between light and dark themes
+- **Timeline View**: Interactive timeline showing persons by birth year with decade markers
+- **PDF/PNG Export**: Export family tree to PDF or PNG format
+- **Location Radius Search**: Find persons near a specific location
+- **Full-text Comment Search**: Search within all comments across all persons
+- **Autocomplete Suggestions**: Smart search suggestions with history, names, countries, and cities
+- **Keyboard Navigation**: Navigate search results with arrow keys
+- **Backup & Restore**: Complete backup and restore functionality for all data
 
 ## Technology
 
@@ -25,8 +43,9 @@ A social platform for discovering and sharing information about deceased ancesto
 
 ## Color Palette
 
-- **Turquoise**: Primary brand color (#00CED1, #008B8B, #AFEEEE)
-- **Orange**: Accent color (#FF8C00, #FF6347, #FFA500)
+- **Warm Brown**: Primary brand color (#8B6F47, #6B4E2F, #B8956A)
+- **Golden/Amber**: Accent color (#C9A961, #A6894F, #E5C97A)
+- **Warm Neutrals**: Off-white, warm grays, and dark text colors
 
 ## Project Structure
 
@@ -43,10 +62,15 @@ PastLife/
 │   ├── auth.js         # Authentication functions
 │   ├── data.js         # Data management (localStorage)
 │   ├── main.js         # Home page functionality
-│   ├── search.js       # Search functionality
+│   ├── search.js       # Search functionality with autocomplete
 │   ├── profile.js      # Profile page functionality
 │   ├── login.js        # Login/register functionality
-│   └── person.js       # Person detail page functionality
+│   ├── person.js       # Person detail page functionality
+│   ├── family-tree.js  # Family tree builder and visualization
+│   └── utils.js        # Utility functions
+├── css/
+│   ├── style.css       # Main stylesheet
+│   └── family-tree.css # Family tree specific styles
 └── assets/
     └── images/         # Image assets
 ```
@@ -101,13 +125,25 @@ PastLife/
 
 ## Recent Updates
 
-- ✨ AI-powered family tree builder with text analysis
-- ✨ Edit and delete your own contributions
-- ✨ Export/import functionality
-- ✨ Share and copy link features
-- ✨ Improved search with sorting and filtering
-- ✨ Image compression to save storage space
-- ✨ Better UX with loading states and notifications
+### Major Features
+- ✨ **Rebranded to PastLife** - Complete rebranding from F³ with new logo and color scheme
+- ✨ **AI-powered family tree builder** - Upload text and AI extracts family members and relationships
+- ✨ **Timeline View** - Interactive timeline showing persons by birth year
+- ✨ **PDF/PNG Export** - Export family tree to PDF or PNG format
+- ✨ **Image Gallery** - Multiple images per person with tagging support
+- ✨ **Relationship Search** - Find relatives based on family tree data
+- ✨ **Location Radius Search** - Find persons near a specific location
+- ✨ **Statistics Dashboard** - Comprehensive statistics with birth year distribution graphs
+- ✨ **Bulk Operations** - Import from CSV/Excel, bulk edit, bulk export
+- ✨ **Profile Settings** - Customize username, bio, and profile picture
+- ✨ **Dark Mode** - Toggle between light and dark themes
+- ✨ **Enhanced Comments** - @mentions, clickable links, email links
+- ✨ **Autocomplete Search** - Smart suggestions with history, names, locations
+- ✨ **Keyboard Navigation** - Navigate search results with arrow keys
+- ✨ **Improved Mobile Experience** - Better responsive design for mobile and tablets
+- ✨ **Better Error Handling** - Improved error messages and validation
+- ✨ **Tooltips** - Helpful tooltips throughout the application
+- ✨ **FAQ Section** - Frequently asked questions on homepage
 
 ## License
 
