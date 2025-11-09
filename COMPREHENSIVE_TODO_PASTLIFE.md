@@ -94,7 +94,7 @@
 
 ### Brukervennlighet
 - [ ] Onboarding-tutorial for nye brukere
-- [ ] FAQ-seksjon
+- [x] FAQ-seksjon - Implementert på hovedsiden med ofte stilte spørsmål om å legge til forfedre, bygge familietre, importere data, søke og eksportere
 - [ ] Video-tutorials
 - [ ] Forbedre feilmeldinger og hjelpetekster
 - [ ] Tooltips for alle knapper og funksjoner
