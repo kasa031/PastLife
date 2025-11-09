@@ -1,7 +1,7 @@
 // Family Tree Builder with AI
 import { getAllPersons, savePerson, deletePerson } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { showMessage, showLoading, hideLoading, logError } from './utils.js';
+import { showMessage, showLoading, hideLoading, logError, copyToClipboard } from './utils.js';
 
 let treeData = [];
 let allTreeData = []; // Store all data for filtering
