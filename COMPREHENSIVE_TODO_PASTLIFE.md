@@ -43,7 +43,7 @@
 - [x] Eksport til PDF med bedre layout - Implementert med html2pdf bibliotek
 - [x] Eksport til PNG/SVG (høy oppløsning) - Implementert PNG-eksport med html2canvas (høy oppløsning, scale 2x)
 - [x] Timeline-visning (tidslinje med fødselsår) - Implementert interaktiv timeline med fødselsår, tiår-markører, og klikkbare personer
-- [ ] Del familietre med andre (via link)
+- [x] Del familietre med andre (via link) - Implementert deling via lenke med base64-kodet data, støtte for native share API, last inn delt tre fra URL-parameter, kopier til utklippstavle
 - [ ] Touch-gestures for bedre mobil-opplevelse (allerede delvis implementert)
 
 ### Søk og Filtrering
@@ -100,8 +100,8 @@
 - [x] Tooltips for alle knapper og funksjoner - Lagt til tooltips på alle viktige knapper og funksjoner
 
 ### Tekniske Forbedringer
-- [ ] Service Worker for offline-støtte
-- [ ] Caching-strategi
+- [x] Service Worker for offline-støtte - Implementert Service Worker med cache-first strategi, statisk caching, runtime caching for dynamisk innhold, registrert på alle sider
+- [x] Caching-strategi - Implementert cache-first for statiske filer, runtime caching for dynamisk innhold, automatisk cache-opprydding
 - [ ] Performance-optimalisering (lazy load komponenter)
 - [ ] Code splitting
 - [x] Error boundary/error handling - Implementert global error handlers, feilhåndtering i kritiske funksjoner, feilmeldinger med kontekst
