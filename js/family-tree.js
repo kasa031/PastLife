@@ -105,6 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTheme();
     updateNavigation();
     
+    // Load shared tree if URL contains share parameter
+    loadSharedTree();
+    
     // Check if user is logged in
     if (!isLoggedIn()) {
         showMessage('Please login to use the Family Tree Builder', 'error');
@@ -1855,6 +1858,132 @@ function loadSavedTree() {
             }
         } catch (e) {
             console.error('Error loading tree:', e);
+        }
+    }
+}
+
+// Share family tree via link
+window.shareFamilyTree = function() {
+    const user = getCurrentUser();
+    if (!user) {
+        showMessage('Du må være innlogget for å dele familietreet', 'error');
+        return;
+    }
+    
+    if (allTreeData.length === 0) {
+        showMessage('Ingen familietre å dele', 'error');
+        return;
+    }
+    
+    // Create shareable link with tree data encoded
+    const treeData = {
+        persons: allTreeData,
+        relationships: getAllRelationships(),
+        timestamp: new Date().toISOString(),
+        sharedBy: user.username
+    };
+    
+    // Encode tree data as base64 in URL
+    const encodedData = btoa(JSON.stringify(treeData));
+    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encodedData}`;
+    
+    // Copy to clipboard or use native share
+    if (navigator.share) {
+        navigator.share({
+            title: 'PastLife Familietre',
+            text: 'Se mitt familietre på PastLife',
+            url: shareUrl
+        }).catch(() => {
+            copyShareLink(shareUrl);
+        });
+    } else {
+        copyShareLink(shareUrl);
+    }
+};
+
+// Copy share link to clipboard
+function copyShareLink(url) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            showMessage('Delinglenke kopiert til utklippstavle!', 'success');
+        }).catch(() => {
+            fallbackCopy(url);
+        });
+    } else {
+        fallbackCopy(url);
+    }
+}
+
+// Fallback copy method
+function fallbackCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showMessage('Delinglenke kopiert til utklippstavle!', 'success');
+    } catch (err) {
+        showMessage('Kunne ikke kopiere lenke. Del denne URL-en manuelt: ' + text, 'info', 10000);
+    }
+    document.body.removeChild(textArea);
+}
+
+// Get all relationships from tree data
+function getAllRelationships() {
+    const relationships = [];
+    allTreeData.forEach(person => {
+        if (person.relationships && Array.isArray(person.relationships)) {
+            person.relationships.forEach(rel => {
+                if (!relationships.find(r => r.person1 === rel.person1 && r.person2 === rel.person2 && r.type === rel.type)) {
+                    relationships.push(rel);
+                }
+            });
+        }
+    });
+    return relationships;
+}
+
+// Load shared tree from URL
+function loadSharedTree() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareData = urlParams.get('share');
+    
+    if (shareData) {
+        try {
+            const decodedData = JSON.parse(atob(shareData));
+            if (decodedData.persons && Array.isArray(decodedData.persons)) {
+                allTreeData = decodedData.persons;
+                
+                // Add relationships
+                if (decodedData.relationships) {
+                    allTreeData = allTreeData.map(person => {
+                        const rels = decodedData.relationships.filter(r => 
+                            r.person1 === person.name || r.person2 === person.name
+                        );
+                        person.relationships = rels;
+                        return person;
+                    });
+                }
+                
+                // Calculate generations
+                calculateAllGenerations(allTreeData, decodedData.relationships || []);
+                
+                // Render tree
+                applyFilter(currentFilter);
+                renderTree();
+                fitToScreen();
+                
+                showMessage(`Familietre lastet fra ${decodedData.sharedBy || 'deling'}!`, 'success');
+                
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        } catch (error) {
+            console.error('Error loading shared tree:', error);
+            showMessage('Kunne ikke laste delt familietre', 'error');
         }
     }
 }
