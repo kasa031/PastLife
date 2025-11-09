@@ -128,5 +128,15 @@
     </footer>
 
     <script type="module" src="js/main.js"></script>
+    <script type="module">
+        import { showOnboarding } from './js/onboarding.js';
+        
+        // Show onboarding for new users after page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                showOnboarding();
+            }, 1000); // Wait 1 second after page load
+        });
+    </script>
 </body>
 </html>

@@ -71,41 +71,41 @@
 - [ ] Stedsnavn-validering mot faktiske steder
 - [ ] Flerspråklig støtte (norsk/engelsk)
 - [ ] Batch-analyse (analyser flere tekster samtidig)
-- [ ] Forbedret feilhåndtering ved AI-feil
+- [x] Forbedret feilhåndtering ved AI-feil - Implementert spesifikke feiltyper (API-nøkkel, rate limit, nettverk, parse), forbedrede feilmeldinger på norsk, fallback til grunnleggende tekstanalyse
 
 ### Notifikasjoner og Sosiale Funksjoner
 - [ ] Notifikasjoner når noen favoriserer dine personer
 - [ ] Notifikasjoner for nye personer med samme navn
 - [ ] E-post-notifikasjoner (fremtidig backend-integrasjon)
-- [ ] Forbedre kommentar-systemet
+- [x] Forbedre kommentar-systemet - Implementert @mentions, klikkbare lenker og e-post, validering (min 3 tegn, max 1000 tegn), forbedret UI med hover-effekter
 
 ### Statistikk og Visualiseringer
-- [ ] Grafer for fødselsår-fordeling
+- [x] Grafer for fødselsår-fordeling - Implementert stolpediagram per tiår med gradient-farger
 - [ ] Kart-visning av fødselssteder
-- [ ] Generasjon-fordeling
-- [ ] Aktivitet-overview (siste måned, år, etc.)
-- [ ] Forbedre eksisterende statistikk-visning
+- [x] Generasjon-fordeling - Implementert generasjon-fordeling basert på familietre-data med visuell visning per generasjon
+- [x] Aktivitet-overview (siste måned, år, etc.) - Implementert aktivitet-overview med nye personer (siste måned/år) og oppdaterte personer
+- [x] Forbedre eksisterende statistikk-visning - Forbedret med flere statistikker, grafer, generasjon-fordeling, og aktivitet-overview
 
 ### Eksport/Import Forbedringer
 - [ ] Eksport til GEDCOM format (standard for slektsforskning)
 - [ ] Import fra GEDCOM
 - [x] Eksport til Excel med alle detaljer - Implementert CSV-eksport med alle personfelter, BOM for Excel-kompatibilitet
-- [ ] Forbedre JSON-eksport/import
+- [x] Forbedre JSON-eksport/import - Forbedret JSON-eksport til versjon 2.0 med familietre, favoritter, profil, kommentarer og metadata. Forbedret import for å støtte alle datatyper med async/await.
 
 ### Brukervennlighet
 - [ ] Onboarding-tutorial for nye brukere
 - [x] FAQ-seksjon - Implementert på hovedsiden med ofte stilte spørsmål om å legge til forfedre, bygge familietre, importere data, søke og eksportere
 - [ ] Video-tutorials
-- [ ] Forbedre feilmeldinger og hjelpetekster
-- [ ] Tooltips for alle knapper og funksjoner
+- [x] Forbedre feilmeldinger og hjelpetekster - Forbedret feilmeldinger på norsk, bedre validering, mer informative meldinger
+- [x] Tooltips for alle knapper og funksjoner - Lagt til tooltips på alle viktige knapper og funksjoner
 
 ### Tekniske Forbedringer
 - [ ] Service Worker for offline-støtte
 - [ ] Caching-strategi
 - [ ] Performance-optimalisering (lazy load komponenter)
 - [ ] Code splitting
-- [ ] Error boundary/error handling
-- [ ] Logging og analytics
+- [x] Error boundary/error handling - Implementert global error handlers, feilhåndtering i kritiske funksjoner, feilmeldinger med kontekst
+- [x] Logging og analytics - Implementert feilloggingssystem med localStorage-persistens, global error handlers, error log export for debugging
 - [ ] Test edge cases (tomme felter, spesialtegn)
 - [ ] Test med store mengder data (1000+ personer)
 - [ ] Test på langsomme nettverk
