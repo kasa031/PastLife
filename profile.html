@@ -34,6 +34,29 @@
     <!-- Profile Container -->
     <section class="profile-container">
         <div class="container">
+            <!-- User Profile Settings -->
+            <div class="profile-settings-section" style="background: var(--gray-light); padding: 2rem; border-radius: 15px; margin-bottom: 3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <h2 style="color: var(--turquoise-dark); margin-bottom: 1.5rem; font-size: 1.8rem;">👤 Profilinstillinger</h2>
+                <div style="display: grid; grid-template-columns: auto 1fr; gap: 2rem; align-items: start;">
+                    <div style="text-align: center;">
+                        <img id="userProfileImage" src="assets/images/oldphoto2.jpg" alt="Profilbilde" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--turquoise-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;" onclick="document.getElementById('profileImageInput').click()">
+                        <input type="file" id="profileImageInput" accept="image/*" style="display: none;" onchange="handleProfileImageUpload(event)">
+                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-dark);">Klikk for å endre</p>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="form-group">
+                            <label for="userName">Brukernavn</label>
+                            <input type="text" id="userName" placeholder="Ditt brukernavn" style="width: 100%;">
+                        </div>
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="userBio">Bio / Om deg</label>
+                            <textarea id="userBio" rows="4" placeholder="Fortell litt om deg selv..." style="width: 100%; resize: vertical;"></textarea>
+                        </div>
+                        <button class="submit-btn" onclick="saveProfileSettings()" style="margin-top: 1rem;">💾 Lagre profilinstillinger</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="profile-header">
                 <h1>Add Ancestor Information</h1>
                 <p>Share photos and information about your ancestors to help others discover their past</p>
@@ -179,5 +202,12 @@
     </footer>
 
     <script type="module" src="js/profile.js"></script>
+    <script type="module">
+        import { loadProfileSettings } from './js/profile.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfileSettings();
+        });
+    </script>
 </body>
 </html>

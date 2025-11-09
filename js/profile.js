@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
+    // Load profile settings
+    loadProfileSettings();
+    
     // Setup form
     setupForm();
     loadMyContributions();
@@ -428,6 +431,102 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// Load profile settings
+export function loadProfileSettings() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const profileKey = `pastlife_profile_${user.username}`;
+    const profile = JSON.parse(localStorage.getItem(profileKey) || '{}');
+    
+    const userNameInput = document.getElementById('userName');
+    const userBioInput = document.getElementById('userBio');
+    const userProfileImage = document.getElementById('userProfileImage');
+    
+    if (userNameInput && profile.userName) {
+        userNameInput.value = profile.userName;
+    }
+    
+    if (userBioInput && profile.bio) {
+        userBioInput.value = profile.bio;
+    }
+    
+    if (userProfileImage && profile.profileImage) {
+        userProfileImage.src = profile.profileImage;
+    }
+}
+
+// Save profile settings
+window.saveProfileSettings = async function() {
+    const user = getCurrentUser();
+    if (!user) {
+        showMessage('Du må være innlogget for å lagre profilinstillinger', 'error');
+        return;
+    }
+    
+    const userName = document.getElementById('userName').value.trim();
+    const bio = document.getElementById('userBio').value.trim();
+    
+    const profileKey = `pastlife_profile_${user.username}`;
+    const profile = {
+        userName: userName || user.username,
+        bio: bio,
+        profileImage: document.getElementById('userProfileImage').src,
+        updatedAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem(profileKey, JSON.stringify(profile));
+    
+    // Update user object if username changed
+    if (userName && userName !== user.username) {
+        user.username = userName;
+        localStorage.setItem('pastlife_auth', JSON.stringify(user));
+    }
+    
+    showMessage('Profilinstillinger lagret!', 'success');
+};
+
+// Handle profile image upload
+window.handleProfileImageUpload = async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+        showMessage('Ugyldig bildeformat. Bruk JPEG, PNG, GIF eller WebP.', 'error');
+        return;
+    }
+    
+    // Validate file size
+    if (file.size > 10 * 1024 * 1024) {
+        showMessage('Bildet er for stort. Maksimal størrelse er 10MB.', 'error');
+        return;
+    }
+    
+    try {
+        const base64 = await imageToBase64(file, 300, 0.8);
+        
+        document.getElementById('userProfileImage').src = base64;
+        
+        // Auto-save
+        const user = getCurrentUser();
+        if (user) {
+            const profileKey = `pastlife_profile_${user.username}`;
+            const profile = JSON.parse(localStorage.getItem(profileKey) || '{}');
+            profile.profileImage = base64;
+            profile.updatedAt = new Date().toISOString();
+            localStorage.setItem(profileKey, JSON.stringify(profile));
+            showMessage('Profilbilde oppdatert!', 'success');
+        }
+    } catch (error) {
+        console.error('Error uploading profile image:', error);
+        showMessage('Feil ved opplasting av bilde: ' + error.message, 'error');
+    }
+    
+    // Reset input
+    event.target.value = '';
+};
 
 // Edit person
 window.editPerson = function(id) {
