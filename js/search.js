@@ -561,6 +561,8 @@ function loadTheme() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize lazy loading
+    initLazyLoading();
     loadTheme();
     updateNavigation();
     

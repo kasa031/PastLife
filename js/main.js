@@ -2,6 +2,7 @@
 import { getAllPersons } from './data.js';
 import { updateNavigation } from './auth.js';
 import { escapeHtml } from './utils.js';
+import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
 
 // Load recent persons
 function loadRecentPersons() {
@@ -179,11 +180,14 @@ function loadTheme() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize lazy loading
+    initLazyLoading();
     loadTheme(); // Load saved theme
     loadRecentPersons();
     updateNavigation();
     preloadHeroImage(); // Preload hero image
-    setupLazyLoading(); // Setup lazy loading for images
+    // Refresh lazy loading after content is loaded
+    setTimeout(() => refreshLazyLoading(), 100);
     
     // Handle Enter key in hero search
     const heroSearch = document.getElementById('heroSearch');

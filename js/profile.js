@@ -1,4 +1,5 @@
 // Profile page functionality
+import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
 import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById, getAllPersons } from './data.js';
 import { getCommentsForPerson } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
@@ -38,6 +39,8 @@ function loadTheme() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize lazy loading
+    initLazyLoading();
     loadTheme();
     updateNavigation();
     
