@@ -775,34 +775,101 @@ window.importCSVData = async function(event) {
     }
 };
 
-// Import data
-window.importData = function(event) {
+// Import data (improved JSON import with version 2.0 support)
+window.importData = async function(event) {
     const file = event.target.files[0];
     if (!file) return;
     
+    const user = getCurrentUser();
+    if (!user) {
+        showMessage('Du må være innlogget for å importere data', 'error');
+        return;
+    }
+    
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
+            let importedCount = 0;
+            let importedTree = false;
+            let importedFavorites = false;
+            let importedProfile = false;
+            let importedComments = false;
+            
+            // Import persons (version 2.0 or legacy)
             if (data.persons && Array.isArray(data.persons)) {
-                const user = getCurrentUser();
-                // Only import persons created by current user
-                const myPersons = data.persons.filter(p => p.createdBy === user.username);
+                const myPersons = data.persons.filter(p => !p.createdBy || p.createdBy === user.username);
                 if (myPersons.length > 0) {
-                    // Import each person
                     myPersons.forEach(personData => {
+                        // Ensure createdBy is set
+                        if (!personData.createdBy) {
+                            personData.createdBy = user.username;
+                        }
                         savePerson(personData);
                     });
-                    showMessage(`Imported ${myPersons.length} ancestor entries`, 'success');
-                    loadMyContributions();
-                } else {
-                    showMessage('No matching data found in import file', 'error');
+                    importedCount = myPersons.length;
+                }
+            }
+            
+            // Import family tree (version 2.0)
+            if (data.familyTree && data.version === '2.0') {
+                const treeKey = `pastlife_tree_${user.username}`;
+                localStorage.setItem(treeKey, JSON.stringify(data.familyTree));
+                importedTree = true;
+            }
+            
+            // Import favorites (version 2.0)
+            if (data.favorites && Array.isArray(data.favorites) && data.version === '2.0') {
+                const favoritesKey = `pastlife_favorites_${user.username}`;
+                const existingFavorites = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+                const mergedFavorites = [...new Set([...existingFavorites, ...data.favorites])];
+                localStorage.setItem(favoritesKey, JSON.stringify(mergedFavorites));
+                importedFavorites = true;
+            }
+            
+            // Import profile (version 2.0)
+            if (data.profile && data.version === '2.0') {
+                const profileKey = `pastlife_profile_${user.username}`;
+                const existingProfile = JSON.parse(localStorage.getItem(profileKey) || '{}');
+                const mergedProfile = { ...existingProfile, ...data.profile };
+                localStorage.setItem(profileKey, JSON.stringify(mergedProfile));
+                importedProfile = true;
+            }
+            
+            // Import comments (version 2.0)
+            if (data.comments && typeof data.comments === 'object' && data.version === '2.0') {
+                const { addComment } = await import('./data.js');
+                Object.keys(data.comments).forEach(personId => {
+                    const personComments = data.comments[personId];
+                    personComments.forEach(comment => {
+                        try {
+                            addComment(personId, comment.text, comment.author);
+                        } catch (e) {
+                            console.error('Error importing comment:', e);
+                        }
+                    });
+                });
+                importedComments = true;
+            }
+            
+            if (importedCount > 0 || importedTree || importedFavorites || importedProfile || importedComments) {
+                const parts = [];
+                if (importedCount > 0) parts.push(`${importedCount} personer`);
+                if (importedTree) parts.push('familietre');
+                if (importedFavorites) parts.push('favoritter');
+                if (importedProfile) parts.push('profil');
+                if (importedComments) parts.push('kommentarer');
+                
+                showMessage(`Importert: ${parts.join(', ')}`, 'success');
+                loadMyContributions();
+                if (importedProfile) {
+                    loadProfileSettings();
                 }
             } else {
-                showMessage('Invalid import file format', 'error');
+                showMessage('Ingen data funnet i importfilen', 'error');
             }
         } catch (error) {
-            showMessage('Error reading import file', 'error');
+            showMessage('Feil ved lesing av importfil: ' + error.message, 'error');
             console.error(error);
         }
     };
