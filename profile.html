@@ -183,8 +183,9 @@
             </div>
 
             <div class="data-actions">
-                <button class="btn-export" onclick="exportData()" title="Export all your contributions as JSON">📥 Export My Data</button>
-                <button class="btn-export" onclick="bulkExportSelected()" title="Export selected persons only" style="background: var(--turquoise-primary);">📦 Export Selected</button>
+                <button class="btn-export" onclick="exportData()" title="Eksporter alle dine bidrag som JSON">📥 Export JSON</button>
+                <button class="btn-export" onclick="exportToExcel()" title="Eksporter alle dine bidrag som CSV/Excel fil" style="background: var(--orange-primary);">📊 Export Excel</button>
+                <button class="btn-export" onclick="bulkExportSelected()" title="Eksporter kun valgte personer" style="background: var(--turquoise-primary);">📦 Export Selected</button>
                 <button class="btn-edit" onclick="bulkEditSelected()" title="Edit multiple selected persons" style="background: var(--orange-primary);">✏️ Bulk Edit Selected</button>
                 <button class="btn-import" onclick="document.getElementById('importFile').click()" title="Import ancestor data from JSON file">📤 Import JSON</button>
                 <button class="btn-import" onclick="document.getElementById('importCSVFile').click()" title="Import ancestor data from CSV/Excel file" style="background: var(--orange-primary);">📊 Import CSV/Excel</button>
