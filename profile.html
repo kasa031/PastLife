@@ -185,6 +185,7 @@
             <div class="data-actions">
                 <button class="btn-export" onclick="exportData()" title="Export all your contributions as JSON">📥 Export My Data</button>
                 <button class="btn-export" onclick="bulkExportSelected()" title="Export selected persons only" style="background: var(--turquoise-primary);">📦 Export Selected</button>
+                <button class="btn-edit" onclick="bulkEditSelected()" title="Edit multiple selected persons" style="background: var(--orange-primary);">✏️ Bulk Edit Selected</button>
                 <button class="btn-import" onclick="document.getElementById('importFile').click()" title="Import ancestor data from JSON file">📤 Import JSON</button>
                 <button class="btn-import" onclick="document.getElementById('importCSVFile').click()" title="Import ancestor data from CSV/Excel file" style="background: var(--orange-primary);">📊 Import CSV/Excel</button>
                 <button class="btn-export" onclick="backupAllData()" title="Create a complete backup of all your data (persons, favorites, tree, etc.)" style="background: var(--orange-primary);">💾 Backup All Data</button>
@@ -192,6 +193,34 @@
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
                 <input type="file" id="importCSVFile" accept=".csv,.xlsx,.xls" style="display: none;" onchange="importCSVData(event)">
                 <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreBackup(event)">
+            </div>
+            
+            <!-- Bulk Edit Modal -->
+            <div id="bulkEditModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+                <div style="background: var(--white); padding: 2rem; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <h2 style="color: var(--turquoise-dark); margin-bottom: 1.5rem;">✏️ Bulk Edit</h2>
+                    <p id="bulkEditCount" style="color: var(--gray-dark); margin-bottom: 1.5rem;"></p>
+                    <div class="form-group">
+                        <label>Add Tag (to all selected)</label>
+                        <input type="text" id="bulkAddTag" placeholder="e.g., morsside" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Remove Tag (from all selected)</label>
+                        <input type="text" id="bulkRemoveTag" placeholder="e.g., morsside" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Set Country (for all selected)</label>
+                        <input type="text" id="bulkSetCountry" placeholder="e.g., Norway" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Set City (for all selected)</label>
+                        <input type="text" id="bulkSetCity" placeholder="e.g., Oslo" style="width: 100%;">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button class="submit-btn" onclick="applyBulkEdit()" style="flex: 1;">✅ Apply Changes</button>
+                        <button class="btn-delete" onclick="closeBulkEditModal()" style="flex: 1;">❌ Cancel</button>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

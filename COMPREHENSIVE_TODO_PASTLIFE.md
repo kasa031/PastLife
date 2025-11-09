@@ -63,7 +63,7 @@
 - [x] Profilinstillinger (brukernavn, bio, bilde) - Implementert profilinstillinger med bildeopplasting, brukernavn og bio
 
 ### Bulk-operasjoner
-- [ ] Bulk-import fra CSV/Excel fil
+- [x] Bulk-import fra CSV/Excel fil - Implementert CSV-import med fleksibel kolonnemapping (støtter norsk og engelsk), validering og rensing av data, import-statistikk. Excel-filer må konverteres til CSV først.
 - [ ] Bulk-edit (endre flere personer samtidig)
 - [ ] Bulk-eksport med valg
 
