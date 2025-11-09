@@ -277,6 +277,18 @@ async function submitForm() {
     // Show success message
     showMessage(editingId ? 'Ancestor information updated successfully!' : 'Ancestor information submitted successfully!', 'success');
     
+    // Complete onboarding if this is first contribution
+    if (!editingId) {
+        const user = getCurrentUser();
+        if (user) {
+            const myPersons = getPersonsByCreator(user.username);
+            if (myPersons.length === 1) {
+                // First person added, complete onboarding
+                completeOnboarding();
+            }
+        }
+    }
+    
     // Reload contributions
     loadMyContributions();
 }
