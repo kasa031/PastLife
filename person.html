@@ -51,8 +51,14 @@
                 </div>
                 
                 <div class="comment-form" id="commentFormSection">
-                    <textarea id="commentText" placeholder="Write a comment..."></textarea>
-                    <button onclick="submitComment()">Post Comment</button>
+                    <textarea id="commentText" placeholder="Skriv en kommentar... (du kan bruke @navn for å nevne personer)" rows="4" style="width: 100%; padding: 1rem; border: 2px solid var(--turquoise-primary); border-radius: 8px; font-family: inherit; resize: vertical; min-height: 100px;"></textarea>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; align-items: center;">
+                        <button class="submit-btn" onclick="submitComment()" style="flex: 1;" title="Legg til kommentar">💬 Post Comment</button>
+                        <button class="btn-edit" onclick="document.getElementById('commentText').value = ''" style="padding: 0.75rem 1.5rem;" title="Tøm kommentarfeltet">🗑️ Clear</button>
+                    </div>
+                    <small class="help-text" style="display: block; margin-top: 0.5rem; color: var(--gray-dark);">
+                        💡 Tips: Du kan bruke @navn for å nevne personer, og lenker blir automatisk klikkbare
+                    </small>
                 </div>
 
                 <div id="commentsContainer">

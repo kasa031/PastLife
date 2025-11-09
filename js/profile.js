@@ -1,5 +1,6 @@
 // Profile page functionality
 import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById, getAllPersons } from './data.js';
+import { getCommentsForPerson } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
 import { showMessage, showLoading, hideLoading, validateYear, validateDateRange, showErrorWithSuggestion } from './utils.js';
 
@@ -999,17 +1000,45 @@ function loadUserStatistics() {
     
     // Calculate statistics
     const total = myPersons.length;
-    const withPhotos = myPersons.filter(p => p.photo).length;
+    const withPhotos = myPersons.filter(p => p.photo || p.mainImage).length;
     const withBirthYear = myPersons.filter(p => p.birthYear).length;
     const withDeathYear = myPersons.filter(p => p.deathYear).length;
     const withDescription = myPersons.filter(p => p.description && p.description.trim()).length;
     const morsside = myPersons.filter(p => p.tags && p.tags.includes('morsside')).length;
     const farsside = myPersons.filter(p => p.tags && p.tags.includes('farsside')).length;
+    const withSources = myPersons.filter(p => p.sources && p.sources.length > 0).length;
+    const withComments = myPersons.filter(p => {
+        const comments = getCommentsForPerson(p.id);
+        return comments.length > 0;
+    }).length;
     
     // Calculate date range
     const years = myPersons.filter(p => p.birthYear).map(p => parseInt(p.birthYear));
     const earliestYear = years.length > 0 ? Math.min(...years) : null;
     const latestYear = years.length > 0 ? Math.max(...years) : null;
+    
+    // Calculate birth year distribution for graph
+    const yearDistribution = {};
+    years.forEach(year => {
+        const decade = Math.floor(year / 10) * 10;
+        yearDistribution[decade] = (yearDistribution[decade] || 0) + 1;
+    });
+    
+    // Generate bar chart HTML
+    const maxCount = Math.max(...Object.values(yearDistribution), 1);
+    const chartBars = Object.keys(yearDistribution).sort((a, b) => a - b).map(decade => {
+        const count = yearDistribution[decade];
+        const height = (count / maxCount) * 100;
+        return `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem;">
+                <div style="width: 30px; height: 120px; background: var(--gray-light); border-radius: 5px 5px 0 0; position: relative; display: flex; align-items: flex-end;">
+                    <div style="width: 100%; height: ${height}%; background: linear-gradient(to top, var(--turquoise-primary), var(--orange-primary)); border-radius: 5px 5px 0 0; transition: all 0.3s;" title="${decade}s: ${count} personer"></div>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--gray-dark); writing-mode: horizontal-tb; transform: rotate(-45deg); transform-origin: center; white-space: nowrap;">${decade}s</div>
+                <div style="font-size: 0.7rem; color: var(--turquoise-dark); font-weight: bold;">${count}</div>
+            </div>
+        `;
+    }).join('');
     
     // Countries
     const countries = [...new Set(myPersons.filter(p => p.country).map(p => p.country))];
@@ -1033,6 +1062,22 @@ function loadUserStatistics() {
         <div class="stat-card" style="background: var(--orange-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--orange-primary);">
             <div style="font-size: 2rem; font-weight: bold; color: var(--orange-dark);">${farsside}</div>
             <div style="font-size: 0.9rem; color: var(--gray-dark);">👨 Father's Side</div>
+        </div>
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 2rem; font-weight: bold; color: var(--text-dark);">${withBirthYear}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">With Birth Year</div>
+        </div>
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 2rem; font-weight: bold; color: var(--text-dark);">${withDescription}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">With Description</div>
+        </div>
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 2rem; font-weight: bold; color: var(--text-dark);">${withSources}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">With Sources</div>
+        </div>
+        <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--gray-medium);">
+            <div style="font-size: 2rem; font-weight: bold; color: var(--text-dark);">${withComments}</div>
+            <div style="font-size: 0.9rem; color: var(--gray-dark);">With Comments</div>
         </div>
         ${earliestYear ? `
         <div class="stat-card" style="background: var(--gray-light); padding: 1.5rem; border-radius: 10px; text-align: center; border: 2px solid var(--gray-medium);">
@@ -1058,6 +1103,19 @@ function loadUserStatistics() {
             <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-bottom: 0.5rem;">${cities.length}</div>
             <div style="font-size: 0.9rem; color: var(--gray-dark);">Cities Represented</div>
             <div style="font-size: 0.8rem; color: var(--gray-dark); margin-top: 0.5rem;">${cities.slice(0, 3).join(', ')}${cities.length > 3 ? '...' : ''}</div>
+        </div>
+        ` : ''}
+        ${Object.keys(yearDistribution).length > 0 ? `
+        <div class="stat-card" style="grid-column: 1 / -1; background: var(--white); padding: 2rem; border-radius: 10px; border: 2px solid var(--turquoise-primary);">
+            <h3 style="color: var(--turquoise-dark); margin-bottom: 1.5rem; text-align: center;">📊 Fødselsår-fordeling (per tiår)</h3>
+            <div style="display: flex; justify-content: center; align-items: flex-end; gap: 1rem; flex-wrap: wrap; padding: 1rem; min-height: 200px;">
+                ${chartBars}
+            </div>
+            ${years.length > 0 ? `
+            <p style="text-align: center; color: var(--gray-dark); margin-top: 1rem; font-size: 0.9rem;">
+                Totalt ${years.length} personer med fødselsår registrert
+            </p>
+            ` : ''}
         </div>
         ` : ''}
     `;

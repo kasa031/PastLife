@@ -583,34 +583,59 @@ function loadComments() {
     container.innerHTML = comments.map(comment => createCommentHTML(comment)).join('');
 }
 
+// Process comment text (mentions, links, etc.)
+function processCommentText(text) {
+    // Escape HTML first
+    text = escapeHtml(text);
+    
+    // Convert @mentions to highlighted text
+    text = text.replace(/@(\w+)/g, '<span style="background: var(--orange-light); padding: 0.2rem 0.4rem; border-radius: 3px; font-weight: bold; color: var(--orange-dark);">@$1</span>');
+    
+    // Convert URLs to clickable links
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    text = text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--turquoise-primary); text-decoration: underline;">$1</a>');
+    
+    // Convert email addresses to mailto links
+    const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    text = text.replace(emailRegex, '<a href="mailto:$1" style="color: var(--turquoise-primary); text-decoration: underline;">$1</a>');
+    
+    return text;
+}
+
 // Create comment HTML
 function createCommentHTML(comment) {
     const date = formatDate(comment.createdAt);
     const user = getCurrentUser();
     const isOwner = user && comment.author === user.username;
+    const processedText = processCommentText(comment.text);
     
     return `
-        <div class="comment">
+        <div class="comment" style="transition: all 0.3s;" onmouseenter="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseleave="this.style.boxShadow='none';">
             <div style="display: flex; justify-content: space-between; align-items: start;">
                 <div>
-                    <div class="comment-author">${escapeHtml(comment.author)}</div>
-                    <div class="comment-date">${date}</div>
+                    <div class="comment-author" style="font-weight: bold; color: var(--turquoise-dark);">${escapeHtml(comment.author)}</div>
+                    <div class="comment-date" style="color: var(--gray-dark); font-size: 0.85rem; margin-top: 0.25rem;">${date}</div>
                 </div>
                 ${isOwner ? `
-                    <button class="btn-delete" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="deleteCommentConfirm('${comment.id}')">Delete</button>
+                    <button class="btn-delete" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="deleteCommentConfirm('${comment.id}')" title="Slett denne kommentaren">✕</button>
                 ` : ''}
             </div>
-            <div class="comment-text">${escapeHtml(comment.text)}</div>
+            <div class="comment-text" style="margin-top: 0.75rem; line-height: 1.6; white-space: pre-wrap;">${processedText}</div>
         </div>
     `;
 }
 
 // Delete comment with confirmation
 window.deleteCommentConfirm = function(commentId) {
-    if (confirm('Are you sure you want to delete this comment?')) {
-        deleteComment(commentId);
-        showMessage('Comment deleted', 'success');
-        loadComments();
+    if (confirm('Er du sikker på at du vil slette denne kommentaren?')) {
+        try {
+            deleteComment(commentId);
+            showMessage('Kommentar slettet', 'success');
+            loadComments();
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            showMessage('Feil ved sletting av kommentar: ' + error.message, 'error');
+        }
     }
 };
 
