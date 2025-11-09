@@ -64,8 +64,8 @@
 
 ### Bulk-operasjoner
 - [x] Bulk-import fra CSV/Excel fil - Implementert CSV-import med fleksibel kolonnemapping (støtter norsk og engelsk), validering og rensing av data, import-statistikk. Excel-filer må konverteres til CSV først.
-- [ ] Bulk-edit (endre flere personer samtidig)
-- [ ] Bulk-eksport med valg
+- [x] Bulk-edit (endre flere personer samtidig) - Implementert med modal for å legge til/fjerne tags, sette land/by for flere personer samtidig
+- [x] Bulk-eksport med valg - Allerede implementert med bulkExportSelected funksjon
 
 ### AI-forbedringer
 - [ ] Stedsnavn-validering mot faktiske steder
