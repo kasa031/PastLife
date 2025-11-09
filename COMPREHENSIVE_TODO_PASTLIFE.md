@@ -89,7 +89,7 @@
 ### Eksport/Import Forbedringer
 - [ ] Eksport til GEDCOM format (standard for slektsforskning)
 - [ ] Import fra GEDCOM
-- [ ] Eksport til Excel med alle detaljer
+- [x] Eksport til Excel med alle detaljer - Implementert CSV-eksport med alle personfelter, BOM for Excel-kompatibilitet
 - [ ] Forbedre JSON-eksport/import
 
 ### Brukervennlighet
