@@ -866,6 +866,101 @@ window.quickAddToTree = function(personId) {
 };
 
 // Bulk export selected persons
+// Bulk edit selected persons
+window.bulkEditSelected = function() {
+    const checkboxes = document.querySelectorAll('.person-checkbox:checked');
+    if (checkboxes.length === 0) {
+        showMessage('Velg minst én person å redigere', 'error');
+        return;
+    }
+    
+    const selectedIds = Array.from(checkboxes).map(cb => cb.dataset.personId);
+    window.bulkEditSelectedIds = selectedIds;
+    
+    // Show modal
+    const modal = document.getElementById('bulkEditModal');
+    const countText = document.getElementById('bulkEditCount');
+    countText.textContent = `${selectedIds.length} person(er) valgt for bulk-redigering`;
+    
+    // Clear form
+    document.getElementById('bulkAddTag').value = '';
+    document.getElementById('bulkRemoveTag').value = '';
+    document.getElementById('bulkSetCountry').value = '';
+    document.getElementById('bulkSetCity').value = '';
+    
+    modal.style.display = 'flex';
+};
+
+// Close bulk edit modal
+window.closeBulkEditModal = function() {
+    const modal = document.getElementById('bulkEditModal');
+    modal.style.display = 'none';
+    window.bulkEditSelectedIds = null;
+};
+
+// Apply bulk edit changes
+window.applyBulkEdit = async function() {
+    if (!window.bulkEditSelectedIds || window.bulkEditSelectedIds.length === 0) {
+        showMessage('Ingen personer valgt', 'error');
+        return;
+    }
+    
+    const { getPersonById, savePerson } = await import('./data.js');
+    
+    const addTag = document.getElementById('bulkAddTag').value.trim();
+    const removeTag = document.getElementById('bulkRemoveTag').value.trim();
+    const setCountry = document.getElementById('bulkSetCountry').value.trim();
+    const setCity = document.getElementById('bulkSetCity').value.trim();
+    
+    if (!addTag && !removeTag && !setCountry && !setCity) {
+        showMessage('Ingen endringer angitt', 'error');
+        return;
+    }
+    
+    let updatedCount = 0;
+    
+    window.bulkEditSelectedIds.forEach(personId => {
+        const person = getPersonById(personId);
+        if (!person) return;
+        
+        // Add tag
+        if (addTag) {
+            if (!person.tags) person.tags = [];
+            if (!person.tags.includes(addTag)) {
+                person.tags.push(addTag);
+            }
+        }
+        
+        // Remove tag
+        if (removeTag) {
+            if (person.tags) {
+                person.tags = person.tags.filter(t => t !== removeTag);
+            }
+        }
+        
+        // Set country
+        if (setCountry) {
+            person.country = setCountry;
+        }
+        
+        // Set city
+        if (setCity) {
+            person.city = setCity;
+        }
+        
+        // Save updated person
+        savePerson(person, personId);
+        updatedCount++;
+    });
+    
+    showMessage(`${updatedCount} person(er) oppdatert!`, 'success');
+    closeBulkEditModal();
+    loadMyContributions();
+    
+    // Uncheck all checkboxes
+    document.querySelectorAll('.person-checkbox').forEach(cb => cb.checked = false);
+};
+
 window.bulkExportSelected = function() {
     const checkboxes = document.querySelectorAll('.person-checkbox:checked');
     
