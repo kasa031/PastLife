@@ -93,7 +93,7 @@
 - [x] Forbedre JSON-eksport/import - Forbedret JSON-eksport til versjon 2.0 med familietre, favoritter, profil, kommentarer og metadata. Forbedret import for å støtte alle datatyper med async/await.
 
 ### Brukervennlighet
-- [ ] Onboarding-tutorial for nye brukere
+- [x] Onboarding-tutorial for nye brukere - Implementert omfattende onboarding-tutorial med 7 steg, interaktivt med neste/forrige/hopp over-knapper, visuell highlighting av viktige elementer, auto-fullfører når bruker legger til første person, lagret per bruker i localStorage
 - [x] FAQ-seksjon - Implementert på hovedsiden med ofte stilte spørsmål om å legge til forfedre, bygge familietre, importere data, søke og eksportere
 - [ ] Video-tutorials
 - [x] Forbedre feilmeldinger og hjelpetekster - Forbedret feilmeldinger på norsk, bedre validering, mer informative meldinger

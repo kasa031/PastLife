@@ -237,9 +237,15 @@
     <script type="module" src="js/profile.js"></script>
     <script type="module">
         import { loadProfileSettings } from './js/profile.js';
+        import { showOnboarding } from './js/onboarding.js';
         
         document.addEventListener('DOMContentLoaded', () => {
             loadProfileSettings();
+            
+            // Show onboarding if user hasn't completed it
+            setTimeout(() => {
+                showOnboarding();
+            }, 500);
         });
     </script>
 </body>
