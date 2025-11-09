@@ -58,7 +58,9 @@
 - [ ] Vis relasjons-graf (hvem er relatert til hvem)
 - [ ] Beregn slektsforhold (f.eks. "2. kusine")
 - [x] Vis alle slektninger på én side - Implementert med gruppert visning (foreldre, søsken, barn, ektefelle, andre), klikkbare kort, bruker familietre-relasjonsdata
-- [ ] "Slektninger" filter på person-siden
+- [x] "Slektninger" filter på person-siden - Implementert med filter-knapper for alle, foreldre, søsken, barn, ektefelle, andre
+- [x] Forbedre navigasjonsbar design - Forbedret styling med text-shadow, hover-effekter, active state, border-bottom accent
+- [x] Profilinstillinger (brukernavn, bio, bilde) - Implementert profilinstillinger med bildeopplasting, brukernavn og bio
 
 ### Bulk-operasjoner
 - [ ] Bulk-import fra CSV/Excel fil

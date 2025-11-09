@@ -185,10 +185,12 @@
             <div class="data-actions">
                 <button class="btn-export" onclick="exportData()" title="Export all your contributions as JSON">📥 Export My Data</button>
                 <button class="btn-export" onclick="bulkExportSelected()" title="Export selected persons only" style="background: var(--turquoise-primary);">📦 Export Selected</button>
-                <button class="btn-import" onclick="document.getElementById('importFile').click()" title="Import ancestor data from JSON file">📤 Import Data</button>
+                <button class="btn-import" onclick="document.getElementById('importFile').click()" title="Import ancestor data from JSON file">📤 Import JSON</button>
+                <button class="btn-import" onclick="document.getElementById('importCSVFile').click()" title="Import ancestor data from CSV/Excel file" style="background: var(--orange-primary);">📊 Import CSV/Excel</button>
                 <button class="btn-export" onclick="backupAllData()" title="Create a complete backup of all your data (persons, favorites, tree, etc.)" style="background: var(--orange-primary);">💾 Backup All Data</button>
                 <button class="btn-import" onclick="document.getElementById('restoreFile').click()" title="Restore from a complete backup" style="background: var(--turquoise-dark);">🔄 Restore Backup</button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                <input type="file" id="importCSVFile" accept=".csv,.xlsx,.xls" style="display: none;" onchange="importCSVData(event)">
                 <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreBackup(event)">
             </div>
         </div>

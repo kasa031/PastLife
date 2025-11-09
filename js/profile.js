@@ -594,6 +594,186 @@ window.exportData = function() {
     showMessage('Data exported successfully!', 'success');
 };
 
+// Import CSV/Excel data
+window.importCSVData = async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const user = getCurrentUser();
+    if (!user) {
+        showMessage('Du må være innlogget for å importere data', 'error');
+        return;
+    }
+    
+    // Check file extension
+    const fileName = file.name.toLowerCase();
+    const isCSV = fileName.endsWith('.csv');
+    const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+    
+    if (!isCSV && !isExcel) {
+        showMessage('Ugyldig filformat. Bruk CSV eller Excel (.xlsx, .xls)', 'error');
+        event.target.value = '';
+        return;
+    }
+    
+    try {
+        showLoading('Laster inn fil...');
+        
+        let text = '';
+        if (isCSV) {
+            text = await file.text();
+        } else {
+            // For Excel files, we'll need to use a library or convert to CSV first
+            showMessage('Excel-filer må konverteres til CSV først. Bruk "Lagre som CSV" i Excel.', 'info');
+            hideLoading();
+            event.target.value = '';
+            return;
+        }
+        
+        // Parse CSV
+        const lines = text.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+            showMessage('CSV-filen er tom eller mangler data', 'error');
+            hideLoading();
+            event.target.value = '';
+            return;
+        }
+        
+        // Parse header
+        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+        
+        // Expected columns (flexible mapping)
+        const columnMap = {
+            name: ['name', 'navn', 'full name', 'fullt navn'],
+            birthyear: ['birthyear', 'birth year', 'fødselsår', 'født', 'born'],
+            deathyear: ['deathyear', 'death year', 'dødsår', 'død', 'died'],
+            birthplace: ['birthplace', 'birth place', 'fødselssted', 'born place'],
+            deathplace: ['deathplace', 'death place', 'dødssted', 'died place'],
+            country: ['country', 'land'],
+            city: ['city', 'by'],
+            description: ['description', 'beskrivelse', 'bio', 'biography'],
+            tags: ['tags', 'tagger', 'tag']
+        };
+        
+        // Find column indices
+        const colIndices = {};
+        Object.keys(columnMap).forEach(key => {
+            const possibleNames = columnMap[key];
+            for (const name of possibleNames) {
+                const index = header.findIndex(h => h === name);
+                if (index !== -1) {
+                    colIndices[key] = index;
+                    break;
+                }
+            }
+        });
+        
+        if (!colIndices.name) {
+            showMessage('CSV-filen må ha en "name" eller "navn" kolonne', 'error');
+            hideLoading();
+            event.target.value = '';
+            return;
+        }
+        
+        // Parse data rows
+        const importedPersons = [];
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (let i = 1; i < lines.length; i++) {
+            try {
+                const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                
+                if (values.length < header.length) {
+                    // Try to handle quoted values with commas
+                    const regex = /(".*?"|[^,]+)(?=\s*,|\s*$)/g;
+                    const matches = lines[i].match(regex);
+                    if (matches) {
+                        values.length = 0;
+                        matches.forEach(m => values.push(m.trim().replace(/^"|"$/g, '')));
+                    }
+                }
+                
+                const name = values[colIndices.name] || '';
+                if (!name) continue; // Skip empty rows
+                
+                const person = {
+                    name: name,
+                    birthYear: colIndices.birthyear !== undefined ? (values[colIndices.birthyear] || null) : null,
+                    deathYear: colIndices.deathyear !== undefined ? (values[colIndices.deathyear] || null) : null,
+                    birthPlace: colIndices.birthplace !== undefined ? (values[colIndices.birthplace] || '') : '',
+                    deathPlace: colIndices.deathplace !== undefined ? (values[colIndices.deathplace] || '') : '',
+                    country: colIndices.country !== undefined ? (values[colIndices.country] || '') : '',
+                    city: colIndices.city !== undefined ? (values[colIndices.city] || '') : '',
+                    description: colIndices.description !== undefined ? (values[colIndices.description] || '') : '',
+                    tags: colIndices.tags !== undefined ? (values[colIndices.tags] || '').split(';').map(t => t.trim()).filter(t => t) : [],
+                    createdBy: user.username,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Validate and clean data
+                if (person.birthYear) {
+                    const year = parseInt(person.birthYear);
+                    if (!isNaN(year) && year > 1000 && year <= new Date().getFullYear() + 10) {
+                        person.birthYear = year.toString();
+                    } else {
+                        person.birthYear = null;
+                    }
+                }
+                
+                if (person.deathYear) {
+                    const year = parseInt(person.deathYear);
+                    if (!isNaN(year) && year > 1000 && year <= new Date().getFullYear() + 10) {
+                        person.deathYear = year.toString();
+                    } else {
+                        person.deathYear = null;
+                    }
+                }
+                
+                importedPersons.push(person);
+                successCount++;
+            } catch (error) {
+                console.error(`Error parsing row ${i + 1}:`, error);
+                errorCount++;
+            }
+        }
+        
+        if (importedPersons.length === 0) {
+            showMessage('Ingen gyldige personer funnet i CSV-filen', 'error');
+            hideLoading();
+            event.target.value = '';
+            return;
+        }
+        
+        // Save imported persons
+        const { savePerson } = await import('./data.js');
+        let savedCount = 0;
+        
+        for (const person of importedPersons) {
+            try {
+                savePerson(person);
+                savedCount++;
+            } catch (error) {
+                console.error('Error saving person:', error);
+            }
+        }
+        
+        hideLoading();
+        showMessage(`Importert ${savedCount} av ${importedPersons.length} personer fra CSV! ${errorCount > 0 ? `(${errorCount} feil)` : ''}`, 'success');
+        
+        // Reload contributions
+        loadMyContributions();
+        
+        // Reset input
+        event.target.value = '';
+    } catch (error) {
+        hideLoading();
+        console.error('Error importing CSV:', error);
+        showMessage('Feil ved import av CSV: ' + error.message, 'error');
+        event.target.value = '';
+    }
+};
+
 // Import data
 window.importData = function(event) {
     const file = event.target.files[0];
