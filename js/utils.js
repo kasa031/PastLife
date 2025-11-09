@@ -1,4 +1,71 @@
 // Utility functions
+
+// Error logging
+const ERROR_LOG_KEY = 'pastlife_error_log';
+const MAX_ERROR_LOG_SIZE = 50; // Keep last 50 errors
+
+// Log error for debugging
+export function logError(category, details = {}) {
+    try {
+        const errorLog = JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || '[]');
+        const errorEntry = {
+            timestamp: new Date().toISOString(),
+            category: category,
+            details: details,
+            userAgent: navigator.userAgent,
+            url: window.location.href
+        };
+        
+        errorLog.push(errorEntry);
+        
+        // Keep only last MAX_ERROR_LOG_SIZE errors
+        if (errorLog.length > MAX_ERROR_LOG_SIZE) {
+            errorLog.shift();
+        }
+        
+        localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(errorLog));
+        
+        // Also log to console in development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.error(`[${category}]`, details);
+        }
+    } catch (e) {
+        console.error('Failed to log error:', e);
+    }
+}
+
+// Get error log (for debugging)
+export function getErrorLog() {
+    try {
+        return JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+// Clear error log
+export function clearErrorLog() {
+    localStorage.removeItem(ERROR_LOG_KEY);
+}
+
+// Global error handler
+window.addEventListener('error', (event) => {
+    logError('Global Error', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error?.stack
+    });
+});
+
+// Unhandled promise rejection handler
+window.addEventListener('unhandledrejection', (event) => {
+    logError('Unhandled Promise Rejection', {
+        reason: event.reason?.message || event.reason,
+        stack: event.reason?.stack
+    });
+});
 export function showMessage(message, type = 'info', duration = 3000, details = null) {
     // Remove existing message
     const existing = document.getElementById('globalMessage');

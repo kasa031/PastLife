@@ -2,7 +2,7 @@
 import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById, getAllPersons } from './data.js';
 import { getCommentsForPerson } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { showMessage, showLoading, hideLoading, validateYear, validateDateRange, showErrorWithSuggestion } from './utils.js';
+import { showMessage, showLoading, hideLoading, validateYear, validateDateRange, showErrorWithSuggestion, logError, getErrorLog, clearErrorLog } from './utils.js';
 
 let tags = [];
 let photoFile = null;

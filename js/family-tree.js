@@ -1,7 +1,7 @@
 // Family Tree Builder with AI
 import { getAllPersons, savePerson, deletePerson } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { showMessage, showLoading, hideLoading } from './utils.js';
+import { showMessage, showLoading, hideLoading, logError } from './utils.js';
 
 let treeData = [];
 let allTreeData = []; // Store all data for filtering
@@ -429,7 +429,33 @@ async function performAnalysis(mergeMode = false) {
         
     } catch (error) {
         console.error('Analysis error:', error);
-        showMessage(error.message || 'Error analyzing text. Try again or use manual entry.', 'error');
+        
+        // Enhanced error handling with specific error types
+        let errorMessage = 'Feil ved analyse av tekst. Prøv igjen eller bruk manuell inntasting.';
+        
+        if (error.message) {
+            if (error.message.includes('API error') || error.message.includes('401') || error.message.includes('403')) {
+                errorMessage = 'API-nøkkel er ugyldig eller utløpt. Vennligst sjekk din OpenRouter API-nøkkel.';
+            } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+                errorMessage = 'For mange forespørsler. Vennligst vent litt før du prøver igjen.';
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                errorMessage = 'Nettverksfeil. Sjekk internettforbindelsen din og prøv igjen.';
+            } else if (error.message.includes('parse') || error.message.includes('JSON')) {
+                errorMessage = 'Kunne ikke tolke AI-svar. Prøv med kortere tekst eller manuell inntasting.';
+            } else {
+                errorMessage = error.message;
+            }
+        }
+        
+        // Log error for debugging
+        logError('AI Analysis Error', {
+            error: error.message,
+            stack: error.stack,
+            textLength: text.length,
+            mergeMode: mergeMode
+        });
+        
+        showMessage(errorMessage, 'error', 5000);
     } finally {
         statusDiv.classList.add('hidden');
         analyzeBtn.disabled = false;
@@ -680,8 +706,30 @@ Be particularly careful to:
         
     } catch (error) {
         console.error('OpenRouter error:', error);
+        
+        // Enhanced error handling
+        let errorMessage = 'AI-analyse feilet. Bruker grunnleggende tekstanalyse i stedet...';
+        
+        if (error.message) {
+            if (error.message.includes('401') || error.message.includes('403')) {
+                errorMessage = 'API-nøkkel er ugyldig. Sjekk din OpenRouter API-nøkkel. Bruker grunnleggende analyse.';
+            } else if (error.message.includes('429')) {
+                errorMessage = 'Rate limit nådd. Bruker grunnleggende analyse. Prøv igjen senere for AI-analyse.';
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                errorMessage = 'Nettverksfeil. Bruker grunnleggende analyse.';
+            }
+        }
+        
+        // Log error for debugging
+        logError('OpenRouter API Error', {
+            error: error.message,
+            stack: error.stack,
+            textLength: text.length
+        });
+        
+        showMessage(errorMessage, 'info', 4000);
+        
         // Fallback to basic analysis
-        showMessage('AI analysis failed, using basic text extraction...', 'info');
         return await basicTextAnalysis(text);
     }
 }

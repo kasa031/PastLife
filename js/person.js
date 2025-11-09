@@ -1,7 +1,7 @@
 // Person detail page functionality
 import { getPersonById, getCommentsForPerson, addComment, deleteComment, searchByRelationship } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { copyToClipboard, showMessage, formatDate } from './utils.js';
+import { copyToClipboard, showMessage, formatDate, logError } from './utils.js';
 
 let currentPersonId = null;
 
@@ -634,6 +634,11 @@ window.deleteCommentConfirm = function(commentId) {
             loadComments();
         } catch (error) {
             console.error('Error deleting comment:', error);
+            logError('Comment Deletion Error', {
+                error: error.message,
+                stack: error.stack,
+                commentId: commentId
+            });
             showMessage('Feil ved sletting av kommentar: ' + error.message, 'error');
         }
     }
