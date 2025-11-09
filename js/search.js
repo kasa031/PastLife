@@ -2,6 +2,7 @@
 import { searchPersons } from './data.js';
 import { updateNavigation } from './auth.js';
 import { showMessage } from './utils.js';
+import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
 
 let currentResults = [];
 

@@ -39,6 +39,7 @@ function loadTheme() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    initLazyLoading();
     // Initialize lazy loading
     initLazyLoading();
     loadTheme();
