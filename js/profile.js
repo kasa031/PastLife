@@ -1024,6 +1024,47 @@ function loadUserStatistics() {
         yearDistribution[decade] = (yearDistribution[decade] || 0) + 1;
     });
     
+    // Calculate generation distribution from family tree
+    const generationDistribution = {};
+    const user = getCurrentUser();
+    if (user) {
+        const treeKey = `pastlife_tree_${user.username}`;
+        const savedTree = localStorage.getItem(treeKey);
+        if (savedTree) {
+            try {
+                const treeInfo = JSON.parse(savedTree);
+                const treePersons = Array.isArray(treeInfo) ? treeInfo : (treeInfo.persons || []);
+                treePersons.forEach(person => {
+                    const gen = person.generation !== undefined ? person.generation : 0;
+                    generationDistribution[gen] = (generationDistribution[gen] || 0) + 1;
+                });
+            } catch (e) {
+                console.error('Error parsing tree data:', e);
+            }
+        }
+    }
+    
+    // Calculate activity overview (last month, year)
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    
+    const activityLastMonth = myPersons.filter(p => {
+        const created = new Date(p.createdAt);
+        return created >= lastMonth;
+    }).length;
+    
+    const activityLastYear = myPersons.filter(p => {
+        const created = new Date(p.createdAt);
+        return created >= lastYear;
+    }).length;
+    
+    const recentlyModified = myPersons.filter(p => {
+        if (!p.lastModified) return false;
+        const modified = new Date(p.lastModified);
+        return modified >= lastMonth;
+    }).length;
+    
     // Generate bar chart HTML
     const maxCount = Math.max(...Object.values(yearDistribution), 1);
     const chartBars = Object.keys(yearDistribution).sort((a, b) => a - b).map(decade => {
@@ -1118,6 +1159,40 @@ function loadUserStatistics() {
             ` : ''}
         </div>
         ` : ''}
+        ${Object.keys(generationDistribution).length > 0 ? `
+        <div class="stat-card" style="grid-column: 1 / -1; background: var(--white); padding: 2rem; border-radius: 10px; border: 2px solid var(--orange-primary);">
+            <h3 style="color: var(--orange-dark); margin-bottom: 1.5rem; text-align: center;">🌳 Generasjon-fordeling</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1rem;">
+                ${Object.keys(generationDistribution).sort((a, b) => a - b).map(gen => {
+                    const count = generationDistribution[gen];
+                    const genLabel = gen == 0 ? 'Du' : gen == 1 ? 'Foreldre' : gen == 2 ? 'Besteforeldre' : gen == 3 ? 'Oldeforeldre' : `Generasjon ${gen}`;
+                    return `
+                        <div style="text-align: center; padding: 1rem; background: var(--gray-light); border-radius: 8px; border: 2px solid var(--orange-primary);">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--orange-dark);">${count}</div>
+                            <div style="font-size: 0.9rem; color: var(--gray-dark); margin-top: 0.5rem;">${genLabel}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+        ` : ''}
+        <div class="stat-card" style="grid-column: 1 / -1; background: var(--white); padding: 2rem; border-radius: 10px; border: 2px solid var(--turquoise-primary);">
+            <h3 style="color: var(--turquoise-dark); margin-bottom: 1.5rem; text-align: center;">📈 Aktivitet-overview</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="text-align: center; padding: 1.5rem; background: var(--turquoise-light); border-radius: 8px;">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--turquoise-dark);">${activityLastMonth}</div>
+                    <div style="font-size: 0.9rem; color: var(--gray-dark); margin-top: 0.5rem;">Nye personer (siste måned)</div>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; background: var(--orange-light); border-radius: 8px;">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--orange-dark);">${activityLastYear}</div>
+                    <div style="font-size: 0.9rem; color: var(--gray-dark); margin-top: 0.5rem;">Nye personer (siste år)</div>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; background: var(--gray-light); border-radius: 8px;">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--text-dark);">${recentlyModified}</div>
+                    <div style="font-size: 0.9rem; color: var(--gray-dark); margin-top: 0.5rem;">Oppdatert (siste måned)</div>
+                </div>
+            </div>
+        </div>
     `;
 }
 

@@ -126,7 +126,7 @@
 - [ ] Historikk for endringer (hvem endret hva, når)
 
 ### Dokumentasjon
-- [ ] Oppdater README med alle nye funksjoner
+- [x] Oppdater README med alle nye funksjoner - Oppdatert med omfattende funksjonsliste, ny fargepalett, oppdatert prosjektstruktur, og alle nye funksjoner
 - [ ] Legg til screenshots i README
 - [ ] Opprett brukerveiledning (video eller tekst)
 - [ ] Dokumenter API (hvis backend legges til)
