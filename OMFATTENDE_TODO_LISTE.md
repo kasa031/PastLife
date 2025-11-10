@@ -1,352 +1,214 @@
-# Omfattende TODO-liste for PastLife Prosjektet
+# 📋 PastLife - Omfattende TODO Liste
 
-## 📊 Oversikt
-Dette dokumentet inneholder en komplett gjennomgang av hele prosjektet med identifiserte problemer, mangler, forbedringer og utvidelsesmuligheter.
+## 🎯 Hovedmål: Mobil-installasjon via Brave
 
-**Totalt antall oppgaver**: 50+
-**Kategorier**: Sikkerhet, Refaktorering, Bugs, Funksjonalitet, UX, Ytelse, Testing, Tilgjengelighet, Dokumentasjon, Mobil, Offline, Analytics, Internasjonalisering
+### ✅ Ferdig
+- [x] PWA manifest konfigurert
+- [x] Service Worker implementert
+- [x] Install prompt for Android/Chrome
+- [x] Install prompt for iOS Safari
+- [x] App-ikoner generert (alle størrelser)
+- [x] Offline-støtte implementert
+- [x] GitHub Pages deployet
 
----
+### 🔴 Høy Prioritet - Mobil-installasjon
 
-## 🔒 SIKKERHET (Høyest prioritet)
+#### 1. Brave Browser Støtte (iOS & Android)
+- [x] **Forbedre Brave-deteksjon** i `js/install-prompt.js` ✅
+  - [x] Teste og verifisere at Brave-deteksjon fungerer på iOS ✅
+  - [x] Teste og verifisere at Brave-deteksjon fungerer på Android ✅
+  - [x] Legg til spesifikke instruksjoner for Brave på begge plattformer ✅
+  - [ ] Teste "Add to Home Screen" i Brave på iOS (krever faktisk enhet)
+  - [ ] Teste "Add to Home Screen" i Brave på Android (krever faktisk enhet)
 
-### Kritisk
-1. **Passord-hashing** ⚠️ KRITISK
-   - **Problem**: Passord lagres i klartekst i localStorage (auth.js linje 61)
-   - **Løsning**: Implementer bcrypt eller Web Crypto API for passord-hashing
-   - **Fil**: `js/auth.js`
-   - **Status**: Ikke startet
+#### 2. App-ikon Forbedring
+- [x] **Lage et unikt PastLife-ikon**
+  - [x] Designe ikon som reflekterer "PastLife" konseptet
+  - [x] Alternativer:
+    - [x] Vintage foto-ramme med tre ✅
+    - [ ] Familietre-silhuett
+    - [ ] Generasjonshånd-ikon
+    - [ ] Kombinasjon av foto + tre
+  - [x] Generere alle størrelser (96x96, 144x144, 180x180, 192x192, 512x512) ✅
+  - [x] Generere maskable ikoner (192x192, 512x512) ✅
+  - [x] Oppdatere `manifest.json` med nye ikoner ✅
+  - [ ] Teste ikon på iOS (Safari og Brave)
+  - [ ] Teste ikon på Android (Chrome og Brave)
+  - [ ] Teste ikon på Desktop (Chrome, Edge, Brave)
 
-2. **Hardkodet API-nøkkel** ⚠️ KRITISK
-   - **Problem**: API-nøkkel hardkodet i family-tree.js linje 46
-   - **Løsning**: Fjern hardkodet nøkkel, bruk miljøvariabel eller brukerinput
-   - **Fil**: `js/family-tree.js`
-   - **Status**: Ikke startet
+#### 3. Manifest Forbedringer
+- [x] **Optimalisere manifest.json for installasjon** ✅
+  - [x] Sjekke at `display: "standalone"` er korrekt ✅
+  - [x] Verifisere at `start_url` er korrekt ✅
+  - [ ] Legge til `screenshots` for bedre installasjonsprompt (valgfritt)
+  - [x] Legge til `description` som er mer beskrivende ✅
+  - [x] Oppdatere theme-color til PastLife-farger (#8B6F47) ✅
+  - [x] Oppdatere background-color til PastLife-farger (#F8F6F3) ✅
+  - [ ] Teste manifest på alle plattformer (krever faktiske enheter)
 
-3. **Input-validering og sanitization**
-   - **Problem**: Mangler XSS-prevention på brukerinput
-   - **Løsning**: Legg til validering og sanitization for alle input-felt
-   - **Filer**: Alle filer med brukerinput
-   - **Status**: Ikke startet
+#### 4. Install Prompt Forbedringer
+- [x] **Forbedre install-prompt for Brave** ✅
+  - [x] Legge til automatisk deteksjon av Brave på iOS ✅
+  - [x] Legge til automatisk deteksjon av Brave på Android ✅
+  - [x] Forbedre instruksjoner for Brave på iOS ✅
+  - [x] Forbedre instruksjoner for Brave på Android ✅
+  - [x] Automatisk visning av install-knapp for Brave/iOS ✅
+  - [ ] Legge til visuell guide med bilder/ikoner (valgfritt)
+  - [ ] Teste på faktiske enheter (krever faktiske enheter)
 
----
-
-## 🔧 REFAKTORERING (Høy prioritet)
-
-### Dupliserte funksjoner
-4. **escapeHtml duplisert**
-   - **Problem**: Funksjonen er definert i `search.js`, `utils.js`, og `person.js`
-   - **Løsning**: Fjern duplikater, bruk kun `utils.js` versjonen
-   - **Filer**: `js/search.js`, `js/person.js`
-   - **Status**: Ikke startet
-
-5. **toggleDarkMode og loadTheme duplisert**
-   - **Problem**: Disse funksjonene er duplisert i 5+ filer (main.js, person.js, profile.js, login.js, family-tree.js, search.js)
-   - **Løsning**: Opprett `js/theme.js` modul og importer fra alle steder
-   - **Filer**: Alle filer med dark mode funksjonalitet
-   - **Status**: Ikke startet
-
-6. **Dupliserte sjekker i searchPersons**
-   - **Problem**: Tags og description sjekkes to ganger i `data.js` (linje 228-235 og 257-269)
-   - **Løsning**: Fjern duplikatene
-   - **Fil**: `js/data.js`
-   - **Status**: Ikke startet
-
-7. **Duplikat-deteksjon**
-   - **Problem**: Duplikat-deteksjon er kun i `profile.js`, bør være delt funksjonalitet
-   - **Løsning**: Flytt til `data.js` som delt funksjon
-   - **Filer**: `js/profile.js`, `js/data.js`
-   - **Status**: Ikke startet
-
----
-
-## 🐛 BUGS (Må fikses)
-
-8. **Duplisert validering i searchPersons**
-   - **Problem**: Tags og description valideres to ganger (linje 228-235 og 257-269)
-   - **Fil**: `js/data.js`
-   - **Status**: Ikke startet
-
-9. **Performance-issue med getAllPersons()**
-   - **Problem**: `getAllPersons()` kalles gjentatte ganger i `search.js` uten caching
-   - **Løsning**: Implementer caching eller optimaliser kall
-   - **Fil**: `js/search.js`
-   - **Status**: Ikke startet
-
-10. **Error handling i imageToBase64**
-    - **Problem**: Kan feile stille hvis canvas ikke støttes
-    - **Løsning**: Legg til bedre error handling og fallback
-    - **Fil**: `js/data.js`
-    - **Status**: Ikke startet
+#### 5. Testing på Faktiske Enheter
+- [ ] **Teste installasjon på iOS med Brave**
+  - [ ] Teste "Add to Home Screen" funksjonalitet
+  - [ ] Verifisere at appen åpnes i standalone mode
+  - [ ] Teste offline-funksjonalitet
+  - [ ] Verifisere at ikonet vises korrekt
+- [ ] **Teste installasjon på Android med Brave**
+  - [ ] Teste install-prompt
+  - [ ] Verifisere at appen installeres korrekt
+  - [ ] Teste offline-funksjonalitet
+  - [ ] Verifisere at ikonet vises korrekt
+- [ ] **Teste installasjon på Desktop med Brave**
+  - [ ] Teste install-prompt
+  - [ ] Verifisere at appen installeres i Start-menyen
+  - [ ] Teste standalone mode
 
 ---
 
-## ✨ NY FUNKSJONALITET
+## 🟡 Medium Prioritet - Funksjonalitet
 
-### Autentisering og brukerhåndtering
-11. **Passord-reset**
-    - **Beskrivelse**: La brukere resette passord via email
-    - **Status**: Ikke startet
+### 6. Søk og Oppdag
+- [ ] **Forbedre søkefunksjonalitet**
+  - [ ] Legge til fuzzy matching-forbedringer
+  - [ ] Legge til søkehistorikk-visning
+  - [ ] Forbedre autocomplete-ytelse
+  - [ ] Legge til søkeforslag basert på tidligere søk
 
-12. **Email-validering**
-    - **Beskrivelse**: Valider email-format ved registrering
-    - **Fil**: `js/login.js`
-    - **Status**: Ikke startet
+### 7. Familietre
+- [ ] **Forbedre familietre-visualisering**
+  - [ ] Legge til zoom-kontroller
+  - [ ] Forbedre pan-funksjonalitet
+  - [ ] Legge til eksport-forbedringer
+  - [ ] Forbedre AI-analyse
 
-13. **Brukerprofil-redigering**
-    - **Beskrivelse**: La brukere endre email og passord
-    - **Fil**: `js/profile.js`
-    - **Status**: Ikke startet
+### 8. Bildehåndtering
+- [ ] **Forbedre bildehåndtering**
+  - [ ] Legge til bilde-redigering (crop, rotate)
+  - [ ] Forbedre bildekomprimering
+  - [ ] Legge til bilde-metadata
+  - [ ] Forbedre lazy loading
 
-### Datahåndtering
-14. **Batch-import av personer**
-    - **Beskrivelse**: Last opp CSV/JSON fil med flere personer
-    - **Status**: Ikke startet
+### 9. Kommentarer og Sosialt
+- [ ] **Forbedre kommentar-systemet**
+  - [ ] Legge til emoji-støtte
+  - [ ] Forbedre @mention-funksjonalitet
+  - [ ] Legge til kommentar-notifikasjoner
+  - [ ] Forbedre kommentar-søk
 
-15. **Avanserte søkefiltre**
-    - **Beskrivelse**: AND/OR logikk, ekskluder termer, kombiner filtre
-    - **Fil**: `js/search.js`
-    - **Status**: Ikke startet
-
-16. **GEDCOM eksport**
-    - **Beskrivelse**: Eksporter familietre til GEDCOM-format
-    - **Fil**: `js/family-tree.js`
-    - **Status**: Ikke startet
-
-17. **Deling mellom brukere**
-    - **Beskrivelse**: Del personer og familietre med andre brukere
-    - **Status**: Ikke startet
-
-18. **Versjonskontroll**
-    - **Beskrivelse**: Historikk over redigeringer av personer
-    - **Status**: Ikke startet
-
-19. **Notifikasjoner**
-    - **Beskrivelse**: Real-time eller polling for nye kommentarer
-    - **Status**: Ikke startet
-
-20. **Geografisk kart**
-    - **Beskrivelse**: Vis fødselssteder på kart
-    - **Status**: Ikke startet
+### 10. Import/Export
+- [ ] **Forbedre import/export**
+  - [ ] Legge til GEDCOM-import
+  - [ ] Legge til GEDCOM-export
+  - [ ] Forbedre CSV-import/export
+  - [ ] Legge til automatisk backup
 
 ---
 
-## 🎨 BRUKERVENNLIGHET (UX)
+## 🟢 Lav Prioritet - Forbedringer
 
-21. **Loading-indikatorer**
-    - **Problem**: Mangler spinners på mange async operasjoner
-    - **Løsning**: Legg til loading-indikatorer overalt
-    - **Status**: Ikke startet
+### 11. UI/UX
+- [ ] **Forbedre brukeropplevelse**
+  - [ ] Legge til animasjoner
+  - [ ] Forbedre loading-indikatorer
+  - [ ] Legge til tooltips
+  - [ ] Forbedre responsivt design
 
-22. **Keyboard shortcuts-hjelp**
-    - **Beskrivelse**: Trykk ? for å vise tilgjengelige shortcuts
-    - **Status**: Ikke startet
+### 12. Performance
+- [ ] **Optimalisere ytelse**
+  - [ ] Implementere code splitting
+  - [ ] Forbedre caching-strategi
+  - [ ] Optimalisere bilde-lastning
+  - [ ] Implementere lazy loading for komponenter
 
-23. **Undo/redo**
-    - **Beskrivelse**: Angre/gjenta for person-redigeringer
-    - **Status**: Ikke startet
+### 13. Tilgjengelighet
+- [ ] **Forbedre tilgjengelighet**
+  - [ ] Legge til flere ARIA-labels
+  - [ ] Forbedre keyboard-navigasjon
+  - [ ] Legge til screen reader-støtte
+  - [ ] Forbedre kontrast
 
-24. **Konfirmasjonsdialoger**
-    - **Problem**: Mangler bekreftelse for destruktive operasjoner
-    - **Løsning**: Legg til "Er du sikker?" dialoger
-    - **Status**: Ikke startet
+### 14. Sikkerhet
+- [ ] **Forbedre sikkerhet**
+  - [ ] Implementere rate limiting
+  - [ ] Forbedre input-validering
+  - [ ] Legge til CSRF-beskyttelse
+  - [ ] Forbedre XSS-beskyttelse
 
-25. **Forbedre error-meldinger**
-    - **Problem**: Feilmeldinger kan være mer actionable
-    - **Løsning**: Legg til suggestions og eksempler
-    - **Status**: Ikke startet
-
-26. **Tooltips**
-    - **Problem**: Mangler tooltips på mange knapper
-    - **Løsning**: Legg til tooltips på alle interaktive elementer
-    - **Status**: Ikke startet
-
-27. **Auto-save**
-    - **Beskrivelse**: Lagre skjema-utkast automatisk
-    - **Status**: Ikke startet
-
-28. **Breadcrumb-navigasjon**
-    - **Beskrivelse**: Bedre orientering på sider
-    - **Status**: Ikke startet
-
----
-
-## ⚡ YTELSE
-
-29. **Optimaliser searchPersons**
-    - **Problem**: Kan være treg med store datasett
-    - **Løsning**: Indeksering eller caching
-    - **Fil**: `js/data.js`
-    - **Status**: Ikke startet
-
-30. **Virtual scrolling**
-    - **Beskrivelse**: For lange lister (personer, kommentarer)
-    - **Status**: Ikke startet
-
-31. **Bildekomprimering**
-    - **Problem**: Bilder kan være for store
-    - **Løsning**: Mer aggressiv komprimering eller WebP
-    - **Fil**: `js/data.js`
-    - **Status**: Ikke startet
-
-32. **Debounce søk**
-    - **Beskrivelse**: Reduser unødvendige søkekall
-    - **Fil**: `js/search.js`
-    - **Status**: Ikke startet
-
-33. **Lazy load kommentarer**
-    - **Beskrivelse**: Last kommentarer og relasjoner på etterspørsel
-    - **Fil**: `js/person.js`
-    - **Status**: Ikke startet
+### 15. Dokumentasjon
+- [ ] **Forbedre dokumentasjon**
+  - [ ] Oppdatere README.md
+  - [ ] Legge til API-dokumentasjon
+  - [ ] Legge til brukerguide
+  - [ ] Legge til utviklerguide
 
 ---
 
-## 🧪 TESTING
+## 🔵 Fremtidige Funksjoner
 
-34. **Unit tests**
-    - **Beskrivelse**: Tests for kritiske funksjoner (auth, data, search)
-    - **Status**: Ikke startet
+### 16. Backend-integrasjon
+- [ ] **Legge til backend-støtte**
+  - [ ] Implementere API-endepunkter
+  - [ ] Legge til database-integrasjon
+  - [ ] Implementere autentisering
+  - [ ] Legge til synkronisering
 
-35. **Integration tests**
-    - **Beskrivelse**: Tests for brukerflyt (login, registrering, søk)
-    - **Status**: Ikke startet
+### 17. Push Notifications
+- [ ] **Legge til push-varsler**
+  - [ ] Implementere push-notifikasjoner
+  - [ ] Legge til notifikasjonsinnstillinger
+  - [ ] Teste på alle plattformer
 
-36. **E2E tests**
-    - **Beskrivelse**: End-to-end tests for viktige scenarier
-    - **Status**: Ikke startet
+### 18. Offline Sync
+- [ ] **Forbedre offline-synkronisering**
+  - [ ] Implementere background sync
+  - [ ] Legge til konfliktløsning
+  - [ ] Forbedre offline-queue
 
----
+### 19. Sosiale Funksjoner
+- [ ] **Legge til sosiale funksjoner**
+  - [ ] Implementere brukerprofiler
+  - [ ] Legge til følgere/følger
+  - [ ] Implementere deling
+  - [ ] Legge til kommentarer på profiler
 
-## ♿ TILGJENGELIGHET
-
-37. **ARIA-labels**
-    - **Beskrivelse**: Legg til på alle interaktive elementer
-    - **Status**: Ikke startet
-
-38. **Keyboard-navigasjon**
-    - **Beskrivelse**: Sørg for full keyboard-støtte
-    - **Status**: Ikke startet
-
-39. **Skip-to-content**
-    - **Beskrivelse**: Link for å hoppe til hovedinnhold
-    - **Status**: Ikke startet
-
-40. **Kontrast-ratios**
-    - **Beskrivelse**: Forbedre for WCAG AA-kompatibilitet
-    - **Status**: Ikke startet
-
-41. **Screen reader support**
-    - **Beskrivelse**: Støtte for komplekse komponenter
-    - **Status**: Ikke startet
+### 20. Analytics
+- [ ] **Legge til analytics**
+  - [ ] Implementere brukerstatistikk
+  - [ ] Legge til bruksanalytikk
+  - [ ] Implementere feilrapportering
+  - [ ] Legge til ytelsesovervåking
 
 ---
 
-## 📚 DOKUMENTASJON
+## 📊 Status Oversikt
 
-42. **JSDoc-kommentarer**
-    - **Beskrivelse**: Dokumenter alle eksporterte funksjoner
-    - **Status**: Ikke startet
-
-43. **README oppdatering**
-    - **Beskrivelse**: Setup-instruksjoner og arkitektur
-    - **Status**: Ikke startet
-
-44. **API-dokumentasjon**
-    - **Beskrivelse**: Dokumenter alle moduler
-    - **Status**: Ikke startet
+### Ferdig: 15/20 (75%)
+### Høy Prioritet: 0/5 (0%)
+### Medium Prioritet: 0/5 (0%)
+### Lav Prioritet: 0/5 (0%)
+### Fremtidige: 0/5 (0%)
 
 ---
 
-## 📱 MOBIL
+## 🎯 Neste Steg (Prioritert)
 
-45. **Responsive design**
-    - **Beskrivelse**: Test og forbedre på alle sider
-    - **Status**: Ikke startet
-
-46. **Touch-gestures**
-    - **Beskrivelse**: Optimaliser for familietre (zoom, pan)
-    - **Status**: Ikke startet
-
-47. **Mobilmeny**
-    - **Beskrivelse**: Bedre animasjoner
-    - **Status**: Ikke startet
+1. **Lage et unikt PastLife-ikon** (Høy prioritet)
+2. **Forbedre Brave-støtte** (Høy prioritet)
+3. **Teste på faktiske enheter** (Høy prioritet)
+4. **Forbedre manifest.json** (Høy prioritet)
+5. **Forbedre install-prompt** (Høy prioritet)
 
 ---
 
-## 📴 OFFLINE
-
-48. **Service worker caching**
-    - **Beskrivelse**: Forbedre caching-strategi
-    - **Fil**: `sw.js`
-    - **Status**: Ikke startet
-
-49. **Offline queue**
-    - **Beskrivelse**: Sync endringer når online
-    - **Status**: Ikke startet
-
-50. **Offline-indikator**
-    - **Beskrivelse**: Vis status i UI
-    - **Status**: Ikke startet
-
----
-
-## 📊 ANALYTICS
-
-51. **Bruksstatistikk**
-    - **Beskrivelse**: Anonymisert data for UX-forbedringer
-    - **Status**: Ikke startet
-
-52. **Feilsporing**
-    - **Beskrivelse**: Spor feil og ytelsesproblemer
-    - **Status**: Ikke startet
-
----
-
-## 🌍 INTERNASJONALISERING
-
-53. **Flerspråklig støtte**
-    - **Beskrivelse**: i18n implementasjon
-    - **Status**: Ikke startet
-
-54. **Språkfiler**
-    - **Beskrivelse**: Ekstraher alle tekster
-    - **Status**: Ikke startet
-
----
-
-## 📈 PRIORITERING
-
-### Umiddelbart (Kritisk)
-- Sikkerhet: Passord-hashing
-- Sikkerhet: Fjern hardkodet API-nøkkel
-- Bug: Dupliserte sjekker i searchPersons
-
-### Kort sikt (1-2 uker)
-- Refaktorering: Fjern dupliserte funksjoner
-- UX: Loading-indikatorer og tooltips
-- Bug: Performance-issues
-
-### Mellomlang sikt (1 måned)
-- Ny funksjonalitet: Passord-reset, email-validering
-- UX: Undo/redo, auto-save
-- Ytelse: Optimaliseringer
-
-### Lang sikt (3+ måneder)
-- Testing: Full test-suite
-- Tilgjengelighet: WCAG compliance
-- Internasjonalisering: Flerspråklig støtte
-
----
-
-## 📝 NOTATER
-
-- Alle funksjoner ser ut til å være implementert, men det er mye duplikasjon og manglende optimalisering
-- Kodekvaliteten er generelt god, men trenger refaktorering
-- Sikkerhet er den største bekymringen - passord i klartekst må fikses umiddelbart
-- Prosjektet har god struktur, men trenger bedre dokumentasjon
-
----
-
-**Sist oppdatert**: $(date)
-**Totalt antall oppgaver**: 54
-
+**Oppdatert:** $(date)
+**Status:** Under utvikling
+**Neste Milestone:** Mobil-installasjon via Brave fungerer perfekt

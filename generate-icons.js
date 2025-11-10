@@ -35,16 +35,22 @@ const iconSizes = [
     { size: 512, name: 'icon-maskable-512x512.png', maskable: true }
 ];
 
-const inputSvg = path.join(__dirname, 'favicon.svg');
+// Try pastlife-icon.svg first, fallback to favicon.svg
+const inputSvg = fs.existsSync(path.join(__dirname, 'pastlife-icon.svg')) 
+    ? path.join(__dirname, 'pastlife-icon.svg')
+    : path.join(__dirname, 'favicon.svg');
 const outputDir = path.join(__dirname, 'assets', 'icons');
 
 async function generateIcons() {
-    // Sjekk om favicon.svg finnes
+    // Sjekk om SVG-fil finnes
     if (!fs.existsSync(inputSvg)) {
-        console.error('❌ Feil: favicon.svg ikke funnet!');
-        console.log('   Plasser favicon.svg i prosjektets rotmappe.');
+        console.error('❌ Feil: Ingen SVG-fil funnet!');
+        console.log('   Plasser pastlife-icon.svg eller favicon.svg i prosjektets rotmappe.');
         process.exit(1);
     }
+    
+    const svgName = path.basename(inputSvg);
+    console.log(`📄 Bruker: ${svgName}`);
     
     // Opprett output-mappen hvis den ikke finnes
     if (!fs.existsSync(outputDir)) {

@@ -1,132 +1,93 @@
-# 📋 PastLife PWA - TODO Oppsummering
+# 📋 PastLife - TODO Oppsummering
 
-## ✅ Fullført (100%)
+## ✅ Fullført i denne sesjonen
 
-### PWA-komponenter
-- ✅ Manifest fil
-- ✅ Service Worker (v3)
-- ✅ Alle 7 app-ikoner
-- ✅ PWA meta tags
-- ✅ Install prompt (med Brave-støtte)
-- ✅ Update manager
-- ✅ Offline queue
-- ✅ Offline indicator
-- ✅ Splash screen (automatisk fra manifest)
+### 1. Omfattende TODO-liste opprettet
+- [x] **OMFATTENDE_TODO_LISTE.md** - Komplett oversikt over alle oppgaver
+- [x] Organisert i kategorier: Høy/Medium/Lav prioritet
+- [x] Inkluderer fremtidige funksjoner
 
-### Funksjonalitet
-- ✅ Alle kjernefunksjoner
-- ✅ Offline-støtte
-- ✅ Performance-optimaliseringer
-- ✅ App Shell Architecture
+### 2. Brave Browser Støtte forbedret
+- [x] **Forbedret Brave-deteksjon** i `js/install-prompt.js`
+  - [x] Sjekker `navigator.brave.isBrave`
+  - [x] Sjekker user agent
+  - [x] Sjekker `navigator.userAgentData.brands`
+- [x] **Automatisk visning av install-knapp** for Brave/iOS
+- [x] **Spesifikke instruksjoner** for Brave på iOS
+- [x] **Spesifikke instruksjoner** for Brave på Android
 
-### Dokumentasjon
-- ✅ README.md
-- ✅ START_GUIDE.md
-- ✅ BRAVE_IPHONE_GUIDE.md
-- ✅ BRAVE_WINDOWS_GUIDE.md
-- ✅ DEPLOYMENT.md
-- ✅ Alle test-guider
+### 3. Nytt App-ikon designet
+- [x] **pastlife-icon.svg** opprettet
+  - [x] Vintage foto-ramme design
+  - [x] Familietre-silhuett inne i rammen
+  - [x] Generasjonscirkler (familie-medlemmer)
+  - [x] PastLife-farger (brun/gyllen)
+  - [x] Dekorative hjørne-elementer
+- [x] **Ikon-generator oppdatert** til å bruke nytt ikon
 
 ---
 
-## ⏳ Gjenstående (Krever manuell handling)
+## 🔴 Høy Prioritet - Neste Steg
 
-### 1. 🧪 Manuell Testing
-**Status:** Verktøy klare, må testes manuelt
+### 1. Generer nye ikoner fra pastlife-icon.svg
+```bash
+# Metode 1: Node.js (raskest)
+npm install sharp
+node generate-icons.js
 
-**Oppgaver:**
-- [ ] Test på Android (Chrome)
-- [ ] Test på iOS (Safari)
-- [ ] Test på iOS (Brave)
-- [ ] Test på Desktop (Chrome/Edge/Brave)
-- [ ] Lighthouse audit (mål: 90+)
-- [ ] Test offline på faktiske enheter
-- [ ] Test installasjon på faktiske enheter
+# Metode 2: HTML-generator
+# Åpne generate-icons.html i nettleseren
+# Last inn pastlife-icon.svg
+# Generer og last ned alle ikoner
+```
 
-**Hvorfor gjenstår:**
-- Krever faktiske enheter
-- Kan ikke automatiseres
+### 2. Teste på faktiske enheter
+- [ ] **Teste på iPhone med Brave**
+  - [ ] Gå til GitHub Pages URL
+  - [ ] Verifisere at install-knapp vises
+  - [ ] Teste "Add to Home Screen"
+  - [ ] Verifisere at appen åpnes i standalone mode
+  - [ ] Teste offline-funksjonalitet
+- [ ] **Teste på Android med Brave**
+  - [ ] Gå til GitHub Pages URL
+  - [ ] Verifisere at install-knapp vises
+  - [ ] Teste installasjon
+  - [ ] Verifisere at appen fungerer
+- [ ] **Teste på Desktop med Brave**
+  - [ ] Verifisere install-prompt
+  - [ ] Teste standalone mode
 
----
-
-### 2. 🚀 Deploy til Produksjon
-**Status:** Instruksjoner klare, må gjøres manuelt
-
-**Oppgaver:**
-- [ ] Opprett GitHub repository
-- [ ] Push kode til GitHub
-- [ ] Aktiver GitHub Pages
-- [ ] Test produksjon-URL
-
-**Hvorfor gjenstår:**
-- Krever GitHub-konto
-- Må gjøres manuelt
-
----
-
-### 3. 🎨 Valgfrie Forbedringer (Ikke kritiske)
-
-#### Performance (for produksjon)
-- [ ] Minifiser JavaScript
-- [ ] Minifiser CSS
-- [ ] Code splitting
-
-#### Touch Gestures (nice-to-have)
-- [ ] Swipe-gestures
-- [ ] Ripple effects
-
-#### Push Notifications (krever backend)
-- [ ] Backend-server
-- [ ] Push notification API
-
-**Notat:** Disse er valgfrie og ikke nødvendige for lokal app.
+### 3. Oppdatere manifest.json
+- [ ] Verifisere at alle ikoner er korrekt referert
+- [ ] Legge til screenshots (valgfritt, men anbefalt)
+- [ ] Teste manifest på alle plattformer
 
 ---
 
-## 🎯 Prioritering
+## 📊 Status
 
-### Umiddelbart (Anbefalt)
-1. **Test lokalt** - Verifiser at alt fungerer
-2. **Lighthouse audit** - Sjekk PWA-score
-3. **Deploy til GitHub Pages** - Gjør appen tilgjengelig
-
-### Kort sikt (Valgfritt)
-4. **Test på faktiske enheter** - Verifiser installasjon
-5. **Performance-optimalisering** - For produksjon
-
-### Lang sikt (Fremtidig)
-6. **Touch gestures** - Nice-to-have
-7. **Push notifications** - Krever backend
+### Ferdig: 3/3 (100% av denne sesjonen)
+### Høy Prioritet: 0/3 (0% - neste steg)
 
 ---
 
-## ✅ Status
+## 🎯 Neste Handlinger
 
-**Utvikling:** ✅ 100% ferdig  
-**Dokumentasjon:** ✅ 100% ferdig  
-**Verktøy:** ✅ 100% ferdig  
-**Testing:** ⏳ Ventende (manuell)  
-**Deploy:** ⏳ Ventende (manuell)
-
----
-
-## 🎉 Konklusjon
-
-**Alle kritiske oppgaver er fullført!**
-
-Gjenstående oppgaver er:
-- Manuell testing (krever faktiske enheter)
-- Deploy til produksjon (valgfritt)
-- Valgfrie forbedringer (ikke kritiske)
-
-**Appen er klar for:**
-- ✅ Lokal bruk
-- ✅ Testing
-- ✅ Deploy til produksjon
-- ✅ Installasjon på alle plattformer
+1. **Generer ikoner** fra `pastlife-icon.svg`
+2. **Test på faktiske enheter** (iPhone, Android, Desktop)
+3. **Push endringer** til GitHub
+4. **Deploy til GitHub Pages** (hvis ikke allerede gjort)
 
 ---
 
-**Sist oppdatert:** 2025-01-10  
-**Status:** Utvikling 100% ferdig - Klar for testing og deploy!
+## 📝 Notater
 
+- **Brave-støtte** er nå forbedret med bedre deteksjon og automatisk visning
+- **Nytt ikon** reflekterer PastLife-konseptet med vintage foto-ramme og familietre
+- **Install-prompt** vises automatisk for Brave/iOS-brukere
+- **TODO-liste** er omfattende og organisert etter prioritet
+
+---
+
+**Oppdatert:** $(date)
+**Status:** Klar for ikon-generering og testing

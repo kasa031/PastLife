@@ -72,6 +72,19 @@ function showInstallButton() {
         return;
     }
     
+    // Always show install button for iOS/Brave (they don't support beforeinstallprompt)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const browser = detectBrowser();
+    const isBrave = browser === 'brave';
+    
+    // For iOS or Brave, always show button (they need manual instructions)
+    if (isIOS || (isBrave && !deferredPrompt)) {
+        // Continue to create button
+    } else if (!deferredPrompt) {
+        // For other browsers, only show if deferredPrompt exists
+        return;
+    }
+    
     // Check if button already exists
     if (document.getElementById('installAppButton')) {
         document.getElementById('installAppButton').style.display = 'block';
@@ -152,12 +165,17 @@ function showInstallButton() {
 
 // Handle install button click
 async function handleInstallClick() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const browser = detectBrowser();
+    const isBrave = browser === 'brave';
+    
+    // For iOS or Brave without deferredPrompt, show instructions
+    if ((isIOS || isBrave) && !deferredPrompt) {
+        showIOSInstructions();
+        return;
+    }
+    
     if (!deferredPrompt) {
-        // Show instructions for iOS (Safari, Brave, etc.)
-        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-            showIOSInstructions();
-            return;
-        }
         // App may already be installed
         showMessageSafe('App is already installed or cannot be installed on this device', 'info');
         return;
@@ -186,11 +204,29 @@ async function handleInstallClick() {
 // Detect browser type
 function detectBrowser() {
     const ua = navigator.userAgent;
+    // Check for Brave first (Brave identifies as Chrome but has Brave-specific properties)
+    if (navigator.brave && navigator.brave.isBrave) {
+        return 'brave';
+    }
+    // Check user agent for Brave
     if (/Brave/i.test(ua)) {
         return 'brave';
-    } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua) && !/CriOS/i.test(ua)) {
+    }
+    // Check for Brave in navigator
+    if (navigator.userAgentData && navigator.userAgentData.brands) {
+        const isBrave = navigator.userAgentData.brands.some(brand => 
+            brand.brand && brand.brand.toLowerCase().includes('brave')
+        );
+        if (isBrave) {
+            return 'brave';
+        }
+    }
+    // Safari detection
+    if (/Safari/i.test(ua) && !/Chrome/i.test(ua) && !/CriOS/i.test(ua) && !/Brave/i.test(ua)) {
         return 'safari';
-    } else if (/Chrome/i.test(ua)) {
+    }
+    // Chrome detection
+    if (/Chrome/i.test(ua) && !/Brave/i.test(ua)) {
         return 'chrome';
     }
     return 'unknown';
@@ -200,13 +236,15 @@ function detectBrowser() {
 function showIOSInstructions() {
     const browser = detectBrowser();
     const isBrave = browser === 'brave';
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
     
     let instructionsHTML = '';
     
-    if (isBrave) {
+    if (isBrave && isIOS) {
         instructionsHTML = `
             <div style="padding: 1.5rem;">
-                <h3 style="color: var(--turquoise-dark); margin-top: 0;">📱 Install PastLife på iOS (Brave)</h3>
+                <h3 style="color: var(--turquoise-dark); margin-top: 0;">📱 Install PastLife på iPhone (Brave)</h3>
                 <ol style="line-height: 2; color: var(--text-dark);">
                     <li>Trykk på <strong>meny-knappen</strong> (☰) nederst i Brave</li>
                     <li>Velg <strong>"Share"</strong> eller <strong>"Del"</strong></li>
@@ -230,7 +268,33 @@ function showIOSInstructions() {
                 ">Lukk</button>
             </div>
         `;
-    } else {
+    } else if (isBrave && isAndroid) {
+        instructionsHTML = `
+            <div style="padding: 1.5rem;">
+                <h3 style="color: var(--turquoise-dark); margin-top: 0;">📱 Install PastLife på Android (Brave)</h3>
+                <ol style="line-height: 2; color: var(--text-dark);">
+                    <li>Trykk på <strong>meny-knappen</strong> (☰) øverst i Brave</li>
+                    <li>Velg <strong>"Install"</strong> eller <strong>"Add to Home Screen"</strong></li>
+                    <li>Bekreft installasjonen</li>
+                    <li>PastLife vil nå vises som en app på hjem-skjermen din! 🎉</li>
+                </ol>
+                <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <strong>💡 Tips:</strong> Hvis du ikke ser install-alternativet, sjekk at du er på HTTPS og at appen er PWA-kompatibel.
+                </div>
+                <button onclick="this.closest('.install-instructions-modal').remove(); this.closest('.install-instructions-overlay').remove();" style="
+                    margin-top: 1rem;
+                    padding: 0.75rem 1.5rem;
+                    background: var(--turquoise-primary);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    width: 100%;
+                ">Lukk</button>
+            </div>
+        `;
+    } else if (isIOS) {
         instructionsHTML = `
             <div style="padding: 1.5rem;">
                 <h3 style="color: var(--turquoise-dark); margin-top: 0;">📱 Install PastLife på iOS</h3>
@@ -318,6 +382,21 @@ window.addEventListener('appinstalled', () => {
         installButton.style.display = 'none';
     }
     showMessageSafe('PastLife app installed successfully! 🎉', 'success');
+});
+
+// Auto-show install button on page load for iOS/Brave
+window.addEventListener('load', () => {
+    // Wait a bit for everything to load
+    setTimeout(() => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const browser = detectBrowser();
+        const isBrave = browser === 'brave';
+        
+        // Auto-show for iOS or Brave
+        if (isIOS || isBrave) {
+            showInstallButton();
+        }
+    }, 1000);
 });
 
 // Export functions for global use
