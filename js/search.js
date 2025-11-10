@@ -1,10 +1,33 @@
 // Search page functionality
-import { searchPersons } from './data.js';
+import { searchPersons, searchByRelationship, getAllPersons } from './data.js';
 import { updateNavigation } from './auth.js';
-import { showMessage } from './utils.js';
+import { showMessage, debounce, initKeyboardShortcuts, initBreadcrumbs, enhanceKeyboardNavigation } from './utils.js';
 import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
+import { loadTheme, toggleDarkMode } from './theme.js';
 
 let currentResults = [];
+
+// Cache for getAllPersons to avoid repeated calls
+let cachedPersons = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5000; // 5 seconds cache
+
+// Get cached persons or fetch new ones
+function getCachedPersons() {
+    const now = Date.now();
+    if (cachedPersons && (now - cacheTimestamp) < CACHE_DURATION) {
+        return cachedPersons;
+    }
+    cachedPersons = getAllPersons();
+    cacheTimestamp = now;
+    return cachedPersons;
+}
+
+// Invalidate cache (call when data changes)
+function invalidateCache() {
+    cachedPersons = null;
+    cacheTimestamp = 0;
+}
 
 // Save search history
 function saveSearchHistory(filters) {
@@ -27,8 +50,13 @@ function saveSearchHistory(filters) {
     }
 }
 
-// Perform search
-function performSearch() {
+// Debounced search function
+const debouncedSearch = debounce(() => {
+    performSearchInternal();
+}, 500); // 500ms debounce delay
+
+// Perform search (internal, called by debounced function)
+function performSearchInternal() {
     const relationshipName = document.getElementById('searchRelationship') ? document.getElementById('searchRelationship').value.trim() : '';
     const relationshipType = document.getElementById('relationshipType') ? document.getElementById('relationshipType').value : 'all';
     
@@ -208,12 +236,47 @@ function viewPerson(id) {
     window.location.href = `person.html?id=${id}`;
 }
 
-// Escape HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+// Load search history into dropdown
+function loadSearchHistory() {
+    const historyKey = 'pastlife_search_history';
+    const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    const select = document.getElementById('searchHistory');
+    
+    if (!select) return;
+    
+    // Clear existing options except the first one
+    select.innerHTML = '<option value="">-- Select a recent search --</option>';
+    
+    // Add history items
+    history.forEach((item, index) => {
+        const option = document.createElement('option');
+        // Format the history string for display
+        const displayText = item.length > 50 ? item.substring(0, 50) + '...' : item;
+        option.value = index;
+        option.textContent = displayText;
+        select.appendChild(option);
+    });
 }
+
+// Load search from history dropdown selection
+window.loadSearchFromHistory = function() {
+    const select = document.getElementById('searchHistory');
+    if (!select || !select.value) return;
+    
+    const historyKey = 'pastlife_search_history';
+    const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    const selectedIndex = parseInt(select.value);
+    
+    if (selectedIndex >= 0 && selectedIndex < history.length) {
+        const historyString = history[selectedIndex];
+        loadSearchFromHistoryString(historyString);
+    }
+    
+    // Reset dropdown
+    select.value = '';
+};
+
+// Escape HTML imported from utils.js
 
 // Check URL parameters for search query
 function checkUrlParams() {
@@ -224,6 +287,12 @@ function checkUrlParams() {
         document.getElementById('searchName').value = query;
         performSearch();
     }
+}
+
+// Perform search (public, can be called directly or via debounce)
+function performSearch() {
+    // Use debounced version for better performance
+    debouncedSearch();
 }
 
 // Make functions globally available
@@ -240,16 +309,15 @@ function setupAutocomplete() {
     
     if (!nameInput || !suggestionsDiv) return;
     
-    nameInput.addEventListener('input', (e) => {
-        const value = e.target.value.trim();
-        
+    // Debounced function to update suggestions
+    const updateSuggestions = debounce((value) => {
         if (value.length < 2) {
             suggestionsDiv.classList.remove('show');
             suggestions = [];
             return;
         }
         
-        const allPersons = getAllPersons();
+        const allPersons = getCachedPersons();
         
         // Get suggestions from search history first (prioritize recent searches)
         const historyKey = 'pastlife_search_history';
@@ -313,6 +381,11 @@ function setupAutocomplete() {
         } else {
             suggestionsDiv.classList.remove('show');
         }
+    }, 300); // 300ms debounce delay
+    
+    nameInput.addEventListener('input', (e) => {
+        const value = e.target.value.trim();
+        updateSuggestions(value);
     });
     
     nameInput.addEventListener('blur', () => {
@@ -471,18 +544,9 @@ function loadSearchFromHistoryString(historyString) {
     performSearch();
 }
 
-// Get all persons (helper)
-function getAllPersons() {
-    const personsKey = 'pastlife_persons';
-    return JSON.parse(localStorage.getItem(personsKey) || '[]');
-}
+// getAllPersons imported from data.js
 
-// Escape HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// Escape HTML imported from utils.js
 
 // Setup lazy loading for images
 function setupLazyLoading() {
@@ -510,62 +574,22 @@ function setupLazyLoading() {
     }
 }
 
-// Dark mode functions (shared)
-window.toggleDarkMode = function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pastlife_theme', newTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-};
-
-function loadTheme() {
-    // Check for saved preference first
-    let savedTheme = localStorage.getItem('pastlife_theme');
-    
-    // If no saved preference, detect system preference
-    if (!savedTheme) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            savedTheme = 'dark';
-        } else {
-            savedTheme = 'light';
-        }
-    }
-    
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-    
-    // Listen for system theme changes
-    if (window.matchMedia) {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('pastlife_theme')) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                toggles.forEach(toggle => {
-                    toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-                    toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-                });
-            }
-        });
-    }
-}
+// Dark mode functions imported from theme.js
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize breadcrumbs
+    initBreadcrumbs([
+        { label: 'Home', url: 'index.html' },
+        { label: 'Search', url: 'search.html' }
+    ]);
+    
     // Initialize lazy loading
     initLazyLoading();
     loadTheme();
     updateNavigation();
+    initKeyboardShortcuts(); // Initialize keyboard shortcuts help
+    enhanceKeyboardNavigation(); // Enhance keyboard navigation
     
     // Setup autocomplete
     setupAutocomplete();

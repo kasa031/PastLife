@@ -1,8 +1,9 @@
 // Main page functionality
 import { getAllPersons } from './data.js';
 import { updateNavigation } from './auth.js';
-import { escapeHtml } from './utils.js';
+import { escapeHtml, initKeyboardShortcuts, enhanceKeyboardNavigation } from './utils.js';
 import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
+import { loadTheme, toggleDarkMode } from './theme.js';
 
 // Load recent persons
 function loadRecentPersons() {
@@ -104,13 +105,12 @@ window.toggleMobileMenu = function(e) {
         e.stopPropagation();
     }
     const menu = document.getElementById('navMenu');
-    if (menu) {
-        menu.classList.toggle('active');
-        // Add visual feedback
-        const toggle = document.querySelector('.menu-toggle');
-        if (toggle) {
-            toggle.classList.toggle('active');
-        }
+    const toggle = document.querySelector('.menu-toggle');
+    if (menu && toggle) {
+        const isActive = menu.classList.toggle('active');
+        toggle.classList.toggle('active');
+        // Update aria-expanded for accessibility
+        toggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
     }
 };
 
@@ -120,63 +120,12 @@ document.addEventListener('click', (e) => {
     const toggle = document.querySelector('.menu-toggle');
     if (menu && toggle && !menu.contains(e.target) && !toggle.contains(e.target)) {
         menu.classList.remove('active');
+        toggle.classList.remove('active');
+        toggle.setAttribute('aria-expanded', 'false');
     }
 });
 
-// Dark mode toggle
-window.toggleDarkMode = function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pastlife_theme', newTheme);
-    localStorage.setItem('pastlife_theme_manual', 'true'); // Mark as manually set
-    
-    // Update toggle button
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-};
-
-// Load saved theme or detect system preference
-function loadTheme() {
-    // Check for saved preference first
-    let savedTheme = localStorage.getItem('pastlife_theme');
-    
-    // If no saved preference, detect system preference
-    if (!savedTheme) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            savedTheme = 'dark';
-        } else {
-            savedTheme = 'light';
-        }
-    }
-    
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Update toggle buttons
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-    
-    // Listen for system theme changes
-    if (window.matchMedia) {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            // Only auto-switch if user hasn't manually set a preference
-            if (!localStorage.getItem('pastlife_theme')) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                toggles.forEach(toggle => {
-                    toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-                    toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-                });
-            }
-        });
-    }
-}
+// Dark mode functions imported from theme.js
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
@@ -186,6 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRecentPersons();
     updateNavigation();
     preloadHeroImage(); // Preload hero image
+    initKeyboardShortcuts(); // Initialize keyboard shortcuts help
+    enhanceKeyboardNavigation(); // Enhance keyboard navigation
     // Refresh lazy loading after content is loaded
     setTimeout(() => refreshLazyLoading(), 100);
     

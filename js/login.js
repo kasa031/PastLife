@@ -1,5 +1,7 @@
 // Login page functionality
 import { loginUser, registerUser, updateNavigation } from './auth.js';
+import { loadTheme, toggleDarkMode } from './theme.js';
+import { validateEmail, showActionableError, showLoadingOverlay, hideLoadingOverlay } from './utils.js';
 
 // Helper to access localStorage (for checking if user exists)
 function initUsers() {
@@ -10,56 +12,7 @@ function initUsers() {
 
 let isLoginMode = true;
 
-// Initialize page
-// Dark mode functions (shared)
-window.toggleDarkMode = function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pastlife_theme', newTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-};
-
-function loadTheme() {
-    // Check for saved preference first
-    let savedTheme = localStorage.getItem('pastlife_theme');
-    
-    // If no saved preference, detect system preference
-    if (!savedTheme) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            savedTheme = 'dark';
-        } else {
-            savedTheme = 'light';
-        }
-    }
-    
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-    
-    // Listen for system theme changes
-    if (window.matchMedia) {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('pastlife_theme')) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                toggles.forEach(toggle => {
-                    toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-                    toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-                });
-            }
-        });
-    }
-}
+// Dark mode functions imported from theme.js
 
 document.addEventListener('DOMContentLoaded', () => {
     loadTheme();
@@ -71,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Handle login
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const usernameInput = document.getElementById('loginUsername');
     const passwordInput = document.getElementById('loginPassword');
@@ -85,31 +38,43 @@ function handleLogin(e) {
         return;
     }
     
-    // Check if user exists in database
-    initUsers();
-    const users = JSON.parse(localStorage.getItem('pastlife_users') || '[]');
-    const userExists = users.some(u => u.username === username || u.email === username);
+    // Show loading
+    const loadingOverlay = showLoadingOverlay('Logging in...');
     
-    if (loginUser(username, password)) {
-        showMessage(messageDiv, 'Login successful! Redirecting...', 'success');
-        // Don't clear fields on success - let user see they logged in
-        setTimeout(() => {
-            window.location.href = 'profile.html';
-        }, 1000);
-    } else {
-        // Give more helpful error message
-        if (!userExists) {
-            showMessage(messageDiv, 'User not found. Please register first or check your username/email.', 'error');
+    try {
+        // Check if user exists in database
+        initUsers();
+        const users = JSON.parse(localStorage.getItem('pastlife_users') || '[]');
+        const userExists = users.some(u => u.username === username || u.email === username);
+        
+        const loginSuccess = await loginUser(username, password);
+        
+        hideLoadingOverlay();
+        
+        if (loginSuccess) {
+            showMessage(messageDiv, 'Login successful! Redirecting...', 'success');
+            // Don't clear fields on success - let user see they logged in
+            setTimeout(() => {
+                window.location.href = 'profile.html';
+            }, 1000);
         } else {
-            showMessage(messageDiv, 'Invalid password. Please try again.', 'error');
+            // Give more helpful error message with actionable suggestions
+            if (!userExists) {
+                showMessage(messageDiv, 'User not found. Please register first or check your username/email.', 'error');
+            } else {
+                showMessage(messageDiv, 'Invalid password. Please try again. Make sure Caps Lock is off and check for typos.', 'error');
+            }
+            // Only clear password field on error, keep username for retry
+            passwordInput.value = '';
         }
-        // Only clear password field on error, keep username for retry
-        passwordInput.value = '';
+    } catch (error) {
+        hideLoadingOverlay();
+        showMessage(messageDiv, 'An error occurred during login. Please try again.', 'error');
     }
 }
 
 // Handle register
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
     const username = document.getElementById('registerUsername').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
@@ -123,25 +88,42 @@ function handleRegister(e) {
         return;
     }
     
+    // Validate email format
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+        showMessage(messageDiv, emailValidation.message + '. ' + (emailValidation.suggestion || ''), 'error');
+        return;
+    }
+    
     if (password !== passwordConfirm) {
-        showMessage(messageDiv, 'Passwords do not match', 'error');
+        showMessage(messageDiv, 'Passwords do not match. Please make sure both password fields are identical.', 'error');
         return;
     }
     
     if (password.length < 6) {
-        showMessage(messageDiv, 'Password must be at least 6 characters', 'error');
+        showMessage(messageDiv, 'Password must be at least 6 characters. Choose a longer password for better security.', 'error');
         return;
     }
     
-    const result = registerUser(username, email, password);
+    // Show loading
+    const loadingOverlay = showLoadingOverlay('Creating account...');
     
-    if (result.success) {
-        showMessage(messageDiv, 'Registration successful! Redirecting...', 'success');
-        setTimeout(() => {
-            window.location.href = 'profile.html';
-        }, 1000);
-    } else {
-        showMessage(messageDiv, result.message || 'Registration failed', 'error');
+    try {
+        const result = await registerUser(username, email, password);
+        
+        hideLoadingOverlay();
+        
+        if (result.success) {
+            showMessage(messageDiv, 'Registration successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = 'profile.html';
+            }, 1000);
+        } else {
+            showMessage(messageDiv, result.message || 'Registration failed. Please try again.', 'error');
+        }
+    } catch (error) {
+        hideLoadingOverlay();
+        showMessage(messageDiv, 'An error occurred during registration. Please try again.', 'error');
     }
 }
 

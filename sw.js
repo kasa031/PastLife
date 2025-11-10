@@ -1,6 +1,6 @@
 // Service Worker for offline support and caching
-const CACHE_NAME = 'pastlife-v1';
-const RUNTIME_CACHE = 'pastlife-runtime-v1';
+const CACHE_NAME = 'pastlife-v3';
+const RUNTIME_CACHE = 'pastlife-runtime-v3';
 
 // Files to cache on install
 const STATIC_CACHE_FILES = [
@@ -12,6 +12,7 @@ const STATIC_CACHE_FILES = [
     '/person.html',
     '/family-tree.html',
     '/about.html',
+    '/manifest.json',
     '/css/style.css',
     '/css/family-tree.css',
     '/js/auth.js',
@@ -24,8 +25,23 @@ const STATIC_CACHE_FILES = [
     '/js/family-tree.js',
     '/js/utils.js',
     '/js/onboarding.js',
+    '/js/navigation-utils.js',
+    '/js/offline-indicator.js',
+    '/js/install-prompt.js',
+    '/js/update-manager.js',
+    '/js/offline-queue.js',
+    '/js/theme.js',
+    '/js/lazy-load.js',
     '/assets/images/PastLifeLogo.jpg',
-    '/favicon.svg'
+    '/favicon.svg',
+    // PWA Icons
+    '/assets/icons/icon-96x96.png',
+    '/assets/icons/icon-144x144.png',
+    '/assets/icons/icon-180x180.png',
+    '/assets/icons/icon-192x192.png',
+    '/assets/icons/icon-512x512.png',
+    '/assets/icons/icon-maskable-192x192.png',
+    '/assets/icons/icon-maskable-512x512.png'
 ];
 
 // Install event - cache static files
@@ -120,5 +136,34 @@ self.addEventListener('message', (event) => {
             })
         );
     }
+    
+    // Handle update check request
+    if (event.data && event.data.type === 'CHECK_UPDATE') {
+        self.registration.update();
+    }
 });
+
+// Background sync for offline actions (if supported)
+if ('sync' in self.registration) {
+    self.addEventListener('sync', (event) => {
+        if (event.tag === 'background-sync') {
+            event.waitUntil(
+                // Perform background sync operations
+                syncOfflineData()
+            );
+        }
+    });
+}
+
+// Sync offline data when online
+async function syncOfflineData() {
+    // Notify clients that sync should happen
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+        client.postMessage({
+            type: 'SYNC_OFFLINE_QUEUE'
+        });
+    });
+    console.log('[Service Worker] Background sync triggered - notified clients');
+}
 

@@ -9,6 +9,56 @@ function initUsers() {
     }
 }
 
+// Hash password using Web Crypto API (SHA-256 with salt)
+async function hashPassword(password, salt = null) {
+    // Generate salt if not provided
+    if (!salt) {
+        const saltArray = new Uint8Array(16);
+        crypto.getRandomValues(saltArray);
+        salt = Array.from(saltArray).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    
+    // Convert password and salt to ArrayBuffer
+    const encoder = new TextEncoder();
+    const passwordData = encoder.encode(password + salt);
+    
+    // Hash with SHA-256
+    const hashBuffer = await crypto.subtle.digest('SHA-256', passwordData);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return { hash: hashHex, salt: salt };
+}
+
+// Verify password against stored hash
+async function verifyPassword(password, storedHash, salt) {
+    const { hash } = await hashPassword(password, salt);
+    return hash === storedHash;
+}
+
+// Migrate existing users with plaintext passwords to hashed passwords
+async function migrateUserPasswords() {
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    let needsMigration = false;
+    
+    for (const user of users) {
+        // Check if password is already hashed (has hash and salt properties)
+        if (!user.passwordHash || !user.salt) {
+            needsMigration = true;
+            // Hash the plaintext password
+            const { hash, salt } = await hashPassword(user.password);
+            user.passwordHash = hash;
+            user.salt = salt;
+            // Remove plaintext password
+            delete user.password;
+        }
+    }
+    
+    if (needsMigration) {
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+}
+
 // Get current user
 export function getCurrentUser() {
     const auth = localStorage.getItem(AUTH_KEY);
@@ -24,24 +74,52 @@ export function isLoggedIn() {
 }
 
 // Login user (accepts both username and email)
-export function loginUser(usernameOrEmail, password) {
+export async function loginUser(usernameOrEmail, password) {
     initUsers();
+    await migrateUserPasswords(); // Ensure all passwords are hashed
+    
     const users = JSON.parse(localStorage.getItem(USERS_KEY));
     // Try to find user by username OR email
     const user = users.find(u => 
-        (u.username === usernameOrEmail || u.email === usernameOrEmail) && 
-        u.password === password
+        u.username === usernameOrEmail || u.email === usernameOrEmail
     );
     
-    if (user) {
+    if (!user) {
+        return false;
+    }
+    
+    // Verify password - handle both old plaintext and new hashed passwords
+    let passwordValid = false;
+    
+    if (user.passwordHash && user.salt) {
+        // New hashed password
+        passwordValid = await verifyPassword(password, user.passwordHash, user.salt);
+    } else if (user.password) {
+        // Old plaintext password - verify it matches, then migrate
+        if (user.password === password) {
+            // Password matches, migrate to hashed version
+            const { hash, salt } = await hashPassword(password);
+            user.passwordHash = hash;
+            user.salt = salt;
+            delete user.password;
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+            passwordValid = true;
+        } else {
+            // Password doesn't match
+            passwordValid = false;
+        }
+    }
+    
+    if (passwordValid) {
         localStorage.setItem(AUTH_KEY, JSON.stringify({ username: user.username, email: user.email }));
         return true;
     }
+    
     return false;
 }
 
 // Register user
-export function registerUser(username, email, password) {
+export async function registerUser(username, email, password) {
     initUsers();
     const users = JSON.parse(localStorage.getItem(USERS_KEY));
     
@@ -55,10 +133,14 @@ export function registerUser(username, email, password) {
         return { success: false, message: 'Email already exists' };
     }
     
+    // Hash the password
+    const { hash, salt } = await hashPassword(password);
+    
     const newUser = {
         username,
         email,
-        password, // In production, hash this password
+        passwordHash: hash,
+        salt: salt,
         createdAt: new Date().toISOString()
     };
     

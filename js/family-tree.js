@@ -1,7 +1,8 @@
 // Family Tree Builder with AI
 import { getAllPersons, savePerson, deletePerson } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { showMessage, showLoading, hideLoading, logError, copyToClipboard } from './utils.js';
+import { showMessage, showLoading, hideLoading, logError, copyToClipboard, escapeHtml, confirmAction, initKeyboardShortcuts, showActionableError, showLoadingOverlay, hideLoadingOverlay, initAutoSave, debounce, enhanceKeyboardNavigation } from './utils.js';
+import { loadTheme, toggleDarkMode } from './theme.js';
 
 let treeData = [];
 let allTreeData = []; // Store all data for filtering
@@ -36,74 +37,43 @@ function getSavedApiKey() {
     return localStorage.getItem(API_KEY_STORAGE);
 }
 
-// Initialize API key (call this once to set the new key)
-function initializeApiKey() {
-    const existing = localStorage.getItem(API_KEY_STORAGE);
-    if (!existing) {
-        // Set new API key for first-time users
-        // NOTE: This is only set once when localStorage is empty
-        // After this, users must manually update it if needed
-        const newApiKey = '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';
-        saveApiKey(newApiKey);
-        return newApiKey;
-    }
-    return existing;
+// Get API key (users must set their own via UI)
+function getApiKey() {
+    return getSavedApiKey();
 }
 
-// Initialize page
-// Dark mode functions (shared)
-window.toggleDarkMode = function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pastlife_theme', newTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-};
-
-function loadTheme() {
-    // Check for saved preference first
-    let savedTheme = localStorage.getItem('pastlife_theme');
-    
-    // If no saved preference, detect system preference
-    if (!savedTheme) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            savedTheme = 'dark';
-        } else {
-            savedTheme = 'light';
-        }
-    }
-    
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-    
-    // Listen for system theme changes
-    if (window.matchMedia) {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('pastlife_theme')) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                toggles.forEach(toggle => {
-                    toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-                    toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-                });
-            }
-        });
-    }
+// Check if API key is set
+function hasApiKey() {
+    return !!getSavedApiKey();
 }
+
+// Dark mode functions imported from theme.js
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize auto-save for family text
+    initAutoSave('familyText', 'pastlife_family_text_draft', {
+        debounceDelay: 3000, // Save 3 seconds after last change (longer for textarea)
+        onLoad: (draft) => {
+            const textarea = document.getElementById('familyText');
+            if (textarea && draft.familyText) {
+                textarea.value = draft.familyText;
+                updateWordCount();
+                showMessage('Draft restored from previous session', 'info', 3000);
+            }
+        },
+        onSave: (draft) => {
+            // Save textarea value separately
+            const textarea = document.getElementById('familyText');
+            if (textarea) {
+                draft.familyText = textarea.value;
+            }
+            return draft;
+        }
+    });
     loadTheme();
     updateNavigation();
+    initKeyboardShortcuts(); // Initialize keyboard shortcuts help
+    enhanceKeyboardNavigation(); // Enhance keyboard navigation
     
     // Load shared tree if URL contains share parameter
     loadSharedTree();
@@ -126,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const apiKeyStatus = document.getElementById('apiKeyStatus');
     if (apiKeyInput) {
         // Initialize API key if first time (sets new key in localStorage)
-        const initializedKey = initializeApiKey();
+        const initializedKey = getApiKey();
         // Get the key (either newly initialized or existing)
         const keyToUse = getSavedApiKey() || initializedKey;
         // Force set value and remove placeholder
@@ -205,8 +175,16 @@ window.pasteApiKey = async function() {
 };
 
 // Clear API key
-window.clearApiKey = function() {
-    if (confirm('Er du sikker på at du vil slette API-nøkkelen?')) {
+window.clearApiKey = async function() {
+    const confirmed = await confirmAction(
+        'Slett API-nøkkel?',
+        'Er du sikker på at du vil slette API-nøkkelen? Du må legge til en ny nøkkel for å bruke AI-funksjoner.',
+        'Slett',
+        'Avbryt',
+        true
+    );
+    
+    if (confirmed) {
         const apiKeyInput = document.getElementById('apiKey');
         const apiKeyStatus = document.getElementById('apiKeyStatus');
         apiKeyInput.value = '';
@@ -306,17 +284,26 @@ async function performAnalysis(mergeMode = false) {
     
     // If still no API key, show error
     if (!apiKey || apiKey === 'sk-or-...') {
-        showMessage('Vennligst legg inn din OpenRouter API-nøkkel først.', 'error');
+        showActionableError('Vennligst legg inn din OpenRouter API-nøkkel først.', { 
+            type: 'api_key',
+            suggestion: 'Enter your OpenRouter API key in the input field above. You can get a key from openrouter.ai'
+        });
         return;
     }
     
     if (!text) {
-        showMessage('Please enter some family information', 'error');
+        showActionableError('Please enter some family information', { 
+            type: 'validation',
+            suggestion: 'Enter details about your family members, their relationships, and important dates.'
+        });
         return;
     }
     
     if (text.split(/\s+/).length < 10) {
-        showMessage('Please provide more detailed information (at least 10 words)', 'error');
+        showActionableError('Please provide more detailed information (at least 10 words)', { 
+            type: 'validation',
+            suggestion: 'Include more details such as names, relationships, birth/death dates, and locations. Example: "My grandfather John Smith was born in 1920 in Oslo, Norway. He married Mary Johnson in 1945."'
+        });
         return;
     }
     
@@ -330,6 +317,9 @@ async function performAnalysis(mergeMode = false) {
     mergeBtn.disabled = true;
     analyzeBtn.textContent = 'Analyzing...';
     mergeBtn.textContent = 'Analyzing...';
+    
+    // Show loading overlay for better UX
+    const loadingOverlay = showLoadingOverlay('Analyzing family information...');
     
     try {
         statusText.textContent = mergeMode ? 'Connecting to AI (will merge with existing tree)...' : 'Connecting to AI...';
@@ -433,18 +423,18 @@ async function performAnalysis(mergeMode = false) {
     } catch (error) {
         console.error('Analysis error:', error);
         
-        // Enhanced error handling with specific error types
+        // Enhanced error handling with actionable suggestions
         let errorMessage = 'Feil ved analyse av tekst. Prøv igjen eller bruk manuell inntasting.';
         
         if (error.message) {
             if (error.message.includes('API error') || error.message.includes('401') || error.message.includes('403')) {
-                errorMessage = 'API-nøkkel er ugyldig eller utløpt. Vennligst sjekk din OpenRouter API-nøkkel.';
+                errorMessage = 'API-nøkkel er ugyldig eller utløpt.';
             } else if (error.message.includes('429') || error.message.includes('rate limit')) {
-                errorMessage = 'For mange forespørsler. Vennligst vent litt før du prøver igjen.';
+                errorMessage = 'For mange forespørsler.';
             } else if (error.message.includes('network') || error.message.includes('fetch')) {
-                errorMessage = 'Nettverksfeil. Sjekk internettforbindelsen din og prøv igjen.';
+                errorMessage = 'Nettverksfeil.';
             } else if (error.message.includes('parse') || error.message.includes('JSON')) {
-                errorMessage = 'Kunne ikke tolke AI-svar. Prøv med kortere tekst eller manuell inntasting.';
+                errorMessage = 'Kunne ikke tolke AI-svar.';
             } else {
                 errorMessage = error.message;
             }
@@ -458,8 +448,9 @@ async function performAnalysis(mergeMode = false) {
             mergeMode: mergeMode
         });
         
-        showMessage(errorMessage, 'error', 5000);
+        showActionableError(errorMessage, { type: 'ai_analysis' });
     } finally {
+        hideLoadingOverlay();
         statusDiv.classList.add('hidden');
         analyzeBtn.disabled = false;
         mergeBtn.disabled = false;
@@ -1816,11 +1807,19 @@ function fileToBase64(file) {
 }
 
 // Delete tree node
-window.deleteTreeNode = function(nodeId) {
+window.deleteTreeNode = async function(nodeId) {
     const person = allTreeData.find(p => p.id === nodeId);
     if (!person) return;
     
-    if (confirm(`Delete "${person.name}" from tree?`)) {
+    const confirmed = await confirmAction(
+        'Remove Person from Tree?',
+        `Are you sure you want to remove "${person.name}" from the family tree? This will only remove them from the tree view, not from the main database.`,
+        'Remove',
+        'Cancel',
+        true
+    );
+    
+    if (confirmed) {
         // Remove from both allTreeData and treeData
         allTreeData = allTreeData.filter(p => p.id !== nodeId);
         treeData = treeData.filter(p => p.id !== nodeId);
@@ -2384,13 +2383,7 @@ window.selectTimelinePerson = function(personIdOrName) {
     showMessage(`Viser ${person.name} i familietreet`, 'success', 2000);
 };
 
-// Escape HTML helper
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// Escape HTML imported from utils.js (use escapeHtml(text || '') for null safety)
 
 // Import tree
 window.importTree = function() {
@@ -2424,8 +2417,16 @@ window.importTree = function() {
 };
 
 // Clear tree
-window.clearTree = function() {
-    if (confirm('Clear the entire family tree? This cannot be undone.')) {
+window.clearTree = async function() {
+    const confirmed = await confirmAction(
+        'Clear Entire Family Tree?',
+        'Are you sure you want to clear the entire family tree? This will remove all persons and relationships from the tree. This action cannot be undone.',
+        'Clear Tree',
+        'Cancel',
+        true
+    );
+    
+    if (confirmed) {
         treeData = [];
         allTreeData = [];
         document.getElementById('treeContainer').innerHTML = '';
@@ -2436,10 +2437,4 @@ window.clearTree = function() {
     }
 };
 
-// Escape HTML
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// Escape HTML imported from utils.js (use escapeHtml(text || '') for null safety)

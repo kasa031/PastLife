@@ -1,64 +1,18 @@
 // Person detail page functionality
 import { getPersonById, getCommentsForPerson, addComment, deleteComment, searchByRelationship } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { copyToClipboard, showMessage, formatDate, logError } from './utils.js';
+import { copyToClipboard, showMessage, formatDate, logError, confirmAction, initKeyboardShortcuts, initBreadcrumbs, sanitizeInput, enhanceKeyboardNavigation, escapeHtml, showLoadingOverlay, hideLoadingOverlay } from './utils.js';
+import { loadTheme, toggleDarkMode } from './theme.js';
 
 let currentPersonId = null;
 
-// Dark mode functions (shared)
-window.toggleDarkMode = function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pastlife_theme', newTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-};
-
-function loadTheme() {
-    // Check for saved preference first
-    let savedTheme = localStorage.getItem('pastlife_theme');
-    
-    // If no saved preference, detect system preference
-    if (!savedTheme) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            savedTheme = 'dark';
-        } else {
-            savedTheme = 'light';
-        }
-    }
-    
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-    
-    // Listen for system theme changes
-    if (window.matchMedia) {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('pastlife_theme')) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                toggles.forEach(toggle => {
-                    toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-                    toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-                });
-            }
-        });
-    }
-}
+// Dark mode functions imported from theme.js
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     loadTheme();
     updateNavigation();
+    initKeyboardShortcuts(); // Initialize keyboard shortcuts help
     
     // Get person ID from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -70,10 +24,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
+    // Initialize breadcrumbs (will be updated when person is loaded)
+    initBreadcrumbs([
+        { label: 'Home', url: 'index.html' },
+        { label: 'Search', url: 'search.html' },
+        { label: 'Person Details', url: '#' }
+    ]);
+    
     loadPersonDetails();
-    loadComments();
     updateFavoriteButton();
     checkPersonInTree();
+    
+    // Lazy load comments when they come into view
+    setupLazyLoading();
+    
+    // Enhance keyboard navigation
+    enhanceKeyboardNavigation();
     
     // Setup comment form
     const commentForm = document.getElementById('commentFormSection');
@@ -147,7 +113,7 @@ window.addToFamilyTree = function() {
     if (!treeDataKey) return false;
     
     const savedTree = localStorage.getItem(treeDataKey);
-    let treeData = { persons: [], relationships: [] };
+    let allTreePersons = [];
     
     if (savedTree) {
         try {
@@ -201,6 +167,13 @@ function loadPersonDetails() {
             '<p style="text-align: center; padding: 2rem;">Person not found</p>';
         return;
     }
+    
+    // Update breadcrumbs with person name
+    initBreadcrumbs([
+        { label: 'Home', url: 'index.html' },
+        { label: 'Search', url: 'search.html' },
+        { label: sanitizeInput(person.name), url: '#' }
+    ]);
     
     // Use mainImage if available, otherwise photo, otherwise default
     const mainPhoto = person.mainImage || person.photo || 'assets/images/oldphoto2.jpg';
@@ -570,17 +543,57 @@ window.filterRelatives = function(filterType) {
     });
 }
 
-// Load comments
+// Load comments (can be called lazily)
 function loadComments() {
     const comments = getCommentsForPerson(currentPersonId);
     const container = document.getElementById('commentsContainer');
+    
+    if (!container) return;
     
     if (comments.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: var(--gray-dark); padding: 2rem;">No comments yet. Be the first to comment!</p>';
         return;
     }
     
-    container.innerHTML = comments.map(comment => createCommentHTML(comment)).join('');
+    // Show loading indicator first
+    container.innerHTML = '<div style="text-align: center; padding: 2rem;"><div class="spinner" style="margin: 0 auto;"></div><p style="margin-top: 1rem; color: var(--gray-dark);">Loading comments...</p></div>';
+    
+    // Load comments with a small delay to allow UI to update
+    setTimeout(() => {
+        container.innerHTML = comments.map(comment => createCommentHTML(comment)).join('');
+    }, 100);
+}
+
+// Setup lazy loading for comments and relatives
+function setupLazyLoading() {
+    if (!('IntersectionObserver' in window)) {
+        // Fallback: load immediately if IntersectionObserver not supported
+        loadComments();
+        return;
+    }
+    
+    // Lazy load comments
+    const commentsSection = document.querySelector('.comments-section');
+    if (commentsSection) {
+        const commentsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const container = document.getElementById('commentsContainer');
+                    if (container && !container.dataset.loaded) {
+                        container.dataset.loaded = 'true';
+                        loadComments();
+                        commentsObserver.unobserve(entry.target);
+                    }
+                }
+            });
+        }, {
+            rootMargin: '200px' // Start loading 200px before section comes into view
+        });
+        
+        commentsObserver.observe(commentsSection);
+    }
+    
+    // Relatives are already loaded in loadPersonDetails, no need for lazy loading
 }
 
 // Process comment text (mentions, links, etc.)
@@ -626,8 +639,16 @@ function createCommentHTML(comment) {
 }
 
 // Delete comment with confirmation
-window.deleteCommentConfirm = function(commentId) {
-    if (confirm('Er du sikker på at du vil slette denne kommentaren?')) {
+window.deleteCommentConfirm = async function(commentId) {
+    const confirmed = await confirmAction(
+        'Slett kommentar?',
+        'Er du sikker på at du vil slette denne kommentaren? Denne handlingen kan ikke angres.',
+        'Slett',
+        'Avbryt',
+        true
+    );
+    
+    if (confirmed) {
         try {
             deleteComment(commentId);
             showMessage('Kommentar slettet', 'success');
@@ -804,8 +825,9 @@ window.handleGalleryImageUpload = async function(event, personId) {
         return;
     }
     
+    const loadingOverlay = showLoadingOverlay(`Laster opp ${files.length} bilde(r)...`);
+    
     try {
-        showMessage(`Laster opp ${files.length} bilde(r)...`, 'info');
         
         const { imageToBase64 } = await import('./data.js');
         const newImages = [];
@@ -850,12 +872,14 @@ window.handleGalleryImageUpload = async function(event, personId) {
         const { savePerson } = await import('./data.js');
         savePerson(updatedPerson, personId);
         
+        hideLoadingOverlay();
         showMessage(`${newImages.length} bilde(r) lagt til i galleriet!`, 'success');
         loadPersonDetails(); // Reload to show new images
         
         // Reset input
         event.target.value = '';
     } catch (error) {
+        hideLoadingOverlay();
         console.error('Error uploading images:', error);
         showMessage('Feil ved opplasting av bilder: ' + error.message, 'error');
     }
@@ -863,7 +887,15 @@ window.handleGalleryImageUpload = async function(event, personId) {
 
 // Remove image from gallery
 window.removeImageFromGallery = async function(imageUrl, personId) {
-    if (!confirm('Er du sikker på at du vil slette dette bildet?')) {
+    const confirmed = await confirmAction(
+        'Delete Image?',
+        'Are you sure you want to delete this image? This action cannot be undone.',
+        'Delete',
+        'Cancel',
+        true
+    );
+    
+    if (!confirmed) {
         return;
     }
     
@@ -956,9 +988,7 @@ function getAllPersons() {
     return JSON.parse(localStorage.getItem(personsKey) || '[]');
 }
 
-// Escape HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// View person details
+window.viewPerson = function(id) {
+    window.location.href = `person.html?id=${id}`;
+};

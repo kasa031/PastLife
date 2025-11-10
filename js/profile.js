@@ -1,10 +1,11 @@
 // Profile page functionality
 import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
-import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById, getAllPersons } from './data.js';
+import { savePerson, imageToBase64, getPersonsByCreator, deletePerson, getPersonById, getAllPersons, checkDuplicatePerson } from './data.js';
 import { getCommentsForPerson } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { showMessage, showLoading, hideLoading, validateYear, validateDateRange, showErrorWithSuggestion, logError, getErrorLog, clearErrorLog } from './utils.js';
+import { showMessage, showLoading, hideLoading, validateYear, validateDateRange, showErrorWithSuggestion, showActionableError, logError, getErrorLog, clearErrorLog, escapeHtml, confirmAction, initKeyboardShortcuts, showLoadingOverlay, hideLoadingOverlay, initAutoSave, initBreadcrumbs, sanitizeInput, validateAndSanitizeInput, enhanceKeyboardNavigation } from './utils.js';
 import { completeOnboarding } from './onboarding.js';
+import { loadTheme, toggleDarkMode } from './theme.js';
 
 let tags = [];
 let photoFile = null;
@@ -12,30 +13,7 @@ let allContributions = []; // Store all user contributions
 let currentFilter = 'all'; // 'all', 'morsside', 'farsside', 'both'
 let currentSort = 'newest'; // Sort option
 
-// Dark mode functions (shared)
-window.toggleDarkMode = function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pastlife_theme', newTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = newTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-};
-
-function loadTheme() {
-    const savedTheme = localStorage.getItem('pastlife_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    const toggles = document.querySelectorAll('.theme-toggle');
-    toggles.forEach(toggle => {
-        toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        toggle.title = savedTheme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode';
-    });
-}
+// Dark mode functions imported from theme.js
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
@@ -52,8 +30,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load profile settings
     loadProfileSettings();
     
+    // Initialize breadcrumbs
+    initBreadcrumbs([
+        { label: 'Home', url: 'index.html' },
+        { label: 'Profile', url: 'profile.html' }
+    ]);
+    
     // Setup form
     setupForm();
+    
+    // Initialize auto-save for ancestor form
+    initAutoSave('ancestorForm', 'pastlife_ancestor_draft', {
+        debounceDelay: 2000,
+        excludeFields: ['photo'], // Don't save file input
+        onSave: (draft) => {
+            // Include tags in draft
+            draft.tags = tags;
+            return draft;
+        },
+        onLoad: (draft) => {
+            // Restore form fields
+            Object.keys(draft).forEach(key => {
+                if (key === 'tags') {
+                    // Restore tags separately
+                    if (Array.isArray(draft.tags)) {
+                        tags = draft.tags;
+                        updateTagsDisplay();
+                    }
+                } else {
+                    const field = document.getElementById(key);
+                    if (field && key !== 'photo') {
+                        field.value = draft[key] || '';
+                    }
+                }
+            });
+            
+            // Show notification if draft was restored
+            if (Object.keys(draft).length > 0) {
+                showMessage('Draft restored from previous session', 'info', 3000);
+            }
+        }
+    });
+    
     loadMyContributions();
     loadUserStatistics();
     loadMyFavorites();
@@ -63,6 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check for notifications
     checkNotifications();
+    
+    // Enhance keyboard navigation
+    enhanceKeyboardNavigation();
 });
 
 // Setup form handlers
@@ -90,14 +111,14 @@ function setupForm() {
         if (file) {
             // Validate file type
             if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
-                showMessage('Ugyldig bildeformat. Bruk JPEG, PNG, GIF eller WebP.', 'error');
+                showActionableError('Invalid image format', { type: 'image_format' });
                 photoInput.value = '';
                 return;
             }
             
             // Validate file size
             if (file.size > 10 * 1024 * 1024) {
-                showMessage('Bildet er for stort. Maksimal størrelse er 10MB.', 'error');
+                showActionableError('Image file is too large', { type: 'image_size' });
                 photoInput.value = '';
                 return;
             }
@@ -161,53 +182,40 @@ window.removeTag = function(index) {
     updateTagsDisplay();
 };
 
-// Check for duplicate person
-function checkDuplicate(personData) {
-    const allPersons = getAllPersons();
-    const nameLower = personData.name.toLowerCase().trim();
-    
-    return allPersons.find(p => {
-        const pNameLower = p.name.toLowerCase().trim();
-        const nameSimilar = pNameLower === nameLower || 
-                           pNameLower.includes(nameLower) || 
-                           nameLower.includes(pNameLower);
-        
-        // Check if birth year matches (if provided)
-        const yearMatch = !personData.birthYear || !p.birthYear || 
-                         personData.birthYear === p.birthYear;
-        
-        return nameSimilar && yearMatch;
-    });
-}
+// Duplicate checking imported from data.js
 
 // Submit form
 async function submitForm() {
     const user = getCurrentUser();
     if (!user) {
-        showMessage('Please login to submit ancestor information', 'error');
+        showActionableError('Please login to submit ancestor information', { 
+            type: 'auth',
+            suggestion: 'Click the Login link in the navigation menu to sign in.'
+        });
+        return;
+    }
+    
+    // Validate and sanitize all inputs
+    const nameValidation = validateAndSanitizeInput(document.getElementById('personName').value, 'text', { required: true, maxLength: 200 });
+    if (!nameValidation.valid) {
+        showErrorWithSuggestion(nameValidation.error || 'Name is required', 'Please enter a valid name');
         return;
     }
     
     const formData = {
-        name: document.getElementById('personName').value.trim(),
+        name: nameValidation.value,
         birthYear: document.getElementById('birthYear').value ? parseInt(document.getElementById('birthYear').value) : null,
         deathYear: document.getElementById('deathYear').value ? parseInt(document.getElementById('deathYear').value) : null,
-        birthPlace: document.getElementById('birthPlace').value.trim(),
-        deathPlace: document.getElementById('deathPlace').value.trim(),
-        country: document.getElementById('country').value.trim(),
-        city: document.getElementById('city').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        tags: tags,
+        birthPlace: sanitizeInput(document.getElementById('birthPlace').value.trim()),
+        deathPlace: sanitizeInput(document.getElementById('deathPlace').value.trim()),
+        country: sanitizeInput(document.getElementById('country').value.trim()),
+        city: sanitizeInput(document.getElementById('city').value.trim()),
+        description: sanitizeInput(document.getElementById('description').value.trim()),
+        tags: tags.map(tag => sanitizeInput(tag)),
         createdBy: user.username
     };
     
-    if (!formData.name) {
-        showErrorWithSuggestion(
-            'Name is required',
-            'Please enter the ancestor\'s full name (e.g., "Edvard Jensen")'
-        );
-        return;
-    }
+    // Name validation already done above, no need to check again
     
     // Validate years
     if (formData.birthYear) {
@@ -238,7 +246,7 @@ async function submitForm() {
     // Check for duplicates (skip if editing)
     const editingId = window.currentEditingId;
     if (!editingId) {
-        const duplicate = checkDuplicate(formData);
+        const duplicate = checkDuplicatePerson(formData);
         if (duplicate) {
             const confirmMsg = `A similar person already exists: "${duplicate.name}"${duplicate.birthYear ? ` (born ${duplicate.birthYear})` : ''}.\n\nDo you want to continue anyway?`;
             if (!confirm(confirmMsg)) {
@@ -247,52 +255,63 @@ async function submitForm() {
         }
     }
     
-    // Handle photo
-    if (photoFile) {
-        try {
-            const loading = showLoading(document.getElementById('ancestorForm'));
-            formData.photo = await imageToBase64(photoFile);
-            hideLoading(document.getElementById('ancestorForm'), loading);
-        } catch (error) {
-            console.error('Error converting image:', error);
-            showMessage(error.message || 'Error processing image. Please try again.', 'error');
-            return;
-        }
-    }
+    // Show loading overlay for form submission
+    const loadingOverlay = showLoadingOverlay(editingId ? 'Updating person...' : 'Saving person...');
     
-    // Save person (update if editing)
-    const editingId = window.currentEditingId;
-    const person = savePerson(formData, editingId);
-    
-    // Reset form
-    document.getElementById('ancestorForm').reset();
-    tags = [];
-    photoFile = null;
-    updateTagsDisplay();
-    document.getElementById('photoPreview').innerHTML = '';
-    window.currentEditingId = null;
-    
-    // Reset submit button text
-    const submitBtn = document.querySelector('#ancestorForm .submit-btn');
-    if (submitBtn) submitBtn.textContent = 'Submit Ancestor Information';
-    
-    // Show success message
-    showMessage(editingId ? 'Ancestor information updated successfully!' : 'Ancestor information submitted successfully!', 'success');
-    
-    // Complete onboarding if this is first contribution
-    if (!editingId) {
-        const user = getCurrentUser();
-        if (user) {
-            const myPersons = getPersonsByCreator(user.username);
-            if (myPersons.length === 1) {
-                // First person added, complete onboarding
-                completeOnboarding();
+    try {
+        // Handle photo
+        if (photoFile) {
+            try {
+                // Use optimized compression for profile photos
+                formData.photo = await imageToBase64(photoFile, 800, 0.7);
+            } catch (error) {
+                console.error('Error converting image:', error);
+                hideLoadingOverlay();
+                showActionableError(error.message || 'Error processing image', { type: 'image' });
+                return;
             }
         }
-    }
+        
+        // Save person (update if editing)
+        const editingId = window.currentEditingId;
+        const person = savePerson(formData, editingId);
+        
+        hideLoadingOverlay();
     
-    // Reload contributions
-    loadMyContributions();
+        // Reset form
+        document.getElementById('ancestorForm').reset();
+        tags = [];
+        photoFile = null;
+        updateTagsDisplay();
+        document.getElementById('photoPreview').innerHTML = '';
+        window.currentEditingId = null;
+        
+        // Reset submit button text
+        const submitBtn = document.querySelector('#ancestorForm .submit-btn');
+        if (submitBtn) submitBtn.textContent = 'Submit Ancestor Information';
+        
+        // Show success message
+        showMessage(editingId ? 'Ancestor information updated successfully!' : 'Ancestor information submitted successfully!', 'success');
+        
+        // Complete onboarding if this is first contribution
+        if (!editingId) {
+            const user = getCurrentUser();
+            if (user) {
+                const myPersons = getPersonsByCreator(user.username);
+                if (myPersons.length === 1) {
+                    // First person added, complete onboarding
+                    completeOnboarding();
+                }
+            }
+        }
+        
+        // Reload contributions
+        loadMyContributions();
+    } catch (error) {
+        hideLoadingOverlay();
+        console.error('Error saving person:', error);
+        showActionableError('An error occurred while saving. Please try again.', { type: 'save' });
+    }
 }
 
 // Setup search and filter
@@ -441,12 +460,7 @@ function viewPerson(id) {
     window.location.href = `person.html?id=${id}`;
 }
 
-// Escape HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// Escape HTML imported from utils.js
 
 // Load profile settings
 export function loadProfileSettings() {
@@ -579,8 +593,19 @@ window.editPerson = function(id) {
 };
 
 // Delete person with confirmation
-window.deletePersonConfirm = function(id) {
-    if (confirm('Are you sure you want to delete this ancestor entry? This action cannot be undone.')) {
+window.deletePersonConfirm = async function(id) {
+    const person = getPersonById(id);
+    const personName = person ? person.name : 'this ancestor';
+    
+    const confirmed = await confirmAction(
+        'Delete Ancestor Entry?',
+        `Are you sure you want to delete "${personName}"? This action cannot be undone and will also delete all associated comments.`,
+        'Delete',
+        'Cancel',
+        true
+    );
+    
+    if (confirmed) {
         deletePerson(id);
         showMessage('Ancestor entry deleted successfully', 'success');
         loadMyContributions();

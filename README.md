@@ -34,12 +34,71 @@ A social platform for discovering and sharing information about deceased ancesto
 - **Keyboard Navigation**: Navigate search results with arrow keys
 - **Backup & Restore**: Complete backup and restore functionality for all data
 
+## Progressive Web App (PWA)
+
+PastLife er en fullverdig Progressive Web App som kan installeres på mobile enheter og desktop!
+
+### PWA Features
+- ✅ **Installable** - Installer appen på hjem-skjermen (Android, iOS, Desktop)
+- ✅ **Offline Support** - Fungerer offline med Service Worker caching
+- ✅ **App-like Experience** - Standalone mode uten browser UI
+- ✅ **Fast Loading** - Cache-first strategi for rask oppstart
+- ✅ **Responsive** - Optimalisert for alle skjermstørrelser
+
+### Installer Appen
+
+#### Android (Chrome)
+1. Åpne PastLife i Chrome
+2. Klikk på install-knappen som vises
+3. Eller: Meny → "Install app"
+4. Appen installeres på hjem-skjermen
+
+#### iOS (Safari eller Brave)
+**Med Safari:**
+1. Åpne PastLife i Safari
+2. Trykk Share-knappen (📤) nederst
+3. Velg "Legg til på hjem-skjerm" eller "Add to Home Screen"
+4. Bekreft og legg til
+
+**Med Brave:**
+1. Åpne PastLife i Brave
+2. Trykk på meny-knappen (☰) nederst
+3. Velg "Share" eller "Del"
+4. Scroll ned og velg "Legg til på hjem-skjerm"
+5. Bekreft og legg til
+
+#### Desktop (Chrome, Edge eller Brave)
+1. Klikk på install-ikonet i adresselinjen
+2. Eller: Meny → "Install PastLife"
+3. Appen åpnes i eget vindu (standalone mode)
+
+**Brave på Windows:**
+- Brave støtter PWA-installasjon på samme måte som Chrome
+- Install-ikonet vises automatisk i adresselinjen
+- Fungerer identisk med Chrome-installasjon
+
+### Offline-funksjonalitet
+- ✅ Fungerer offline etter installasjon
+- ✅ Automatisk caching av alle sider
+- ✅ Offline-indikator vises når du er offline
+- ✅ Offline queue tracker handlinger når offline
+- ✅ Automatisk sync når du kommer online igjen
+
+### PWA-dokumentasjon
+- **`PWA_STATUS.md`** - Detaljert status
+- **`WEB_APP_KONVERTERING.md`** - Teknisk dokumentasjon
+- **`START_GUIDE.md`** - Komplett start-guide
+- **`BRAVE_IPHONE_GUIDE.md`** - Guide for Brave på iPhone
+- **`DEPLOYMENT.md`** - Deploy-instruksjoner
+
 ## Technology
 
 - Pure HTML, CSS, and JavaScript
 - LocalStorage for data persistence
 - ES6 Modules for code organization
 - Responsive design with modern CSS
+- **Service Worker** for offline support
+- **PWA Manifest** for installability
 
 ## Color Palette
 

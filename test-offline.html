@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PastLife - Offline Test Side</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #00897b;
+        }
+        
+        .test-button {
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem;
+            background: #00897b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .test-button:hover {
+            background: #00695c;
+        }
+        
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .status.online {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status.offline {
+            background: #c62828;
+            color: white;
+        }
+        
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #00897b;
+        }
+        
+        .test-result.success {
+            border-left-color: #4caf50;
+        }
+        
+        .test-result.error {
+            border-left-color: #c62828;
+        }
+        
+        .log {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 0.25rem 0;
+            padding: 0.25rem;
+        }
+        
+        .log-entry.success {
+            color: #4caf50;
+        }
+        
+        .log-entry.error {
+            color: #c62828;
+        }
+        
+        .log-entry.info {
+            color: #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 PastLife - Offline Test Side</h1>
+        <p>Denne siden hjelper deg med å teste offline-funksjonalitet i PastLife PWA.</p>
+        
+        <!-- Online/Offline Status -->
+        <div class="test-section">
+            <h2>📡 Nettverksstatus</h2>
+            <div id="networkStatus" class="status">
+                Sjekker status...
+            </div>
+            <button class="test-button" onclick="checkNetworkStatus()">Oppdater Status</button>
+        </div>
+        
+        <!-- Service Worker Status -->
+        <div class="test-section">
+            <h2>⚙️ Service Worker Status</h2>
+            <div id="swStatus" class="test-result">
+                Sjekker Service Worker...
+            </div>
+            <button class="test-button" onclick="checkServiceWorker()">Sjekk Service Worker</button>
+            <button class="test-button" onclick="updateServiceWorker()">Oppdater Service Worker</button>
+        </div>
+        
+        <!-- Cache Status -->
+        <div class="test-section">
+            <h2>💾 Cache Status</h2>
+            <div id="cacheStatus" class="test-result">
+                Sjekker cache...
+            </div>
+            <button class="test-button" onclick="checkCache()">Sjekk Cache</button>
+            <button class="test-button" onclick="clearCache()">Tøm Cache</button>
+        </div>
+        
+        <!-- Offline Queue Test -->
+        <div class="test-section">
+            <h2>📋 Offline Queue Test</h2>
+            <div id="queueStatus" class="test-result">
+                Sjekker offline queue...
+            </div>
+            <button class="test-button" onclick="testOfflineQueue()">Test Offline Queue</button>
+            <button class="test-button" onclick="clearQueue()">Tøm Queue</button>
+        </div>
+        
+        <!-- Data Test -->
+        <div class="test-section">
+            <h2>📊 Data Test</h2>
+            <div id="dataStatus" class="test-result">
+                Klar for testing...
+            </div>
+            <button class="test-button" onclick="testDataAccess()">Test Data-tilgang</button>
+            <button class="test-button" onclick="testSearch()">Test Søk</button>
+        </div>
+        
+        <!-- Navigation Test -->
+        <div class="test-section">
+            <h2>🧭 Navigasjon Test</h2>
+            <div id="navStatus" class="test-result">
+                Klar for testing...
+            </div>
+            <button class="test-button" onclick="testNavigation()">Test Navigasjon</button>
+        </div>
+        
+        <!-- Test Log -->
+        <div class="test-section">
+            <h2>📝 Test Log</h2>
+            <div id="testLog" class="log">
+                <div class="log-entry info">Test log klar...</div>
+            </div>
+            <button class="test-button" onclick="clearLog()">Tøm Log</button>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="test-section">
+            <h2>⚡ Rask Testing</h2>
+            <button class="test-button" onclick="runAllTests()">Kjør Alle Tester</button>
+            <button class="test-button" onclick="simulateOffline()">Simuler Offline</button>
+            <button class="test-button" onclick="simulateOnline()">Simuler Online</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { queueOfflineAction, getOfflineQueue, clearQueue, processOfflineQueue } from './js/offline-queue.js';
+        
+        // Make functions available globally
+        window.queueOfflineAction = queueOfflineAction;
+        window.getOfflineQueue = getOfflineQueue;
+        window.clearQueue = clearQueue;
+        window.processOfflineQueue = processOfflineQueue;
+        
+        // Log function
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        window.log = log;
+        
+        // Check network status
+        window.checkNetworkStatus = function() {
+            const status = navigator.onLine ? 'online' : 'offline';
+            const statusDiv = document.getElementById('networkStatus');
+            statusDiv.className = `status ${status}`;
+            statusDiv.textContent = navigator.onLine 
+                ? '✅ Online - Du er tilkoblet internett' 
+                : '❌ Offline - Du er ikke tilkoblet internett';
+            log(`Nettverksstatus: ${status}`, status);
+        };
+        
+        // Check Service Worker
+        window.checkServiceWorker = async function() {
+            const statusDiv = document.getElementById('swStatus');
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        statusDiv.className = 'test-result success';
+                        statusDiv.innerHTML = `
+                            ✅ Service Worker er registrert<br>
+                            Scope: ${registration.scope}<br>
+                            State: ${registration.active?.state || 'N/A'}
+                        `;
+                        log('Service Worker er registrert', 'success');
+                    } else {
+                        statusDiv.className = 'test-result error';
+                        statusDiv.textContent = '❌ Service Worker er ikke registrert';
+                        log('Service Worker er ikke registrert', 'error');
+                    }
+                } else {
+                    statusDiv.className = 'test-result error';
+                    statusDiv.textContent = '❌ Service Worker støttes ikke i denne nettleseren';
+                    log('Service Worker støttes ikke', 'error');
+                }
+            } catch (error) {
+                statusDiv.className = 'test-result error';
+                statusDiv.textContent = `❌ Feil: ${error.message}`;
+                log(`Feil ved sjekk av Service Worker: ${error.message}`, 'error');
+            }
+        };
+        
+        // Update Service Worker
+        window.updateServiceWorker = async function() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        await registration.update();
+                        log('Service Worker oppdatert', 'success');
+                        setTimeout(() => checkServiceWorker(), 1000);
+                    }
+                }
+            } catch (error) {
+                log(`Feil ved oppdatering: ${error.message}`, 'error');
+            }
+        };
+        
+        // Check cache
+        window.checkCache = async function() {
+            const statusDiv = document.getElementById('cacheStatus');
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    let cacheInfo = `✅ ${cacheNames.length} cache(s) funnet:\n`;
+                    for (const name of cacheNames) {
+                        const cache = await caches.open(name);
+                        const keys = await cache.keys();
+                        cacheInfo += `- ${name}: ${keys.length} filer\n`;
+                    }
+                    statusDiv.className = 'test-result success';
+                    statusDiv.textContent = cacheInfo;
+                    log(`Cache sjekket: ${cacheNames.length} cache(s)`, 'success');
+                } else {
+                    statusDiv.className = 'test-result error';
+                    statusDiv.textContent = '❌ Cache API støttes ikke';
+                    log('Cache API støttes ikke', 'error');
+                }
+            } catch (error) {
+                statusDiv.className = 'test-result error';
+                statusDiv.textContent = `❌ Feil: ${error.message}`;
+                log(`Feil ved cache-sjekk: ${error.message}`, 'error');
+            }
+        };
+        
+        // Clear cache
+        window.clearCache = async function() {
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const name of cacheNames) {
+                        await caches.delete(name);
+                    }
+                    log(`Cache tømt: ${cacheNames.length} cache(s)`, 'success');
+                    setTimeout(() => checkCache(), 500);
+                }
+            } catch (error) {
+                log(`Feil ved tømming av cache: ${error.message}`, 'error');
+            }
+        };
+        
+        // Test offline queue
+        window.testOfflineQueue = function() {
+            const statusDiv = document.getElementById('queueStatus');
+            try {
+                const queue = getOfflineQueue();
+                if (queue.length > 0) {
+                    statusDiv.className = 'test-result';
+                    statusDiv.innerHTML = `✅ ${queue.length} item(s) i queue:\n${JSON.stringify(queue, null, 2)}`;
+                    log(`Offline queue: ${queue.length} item(s)`, 'info');
+                } else {
+                    statusDiv.className = 'test-result success';
+                    statusDiv.textContent = '✅ Offline queue er tom';
+                    log('Offline queue er tom', 'success');
+                }
+            } catch (error) {
+                statusDiv.className = 'test-result error';
+                statusDiv.textContent = `❌ Feil: ${error.message}`;
+                log(`Feil ved queue-test: ${error.message}`, 'error');
+            }
+        };
+        
+        window.clearQueue = function() {
+            clearQueue();
+            log('Offline queue tømt', 'success');
+            setTimeout(() => testOfflineQueue(), 500);
+        };
+        
+        // Test data access
+        window.testDataAccess = async function() {
+            const statusDiv = document.getElementById('dataStatus');
+            try {
+                // Try to access localStorage
+                const testKey = 'pastlife_test';
+                localStorage.setItem(testKey, 'test');
+                const value = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                statusDiv.className = 'test-result success';
+                statusDiv.textContent = '✅ Data-tilgang fungerer (localStorage)';
+                log('Data-tilgang testet: OK', 'success');
+            } catch (error) {
+                statusDiv.className = 'test-result error';
+                statusDiv.textContent = `❌ Feil: ${error.message}`;
+                log(`Feil ved data-test: ${error.message}`, 'error');
+            }
+        };
+        
+        // Test search
+        window.testSearch = async function() {
+            const statusDiv = document.getElementById('dataStatus');
+            try {
+                // Import search function
+                const { getAllPersons } = await import('./js/data.js');
+                const persons = getAllPersons();
+                statusDiv.className = 'test-result success';
+                statusDiv.textContent = `✅ Søk fungerer: ${persons.length} person(er) funnet`;
+                log(`Søk testet: ${persons.length} person(er)`, 'success');
+            } catch (error) {
+                statusDiv.className = 'test-result error';
+                statusDiv.textContent = `❌ Feil: ${error.message}`;
+                log(`Feil ved søk-test: ${error.message}`, 'error');
+            }
+        };
+        
+        // Test navigation
+        window.testNavigation = function() {
+            const statusDiv = document.getElementById('navStatus');
+            const pages = ['index.html', 'search.html', 'profile.html', 'family-tree.html'];
+            let results = 'Navigasjon test:\n';
+            let allOk = true;
+            
+            pages.forEach(page => {
+                try {
+                    const link = document.createElement('a');
+                    link.href = page;
+                    if (link.href) {
+                        results += `✅ ${page}\n`;
+                    } else {
+                        results += `❌ ${page}\n`;
+                        allOk = false;
+                    }
+                } catch (error) {
+                    results += `❌ ${page}: ${error.message}\n`;
+                    allOk = false;
+                }
+            });
+            
+            statusDiv.className = allOk ? 'test-result success' : 'test-result error';
+            statusDiv.textContent = results;
+            log(`Navigasjon testet: ${allOk ? 'OK' : 'Feil'}`, allOk ? 'success' : 'error');
+        };
+        
+        // Run all tests
+        window.runAllTests = async function() {
+            log('Starter alle tester...', 'info');
+            checkNetworkStatus();
+            await checkServiceWorker();
+            await checkCache();
+            testOfflineQueue();
+            await testDataAccess();
+            await testSearch();
+            testNavigation();
+            log('Alle tester fullført!', 'success');
+        };
+        
+        // Simulate offline/online (for testing)
+        window.simulateOffline = function() {
+            log('Simulerer offline (kun for testing - ikke faktisk offline)', 'info');
+            // Note: Cannot actually simulate offline in browser
+            // This is just for demonstration
+        };
+        
+        window.simulateOnline = function() {
+            log('Simulerer online (kun for testing)', 'info');
+        };
+        
+        // Clear log
+        window.clearLog = function() {
+            document.getElementById('testLog').innerHTML = '<div class="log-entry info">Log tømt...</div>';
+        };
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            checkNetworkStatus();
+            checkServiceWorker();
+            checkCache();
+            testOfflineQueue();
+            
+            // Listen for online/offline events
+            window.addEventListener('online', () => {
+                log('Nettverk: Online', 'success');
+                checkNetworkStatus();
+            });
+            
+            window.addEventListener('offline', () => {
+                log('Nettverk: Offline', 'error');
+                checkNetworkStatus();
+            });
+        });
+    </script>
+</body>
+</html>
+

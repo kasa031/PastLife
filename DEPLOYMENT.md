@@ -97,9 +97,31 @@ GitHub Pages vil automatisk oppdatere siden etter noen minutter.
 - **Analytics**: Legg til Google Analytics hvis ønskelig
 - **SEO**: Meta tags er allerede inkludert i HTML-filene
 
+## Installere på iPhone (Safari eller Brave)
+
+Etter at appen er deployet til GitHub Pages:
+
+### Med Safari:
+1. Åpne Safari på iPhone
+2. Gå til din GitHub Pages URL (f.eks. `https://kasa031.github.io/PastLife/`)
+3. Trykk Share-knappen (📤) nederst
+4. Velg "Legg til på hjem-skjerm"
+5. Bekreft og legg til
+
+### Med Brave:
+1. Åpne Brave på iPhone
+2. Gå til din GitHub Pages URL (f.eks. `https://kasa031.github.io/PastLife/`)
+3. Trykk på meny-knappen (☰) nederst
+4. Velg "Share" eller "Del"
+5. Scroll ned og velg "Legg til på hjem-skjerm" eller "Add to Home Screen"
+6. Bekreft og legg til
+
+**💡 Tips:** Hvis du ikke ser "Legg til på hjem-skjerm" i Brave, prøv å swipe opp i share-menyen for å se flere alternativer.
+
 ## Support
 
 Hvis du har problemer:
 1. Sjekk GitHub Actions for build-feil
 2. Sjekk browser console for JavaScript-feil
 3. Test lokalt først ved å åpne `index.html` i nettleseren
+4. For PWA-problemer, sjekk at HTTPS fungerer (GitHub Pages har automatisk HTTPS)

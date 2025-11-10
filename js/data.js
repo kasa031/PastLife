@@ -2,6 +2,12 @@
 export const PERSONS_KEY = 'pastlife_persons';
 export const COMMENTS_KEY = 'pastlife_comments';
 
+// Cache for performance optimization
+let personsCache = null;
+let personsCacheTimestamp = null;
+let searchIndexCache = null;
+const CACHE_DURATION = 5000; // 5 seconds cache
+
 // Initialize data storage
 function initData() {
     if (!localStorage.getItem(PERSONS_KEY)) {
@@ -12,16 +18,131 @@ function initData() {
     }
 }
 
-// Get all persons
-export function getAllPersons() {
+// Invalidate cache (call when data changes)
+function invalidateCache() {
+    personsCache = null;
+    personsCacheTimestamp = null;
+    searchIndexCache = null;
+}
+
+// Get all persons with caching
+export function getAllPersons(forceRefresh = false) {
     initData();
-    return JSON.parse(localStorage.getItem(PERSONS_KEY));
+    
+    // Check if cache is valid
+    const now = Date.now();
+    if (!forceRefresh && personsCache && personsCacheTimestamp && (now - personsCacheTimestamp) < CACHE_DURATION) {
+        return personsCache;
+    }
+    
+    // Load from localStorage
+    const persons = JSON.parse(localStorage.getItem(PERSONS_KEY) || '[]');
+    
+    // Update cache
+    personsCache = persons;
+    personsCacheTimestamp = now;
+    
+    return persons;
+}
+
+// Build search index for faster searching
+function buildSearchIndex(persons) {
+    const index = {
+        byName: new Map(), // name -> [person, ...]
+        byCountry: new Map(), // country -> [person, ...]
+        byCity: new Map(), // city -> [person, ...]
+        byTag: new Map(), // tag -> [person, ...]
+        byYear: new Map(), // year -> [person, ...]
+        byNameLower: new Map() // lowercase name -> [person, ...] for case-insensitive search
+    };
+    
+    persons.forEach(person => {
+        // Index by name
+        const name = person.name || '';
+        if (name) {
+            if (!index.byName.has(name)) {
+                index.byName.set(name, []);
+            }
+            index.byName.get(name).push(person);
+            
+            // Also index by lowercase for case-insensitive search
+            const nameLower = name.toLowerCase();
+            if (!index.byNameLower.has(nameLower)) {
+                index.byNameLower.set(nameLower, []);
+            }
+            index.byNameLower.get(nameLower).push(person);
+        }
+        
+        // Index by country
+        const country = person.country || '';
+        if (country) {
+            const countryLower = country.toLowerCase();
+            if (!index.byCountry.has(countryLower)) {
+                index.byCountry.set(countryLower, []);
+            }
+            index.byCountry.get(countryLower).push(person);
+        }
+        
+        // Index by city
+        const city = person.city || '';
+        if (city) {
+            const cityLower = city.toLowerCase();
+            if (!index.byCity.has(cityLower)) {
+                index.byCity.set(cityLower, []);
+            }
+            index.byCity.get(cityLower).push(person);
+        }
+        
+        // Index by tags
+        (person.tags || []).forEach(tag => {
+            const tagLower = tag.toLowerCase();
+            if (!index.byTag.has(tagLower)) {
+                index.byTag.set(tagLower, []);
+            }
+            index.byTag.get(tagLower).push(person);
+        });
+        
+        // Index by years
+        if (person.birthYear) {
+            if (!index.byYear.has(person.birthYear)) {
+                index.byYear.set(person.birthYear, []);
+            }
+            index.byYear.get(person.birthYear).push(person);
+        }
+        if (person.deathYear) {
+            if (!index.byYear.has(person.deathYear)) {
+                index.byYear.set(person.deathYear, []);
+            }
+            index.byYear.get(person.deathYear).push(person);
+        }
+    });
+    
+    return index;
+}
+
+// Get or build search index
+function getSearchIndex() {
+    const persons = getAllPersons();
+    
+    // Check if index is still valid (same number of persons)
+    if (searchIndexCache && searchIndexCache.personCount === persons.length) {
+        return searchIndexCache.index;
+    }
+    
+    // Build new index
+    const index = buildSearchIndex(persons);
+    searchIndexCache = {
+        index: index,
+        personCount: persons.length
+    };
+    
+    return index;
 }
 
 // Save person (new or update)
 export function savePerson(personData, personId = null) {
     initData();
-    const persons = getAllPersons();
+    const persons = getAllPersons(true); // Force refresh to get latest data
     
     if (personId) {
         // Update existing person
@@ -46,6 +167,7 @@ export function savePerson(personData, personId = null) {
                 lastModified: new Date().toISOString()
             };
             localStorage.setItem(PERSONS_KEY, JSON.stringify(persons));
+            invalidateCache(); // Invalidate cache after update
             return persons[index];
         }
     }
@@ -74,15 +196,17 @@ export function savePerson(personData, personId = null) {
     
     persons.push(person);
     localStorage.setItem(PERSONS_KEY, JSON.stringify(persons));
+    invalidateCache(); // Invalidate cache after adding new person
     return person;
 }
 
 // Delete person
 export function deletePerson(personId) {
     initData();
-    const persons = getAllPersons();
+    const persons = getAllPersons(true); // Force refresh
     const filtered = persons.filter(p => p.id !== personId);
     localStorage.setItem(PERSONS_KEY, JSON.stringify(filtered));
+    invalidateCache(); // Invalidate cache after deletion
     
     // Also delete associated comments
     const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY));
@@ -123,11 +247,42 @@ export function getPersonById(id) {
     return persons.find(p => p.id === id);
 }
 
-// Search persons with improved fuzzy search
+// Search persons with improved fuzzy search and indexing
 export function searchPersons(filters) {
-    const persons = getAllPersons();
+    // Use index for simple exact matches to improve performance
+    const index = getSearchIndex();
+    let candidates = null;
     
-    return persons.filter(person => {
+    // If we have simple filters that can use index, start with indexed results
+    if (filters.name && !filters.country && !filters.city && !filters.tags && !filters.description && !filters.comments && !filters.yearFrom && !filters.yearTo && !filters.year) {
+        const nameLower = filters.name.toLowerCase().trim();
+        // Try exact match first
+        if (index.byNameLower.has(nameLower)) {
+            candidates = index.byNameLower.get(nameLower);
+        } else {
+            // For fuzzy search, we still need to check all persons
+            candidates = getAllPersons();
+        }
+    } else if (filters.country && !filters.name && !filters.city && !filters.tags && !filters.description && !filters.comments && !filters.yearFrom && !filters.yearTo && !filters.year) {
+        const countryLower = filters.country.toLowerCase().trim();
+        if (index.byCountry.has(countryLower)) {
+            candidates = index.byCountry.get(countryLower);
+        } else {
+            candidates = getAllPersons();
+        }
+    } else if (filters.city && !filters.name && !filters.country && !filters.tags && !filters.description && !filters.comments && !filters.yearFrom && !filters.yearTo && !filters.year) {
+        const cityLower = filters.city.toLowerCase().trim();
+        if (index.byCity.has(cityLower)) {
+            candidates = index.byCity.get(cityLower);
+        } else {
+            candidates = getAllPersons();
+        }
+    } else {
+        // Complex search - use all persons
+        candidates = getAllPersons();
+    }
+    
+    return candidates.filter(person => {
         let matches = true;
         
         if (filters.name) {
@@ -252,20 +407,6 @@ export function searchPersons(filters) {
                              (person.birthYear && person.deathYear && 
                               person.birthYear <= year && person.deathYear >= year);
             matches = matches && yearMatch;
-        }
-        
-        if (filters.tags) {
-            const tagSearch = filters.tags.toLowerCase();
-            const tagMatch = person.tags.some(tag => 
-                tag.toLowerCase().includes(tagSearch)
-            );
-            matches = matches && tagMatch;
-        }
-        
-        // Search in description
-        if (filters.description) {
-            const descMatch = person.description.toLowerCase().includes(filters.description.toLowerCase());
-            matches = matches && descMatch;
         }
         
         // Search in comments (full-text search)
@@ -465,8 +606,26 @@ export function getCommentsForPerson(personId) {
 
 // Compress and convert image to base64
 // Optimized for different use cases: profile photos (800px), thumbnails (300px), full size (1200px)
-export function imageToBase64(file, maxWidth = 800, quality = 0.75) {
+// Improved compression: uses adaptive quality based on file size
+export function imageToBase64(file, maxWidth = 800, quality = null) {
+    // Adaptive quality based on original file size
+    if (quality === null) {
+        const fileSizeMB = file.size / (1024 * 1024);
+        if (fileSizeMB > 5) {
+            quality = 0.6; // More aggressive compression for large files
+        } else if (fileSizeMB > 2) {
+            quality = 0.7;
+        } else {
+            quality = 0.75; // Default quality
+        }
+    }
     return new Promise((resolve, reject) => {
+        // Check if canvas is supported
+        if (!document.createElement('canvas').getContext) {
+            reject(new Error('Canvas is not supported in this browser. Please use a modern browser.'));
+            return;
+        }
+        
         // Validate file type
         if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
             reject(new Error('Invalid image format. Please use JPEG, PNG, GIF, or WebP.'));
@@ -483,46 +642,77 @@ export function imageToBase64(file, maxWidth = 800, quality = 0.75) {
         reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                
-                // Calculate new dimensions - maintain aspect ratio
-                if (width > maxWidth || height > maxWidth) {
-                    const ratio = Math.min(maxWidth / width, maxWidth / height);
-                    width = width * ratio;
-                    height = height * ratio;
+                try {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Calculate new dimensions - maintain aspect ratio
+                    if (width > maxWidth || height > maxWidth) {
+                        const ratio = Math.min(maxWidth / width, maxWidth / height);
+                        width = width * ratio;
+                        height = height * ratio;
+                    }
+                    
+                    // Ensure dimensions are even numbers for better compression
+                    width = Math.round(width / 2) * 2;
+                    height = Math.round(height / 2) * 2;
+                    
+                    // Validate dimensions
+                    if (width <= 0 || height <= 0) {
+                        reject(new Error('Invalid image dimensions.'));
+                        return;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                        reject(new Error('Failed to get canvas context.'));
+                        return;
+                    }
+                    
+                    // Use better image rendering
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to base64 with compression
+                    // Try WebP first if supported, otherwise use JPEG for better compression
+                    let compressed;
+                    try {
+                        // Try WebP for better compression (smaller file size)
+                        compressed = canvas.toDataURL('image/webp', quality);
+                        // If WebP fails or returns data URL that's too large, fall back to JPEG
+                        if (!compressed || compressed.length === 0 || compressed === 'data:,') {
+                            compressed = canvas.toDataURL('image/jpeg', quality);
+                        }
+                    } catch (e) {
+                        // Fallback to JPEG if WebP is not supported
+                        compressed = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    
+                    if (!compressed || compressed.length === 0) {
+                        reject(new Error('Failed to compress image.'));
+                        return;
+                    }
+                    
+                    // Log compression info (for debugging)
+                    const originalSizeKB = (file.size / 1024).toFixed(2);
+                    const compressedSizeKB = ((compressed.length * 3) / 4 / 1024).toFixed(2);
+                    const compressionRatio = ((1 - (compressed.length * 3) / 4 / file.size) * 100).toFixed(1);
+                    console.log(`Image compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${compressionRatio}% reduction)`);
+                    
+                    resolve(compressed);
+                } catch (error) {
+                    reject(new Error(`Error processing image: ${error.message}`));
                 }
-                
-                // Ensure dimensions are even numbers for better compression
-                width = Math.round(width / 2) * 2;
-                height = Math.round(height / 2) * 2;
-                
-                canvas.width = width;
-                canvas.height = height;
-                
-                const ctx = canvas.getContext('2d');
-                // Use better image rendering
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // Convert to base64 with compression
-                // Use JPEG for better compression, but preserve quality
-                const compressed = canvas.toDataURL('image/jpeg', quality);
-                
-                // Log compression info (for debugging)
-                const originalSizeKB = (file.size / 1024).toFixed(2);
-                const compressedSizeKB = ((compressed.length * 3) / 4 / 1024).toFixed(2);
-                const compressionRatio = ((1 - (compressed.length * 3) / 4 / file.size) * 100).toFixed(1);
-                console.log(`Image compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${compressionRatio}% reduction)`);
-                
-                resolve(compressed);
             };
-            img.onerror = () => reject(new Error('Failed to load image'));
+            img.onerror = () => reject(new Error('Failed to load image. The file may be corrupted.'));
             img.src = e.target.result;
         };
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error('Failed to read file. Please try again.'));
         reader.readAsDataURL(file);
     });
 }
@@ -531,4 +721,29 @@ export function imageToBase64(file, maxWidth = 800, quality = 0.75) {
 export function getPersonsByCreator(username) {
     const persons = getAllPersons();
     return persons.filter(p => p.createdBy === username);
+}
+
+// Check for duplicate person (similar name and birth year)
+// Returns the duplicate person if found, null otherwise
+export function checkDuplicatePerson(personData, excludePersonId = null) {
+    const allPersons = getAllPersons();
+    const nameLower = personData.name.toLowerCase().trim();
+    
+    return allPersons.find(p => {
+        // Skip the person being edited
+        if (excludePersonId && p.id === excludePersonId) {
+            return false;
+        }
+        
+        const pNameLower = p.name.toLowerCase().trim();
+        const nameSimilar = pNameLower === nameLower || 
+                           pNameLower.includes(nameLower) || 
+                           nameLower.includes(pNameLower);
+        
+        // Check if birth year matches (if provided)
+        const yearMatch = !personData.birthYear || !p.birthYear || 
+                         personData.birthYear === p.birthYear;
+        
+        return nameSimilar && yearMatch;
+    }) || null;
 }

@@ -2,9 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PastLife - Discover Your Ancestors</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#00897b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PastLife">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="Discover and explore your family history. Build family trees, search ancestors, and connect generations through time.">
+    
+    <!-- Icons and Manifest -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="assets/icons/icon-180x180.png">
+    <link rel="manifest" href="manifest.json">
+    
     <link rel="stylesheet" href="css/style.css">
     <!-- Service Worker Registration -->
     <script>
@@ -27,8 +40,17 @@
     <link rel="preload" as="image" href="assets/images/tree.png">
 </head>
 <body>
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content" style="position: absolute; left: -9999px; z-index: 9999; padding: 1rem; background: var(--turquoise-primary); color: white; text-decoration: none;">Skip to main content</a>
+    <style>
+        .skip-to-content:focus {
+            left: 0;
+            top: 0;
+        }
+    </style>
+    
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="container">
             <div class="nav-brand">
                 <img src="assets/images/PastLifeLogo.jpg" alt="PastLife Logo" style="height: 50px; margin-right: 1rem; border-radius: 5px;">
@@ -37,22 +59,23 @@
                     <p class="tagline">Journey through time, discover your ancestors</p>
                 </div>
             </div>
-            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">☰</button>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html" class="active">Home</a></li>
-                <li><a href="search.html">Search</a></li>
-                <li><a href="profile.html" id="profileLink">Profile</a></li>
-                <li><a href="family-tree.html">Family Tree</a></li>
-                <li><a href="about.html">Om Meg</a></li>
-                <li><button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" style="background: none; border: none; color: var(--white); cursor: pointer; padding: 0.5rem 1rem; font-size: 1.2rem;">🌙</button></li>
-                <li><a href="login.html" id="loginLink">Login</a></li>
-                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="navMenu">☰</button>
+            <ul class="nav-menu" id="navMenu" role="menubar">
+                <li role="none"><a href="index.html" class="active" role="menuitem" aria-label="Home page">Home</a></li>
+                <li role="none"><a href="search.html" role="menuitem" aria-label="Search ancestors">Search</a></li>
+                <li role="none"><a href="profile.html" id="profileLink" role="menuitem" aria-label="Your profile">Profile</a></li>
+                <li role="none"><a href="family-tree.html" role="menuitem" aria-label="Family tree builder">Family Tree</a></li>
+                <li role="none"><a href="about.html" role="menuitem" aria-label="About page">Om Meg</a></li>
+                <li role="none"><button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode" role="menuitem" style="background: none; border: none; color: var(--white); cursor: pointer; padding: 0.5rem 1rem; font-size: 1.2rem;">🌙</button></li>
+                <li role="none"><a href="login.html" id="loginLink" role="menuitem" aria-label="Login to your account">Login</a></li>
+                <li role="none"><a href="#" id="logoutLink" class="hidden" role="menuitem" aria-label="Logout from your account">Logout</a></li>
             </ul>
         </div>
     </nav>
 
     <!-- Quick Help / FAQ Section -->
-    <section style="background: var(--gray-light); padding: 3rem 0;">
+    <main id="main-content" role="main">
+    <section style="background: var(--gray-light); padding: 3rem 0;" aria-label="Quick Help and FAQ">
         <div class="container">
             <div style="max-width: 800px; margin: 0 auto; background: var(--white); padding: 2rem; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                 <h2 style="color: var(--turquoise-dark); text-align: center; margin-bottom: 2rem;">❓ Ofte Stilte Spørsmål (FAQ)</h2>
@@ -133,6 +156,7 @@
             </div>
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -141,6 +165,11 @@
         </div>
     </footer>
 
+    <script type="module" src="js/navigation-utils.js"></script>
+    <script type="module" src="js/offline-indicator.js"></script>
+    <script type="module" src="js/offline-queue.js"></script>
+    <script type="module" src="js/install-prompt.js"></script>
+    <script type="module" src="js/update-manager.js"></script>
     <script type="module" src="js/main.js"></script>
     <script type="module">
         import { showOnboarding } from './js/onboarding.js';
