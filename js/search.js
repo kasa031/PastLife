@@ -415,8 +415,7 @@ function setupAutocomplete() {
             .filter(item => item !== null)
             .sort((a, b) => b.score - a.score)
             .map(item => ({ text: item.text, type: item.type }))
-            .slice(0, 7 - historySuggestions.length)
-            .map(name => ({ text: name, type: 'name' }));
+            .slice(0, 7 - historySuggestions.length);
         
         // Get country suggestions if input looks like a country
         const countries = [...new Set(allPersons.map(p => p.country).filter(c => c))];
