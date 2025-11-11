@@ -71,8 +71,13 @@
   - [ ] Fikse eventuelle problemer
 
 ### 2. Valgfrie PWA-forbedringer
-- [ ] Legge til screenshots i manifest.json (for bedre installasjonsprompt)
-- [ ] Legge til visuell guide med bilder/ikoner i install-instruksjoner
+- [x] Legge til screenshots i manifest.json (for bedre installasjonsprompt) ✅
+  - [x] Struktur satt opp i manifest.json ✅
+  - [ ] Generere faktiske screenshots (krever manuell opptak)
+- [x] Legge til visuell guide med bilder/ikoner i install-instruksjoner ✅
+  - [x] Forbedret visuell design med nummererte steg ✅
+  - [x] Lagt til ikoner og visuelle indikatorer ✅
+  - [x] Forbedret layout og farger ✅
 
 ---
 

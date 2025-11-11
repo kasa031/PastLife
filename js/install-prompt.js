@@ -244,77 +244,168 @@ function showIOSInstructions() {
     if (isBrave && isIOS) {
         instructionsHTML = `
             <div style="padding: 1.5rem;">
-                <h3 style="color: var(--turquoise-dark); margin-top: 0;">📱 Install PastLife på iPhone (Brave)</h3>
-                <ol style="line-height: 2; color: var(--text-dark);">
-                    <li>Trykk på <strong>meny-knappen</strong> (☰) nederst i Brave</li>
-                    <li>Velg <strong>"Share"</strong> eller <strong>"Del"</strong></li>
-                    <li>Scroll ned og velg <strong>"Legg til på hjem-skjerm"</strong> eller <strong>"Add to Home Screen"</strong></li>
-                    <li>Trykk <strong>"Legg til"</strong> eller <strong>"Add"</strong> i øvre høyre hjørne</li>
-                    <li>PastLife vil nå vises som en app på hjem-skjermen din! 🎉</li>
-                </ol>
-                <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                    <strong>💡 Tips:</strong> Hvis du ikke ser "Legg til på hjem-skjerm", prøv å swipe opp i share-menyen for å se flere alternativer.
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 4rem; margin-bottom: 0.5rem;">📱</div>
+                    <h3 style="color: var(--turquoise-dark, #8B6F47); margin-top: 0; font-size: 1.5rem;">Install PastLife på iPhone (Brave)</h3>
+                </div>
+                <div style="background: linear-gradient(135deg, #F8F6F3 0%, #ffffff 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #8B6F47;">
+                    <ol style="line-height: 2.2; color: var(--text-dark, #333); margin: 0; padding-left: 1.5rem; list-style: none; counter-reset: step-counter;">
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">1</span>
+                            <strong style="color: #8B6F47;">Trykk på meny-knappen</strong> 
+                            <span style="font-size: 1.5rem; vertical-align: middle; margin-left: 0.5rem;">☰</span>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">Nederst i Brave-nettleseren</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">2</span>
+                            <strong style="color: #8B6F47;">Velg "Share" eller "Del"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">📤 Ikonet med pil oppover</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">3</span>
+                            <strong style="color: #8B6F47;">Scroll ned og velg "Legg til på hjem-skjerm"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">📲 Eller "Add to Home Screen"</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">4</span>
+                            <strong style="color: #8B6F47;">Trykk "Legg til" eller "Add"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">I øvre høyre hjørne</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 0; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #4caf50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">✓</span>
+                            <strong style="color: #4caf50;">PastLife vises nå som en app! 🎉</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">På hjem-skjermen din</div>
+                        </li>
+                    </ol>
+                </div>
+                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <div style="display: flex; align-items: start;">
+                        <span style="font-size: 1.5rem; margin-right: 0.5rem;">💡</span>
+                        <div>
+                            <strong style="color: #856404;">Tips:</strong>
+                            <div style="color: #856404; font-size: 0.9rem; margin-top: 0.3rem;">Hvis du ikke ser "Legg til på hjem-skjerm", prøv å swipe opp i share-menyen for å se flere alternativer.</div>
+                        </div>
+                    </div>
                 </div>
                 <button onclick="this.closest('.install-instructions-modal').remove(); this.closest('.install-instructions-overlay').remove();" style="
-                    margin-top: 1rem;
-                    padding: 0.75rem 1.5rem;
-                    background: var(--turquoise-primary);
+                    margin-top: 1.5rem;
+                    padding: 0.875rem 1.5rem;
+                    background: linear-gradient(135deg, #8B6F47 0%, #6B5F3F 100%);
                     color: white;
                     border: none;
                     border-radius: 8px;
                     cursor: pointer;
                     font-weight: bold;
                     width: 100%;
-                ">Lukk</button>
+                    font-size: 1rem;
+                    box-shadow: 0 4px 12px rgba(139, 111, 71, 0.3);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(139, 111, 71, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)';">Lukk</button>
             </div>
         `;
     } else if (isBrave && isAndroid) {
         instructionsHTML = `
             <div style="padding: 1.5rem;">
-                <h3 style="color: var(--turquoise-dark); margin-top: 0;">📱 Install PastLife på Android (Brave)</h3>
-                <ol style="line-height: 2; color: var(--text-dark);">
-                    <li>Trykk på <strong>meny-knappen</strong> (☰) øverst i Brave</li>
-                    <li>Velg <strong>"Install"</strong> eller <strong>"Add to Home Screen"</strong></li>
-                    <li>Bekreft installasjonen</li>
-                    <li>PastLife vil nå vises som en app på hjem-skjermen din! 🎉</li>
-                </ol>
-                <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                    <strong>💡 Tips:</strong> Hvis du ikke ser install-alternativet, sjekk at du er på HTTPS og at appen er PWA-kompatibel.
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 4rem; margin-bottom: 0.5rem;">🤖</div>
+                    <h3 style="color: var(--turquoise-dark, #8B6F47); margin-top: 0; font-size: 1.5rem;">Install PastLife på Android (Brave)</h3>
+                </div>
+                <div style="background: linear-gradient(135deg, #F8F6F3 0%, #ffffff 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #8B6F47;">
+                    <ol style="line-height: 2.2; color: var(--text-dark, #333); margin: 0; padding-left: 1.5rem; list-style: none; counter-reset: step-counter;">
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">1</span>
+                            <strong style="color: #8B6F47;">Trykk på meny-knappen</strong> 
+                            <span style="font-size: 1.5rem; vertical-align: middle; margin-left: 0.5rem;">☰</span>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">Øverst i Brave-nettleseren</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">2</span>
+                            <strong style="color: #8B6F47;">Velg "Install" eller "Add to Home Screen"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">📲 I menyen</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">3</span>
+                            <strong style="color: #8B6F47;">Bekreft installasjonen</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">Trykk "Install" i bekreftelsesdialogen</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 0; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #4caf50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">✓</span>
+                            <strong style="color: #4caf50;">PastLife vises nå som en app! 🎉</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">På hjem-skjermen din</div>
+                        </li>
+                    </ol>
+                </div>
+                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <div style="display: flex; align-items: start;">
+                        <span style="font-size: 1.5rem; margin-right: 0.5rem;">💡</span>
+                        <div>
+                            <strong style="color: #856404;">Tips:</strong>
+                            <div style="color: #856404; font-size: 0.9rem; margin-top: 0.3rem;">Hvis du ikke ser install-alternativet, sjekk at du er på HTTPS og at appen er PWA-kompatibel.</div>
+                        </div>
+                    </div>
                 </div>
                 <button onclick="this.closest('.install-instructions-modal').remove(); this.closest('.install-instructions-overlay').remove();" style="
-                    margin-top: 1rem;
-                    padding: 0.75rem 1.5rem;
-                    background: var(--turquoise-primary);
+                    margin-top: 1.5rem;
+                    padding: 0.875rem 1.5rem;
+                    background: linear-gradient(135deg, #8B6F47 0%, #6B5F3F 100%);
                     color: white;
                     border: none;
                     border-radius: 8px;
                     cursor: pointer;
                     font-weight: bold;
                     width: 100%;
-                ">Lukk</button>
+                    font-size: 1rem;
+                    box-shadow: 0 4px 12px rgba(139, 111, 71, 0.3);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(139, 111, 71, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)';">Lukk</button>
             </div>
         `;
     } else if (isIOS) {
         instructionsHTML = `
             <div style="padding: 1.5rem;">
-                <h3 style="color: var(--turquoise-dark); margin-top: 0;">📱 Install PastLife på iOS</h3>
-                <ol style="line-height: 2; color: var(--text-dark);">
-                    <li>Trykk på <strong>Share</strong>-knappen (📤) nederst i Safari</li>
-                    <li>Velg <strong>"Legg til på hjem-skjerm"</strong> eller <strong>"Add to Home Screen"</strong></li>
-                    <li>Trykk <strong>"Legg til"</strong> eller <strong>"Add"</strong> i øvre høyre hjørne</li>
-                    <li>PastLife vil nå vises som en app på hjem-skjermen din!</li>
-                </ol>
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 4rem; margin-bottom: 0.5rem;">📱</div>
+                    <h3 style="color: var(--turquoise-dark, #8B6F47); margin-top: 0; font-size: 1.5rem;">Install PastLife på iOS</h3>
+                </div>
+                <div style="background: linear-gradient(135deg, #F8F6F3 0%, #ffffff 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #8B6F47;">
+                    <ol style="line-height: 2.2; color: var(--text-dark, #333); margin: 0; padding-left: 1.5rem; list-style: none; counter-reset: step-counter;">
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">1</span>
+                            <strong style="color: #8B6F47;">Trykk på Share-knappen</strong> 
+                            <span style="font-size: 1.5rem; vertical-align: middle; margin-left: 0.5rem;">📤</span>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">Nederst i Safari-nettleseren</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">2</span>
+                            <strong style="color: #8B6F47;">Velg "Legg til på hjem-skjerm"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">📲 Eller "Add to Home Screen"</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">3</span>
+                            <strong style="color: #8B6F47;">Trykk "Legg til" eller "Add"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">I øvre høyre hjørne</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 0; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #4caf50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">✓</span>
+                            <strong style="color: #4caf50;">PastLife vises nå som en app! 🎉</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">På hjem-skjermen din</div>
+                        </li>
+                    </ol>
+                </div>
                 <button onclick="this.closest('.install-instructions-modal').remove(); this.closest('.install-instructions-overlay').remove();" style="
-                    margin-top: 1rem;
-                    padding: 0.75rem 1.5rem;
-                    background: var(--turquoise-primary);
+                    margin-top: 1.5rem;
+                    padding: 0.875rem 1.5rem;
+                    background: linear-gradient(135deg, #8B6F47 0%, #6B5F3F 100%);
                     color: white;
                     border: none;
                     border-radius: 8px;
                     cursor: pointer;
                     font-weight: bold;
                     width: 100%;
-                ">Lukk</button>
+                    font-size: 1rem;
+                    box-shadow: 0 4px 12px rgba(139, 111, 71, 0.3);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(139, 111, 71, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)';">Lukk</button>
             </div>
         `;
     }

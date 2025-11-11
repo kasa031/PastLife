@@ -55,7 +55,22 @@
       "purpose": "maskable"
     }
   ],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/assets/screenshots/screenshot-wide-1280x720.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "PastLife - Hovedside med søk og oversikt"
+    },
+    {
+      "src": "/assets/screenshots/screenshot-narrow-750x1334.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "PastLife - Mobilvisning med familietre"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Search Ancestors",
