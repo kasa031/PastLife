@@ -5,6 +5,38 @@ import { showMessage, debounce, initKeyboardShortcuts, initBreadcrumbs, enhanceK
 import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
 import { loadTheme, toggleDarkMode } from './theme.js';
 
+// Levenshtein distance calculation for fuzzy matching in autocomplete
+function levenshteinDistance(str1, str2) {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const matrix = [];
+    
+    // Initialize matrix
+    for (let i = 0; i <= len1; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+        matrix[0][j] = j;
+    }
+    
+    // Fill matrix
+    for (let i = 1; i <= len1; i++) {
+        for (let j = 1; j <= len2; j++) {
+            if (str1[i - 1] === str2[j - 1]) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j] + 1,     // deletion
+                    matrix[i][j - 1] + 1,     // insertion
+                    matrix[i - 1][j - 1] + 1  // substitution
+                );
+            }
+        }
+    }
+    
+    return matrix[len1][len2];
+}
+
 let currentResults = [];
 
 // Cache for getAllPersons to avoid repeated calls
@@ -343,14 +375,46 @@ function setupAutocomplete() {
         // Get all unique names from persons
         const uniqueNames = [...new Set(allPersons.map(p => p.name))];
         
-        // Filter names that match (fuzzy)
+        // Filter names that match (improved fuzzy matching with scoring)
         const nameSuggestions = uniqueNames
-            .filter(name => {
+            .map(name => {
                 const nameLower = name.toLowerCase();
                 const valueLower = value.toLowerCase();
-                return nameLower.includes(valueLower) || 
-                       nameLower.split(' ').some(part => part.startsWith(valueLower));
+                
+                // Exact match gets highest priority
+                if (nameLower === valueLower) {
+                    return { text: name, type: 'name', score: 100 };
+                }
+                
+                // Starts with gets high priority
+                if (nameLower.startsWith(valueLower)) {
+                    return { text: name, type: 'name', score: 90 };
+                }
+                
+                // Contains gets medium priority
+                if (nameLower.includes(valueLower)) {
+                    return { text: name, type: 'name', score: 70 };
+                }
+                
+                // Check if any word starts with search term
+                if (nameLower.split(' ').some(part => part.startsWith(valueLower))) {
+                    return { text: name, type: 'name', score: 75 };
+                }
+                
+                // Fuzzy match using Levenshtein distance
+                const distance = levenshteinDistance(nameLower, valueLower);
+                const maxLen = Math.max(nameLower.length, valueLower.length);
+                const similarity = (1 - (distance / maxLen)) * 100;
+                
+                if (similarity >= 70) {
+                    return { text: name, type: 'name', score: similarity };
+                }
+                
+                return null;
             })
+            .filter(item => item !== null)
+            .sort((a, b) => b.score - a.score)
+            .map(item => ({ text: item.text, type: item.type }))
             .slice(0, 7 - historySuggestions.length)
             .map(name => ({ text: name, type: 'name' }));
         
