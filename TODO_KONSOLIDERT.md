@@ -95,9 +95,18 @@
 - [x] Legge til søkeforslag basert på tidligere søk ✅ (allerede implementert)
 
 ### 4. Familietre
-- [ ] Legge til zoom-kontroller (bedre kontroll)
-- [ ] Forbedre pan-funksjonalitet
-- [ ] Touch-gestures for bedre mobil-opplevelse (delvis implementert, kan forbedres)
+- [x] Legge til zoom-kontroller (bedre kontroll) ✅
+  - [x] Lagt til zoom-slider med visuell indikator ✅
+  - [x] Lagt til zoom-nivå visning (prosent) ✅
+  - [x] Forbedret mouse wheel zoom (zoom mot museposisjon) ✅
+- [x] Forbedre pan-funksjonalitet ✅
+  - [x] Forbedret pan-deteksjon (ignorerer knapper/inputs) ✅
+  - [x] Forbedret cursor-feedback (grab/grabbing) ✅
+  - [x] Forhindrer tekst-seleksjon under panning ✅
+- [x] Touch-gestures for bedre mobil-opplevelse ✅
+  - [x] Forbedret touch-deteksjon (ignorerer knapper/nodes) ✅
+  - [x] Pinch-to-zoom implementert ✅
+  - [x] Touch pan implementert ✅
 - [ ] Forbedre AI-analyse
 
 ### 5. Bildehåndtering

@@ -18,6 +18,58 @@
     <link rel="manifest" href="manifest.json">
     
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Zoom Slider Styling */
+        #zoomSlider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: linear-gradient(to right, #8B6F47, #6B5F3F);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        #zoomSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #8B6F47;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+        
+        #zoomSlider::-webkit-slider-thumb:hover {
+            background: #6B5F3F;
+            transform: scale(1.1);
+        }
+        
+        #zoomSlider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #8B6F47;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+        
+        #zoomSlider::-moz-range-thumb:hover {
+            background: #6B5F3F;
+            transform: scale(1.1);
+        }
+        
+        .tree-wrapper.panning {
+            cursor: grabbing !important;
+        }
+        
+        .tree-wrapper:not(.panning) {
+            cursor: grab;
+        }
+    </style>
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -142,11 +194,23 @@
                 <button class="btn-share" onclick="exportTreeToPNG()" title="Export tree as PNG image" style="background: var(--accent-color);">🖼️ Export PNG</button>
                 <button class="btn-share" onclick="showTimeline()" title="Show timeline view with birth years" style="background: var(--orange-dark);">📅 Timeline View</button>
                 <button class="btn-import" onclick="importTree()" title="Import tree from JSON file">📤 Import Tree (JSON)</button>
-            <div style="display: flex; gap: 0.5rem; align-items: center; margin-left: auto;">
-                <button class="btn-edit" onclick="zoomIn()" title="Zoom in to see details">🔍+ Zoom In</button>
-                <button class="btn-edit" onclick="zoomOut()" title="Zoom out to see more">🔍- Zoom Out</button>
-                <button class="btn-edit" onclick="fitToScreen()" title="Fit entire tree to screen">📐 Fit to Screen</button>
-                <button class="btn-edit" onclick="resetView()" title="Reset zoom and position">🔄 Reset View</button>
+            <div style="display: flex; gap: 1rem; align-items: center; margin-left: auto; flex-wrap: wrap;">
+                <!-- Zoom Controls -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; min-width: 200px;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button class="btn-edit" onclick="zoomOut()" title="Zoom out" style="padding: 0.5rem; min-width: 40px;">−</button>
+                        <input type="range" id="zoomSlider" min="30" max="300" value="100" step="5" 
+                               oninput="setZoomFromSlider(this.value)" 
+                               style="flex: 1; cursor: pointer;"
+                               title="Zoom level">
+                        <button class="btn-edit" onclick="zoomIn()" title="Zoom in" style="padding: 0.5rem; min-width: 40px;">+</button>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gray-dark);">
+                        <span id="zoomLevelDisplay" style="font-weight: bold; color: var(--turquoise-dark);">100%</span>
+                        <span style="cursor: pointer;" onclick="fitToScreen()" title="Fit to screen">📐 Fit</span>
+                        <span style="cursor: pointer;" onclick="resetView()" title="Reset view">🔄 Reset</span>
+                    </div>
+                </div>
             </div>
             <button class="btn-delete" onclick="clearTree()" title="⚠️ Delete entire tree (will ask for confirmation)">🗑️ Clear Tree</button>
         </div>

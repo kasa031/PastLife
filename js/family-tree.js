@@ -1109,9 +1109,18 @@ function setupTouchGestures() {
             );
             initialPinchZoom = zoomLevel;
         } else if (e.touches.length === 1) {
-            // Pan start
-            isPanning = true;
+            // Pan start - improved touch handling
             const touch = e.touches[0];
+            
+            // Don't start panning if touching a node or button
+            if (e.target.closest('.tree-node') || e.target.closest('button') || e.target.closest('input')) {
+                return;
+            }
+            
+            isPanning = true;
+            touchStartTime = Date.now();
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
             const startX = touch.clientX - panX;
             const startY = touch.clientY - panY;
             
@@ -1179,15 +1188,21 @@ function setupPanAndZoom() {
         updateTransform();
     }, { passive: false });
     
-    // Pan with mouse drag (on empty space)
+    // Pan with mouse drag (on empty space) - improved
     newWrapper.addEventListener('mousedown', (e) => {
-        // Only pan if clicking on wrapper background or container
+        // Only pan if clicking on wrapper background or container (not on nodes)
         if (e.target === newWrapper || (e.target === newContainer && !e.target.closest('.tree-node'))) {
+            // Don't start panning if clicking on buttons or controls
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) {
+                return;
+            }
+            
             isPanning = true;
             panStartX = e.clientX - panX;
             panStartY = e.clientY - panY;
             newWrapper.classList.add('panning');
             newWrapper.style.cursor = 'grabbing';
+            newWrapper.style.userSelect = 'none'; // Prevent text selection while panning
             e.preventDefault();
         }
     });
@@ -1200,13 +1215,14 @@ function setupPanAndZoom() {
         }
     });
     
-    document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', (e) => {
         if (isPanning) {
             isPanning = false;
             const currentWrapper = document.getElementById('treeWrapper');
             if (currentWrapper) {
                 currentWrapper.classList.remove('panning');
-                currentWrapper.style.cursor = 'grab';
+                currentWrapper.style.cursor = 'default';
+                currentWrapper.style.userSelect = ''; // Re-enable text selection
             }
         }
     });
@@ -1217,19 +1233,47 @@ function updateTransform() {
     const container = document.getElementById('treeContainer');
     if (container) {
         container.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+        container.style.transformOrigin = 'top left';
+    }
+    
+    // Update zoom slider and display
+    updateZoomControls();
+}
+
+// Update zoom controls UI
+function updateZoomControls() {
+    const slider = document.getElementById('zoomSlider');
+    const display = document.getElementById('zoomLevelDisplay');
+    
+    if (slider) {
+        const sliderValue = Math.round(zoomLevel * 100);
+        slider.value = Math.max(30, Math.min(300, sliderValue));
+    }
+    
+    if (display) {
+        display.textContent = `${Math.round(zoomLevel * 100)}%`;
     }
 }
+
+// Set zoom from slider
+window.setZoomFromSlider = function(value) {
+    zoomLevel = parseFloat(value) / 100;
+    zoomLevel = Math.max(0.3, Math.min(3.0, zoomLevel));
+    updateTransform();
+};
 
 // Zoom in
 window.zoomIn = function() {
     zoomLevel = Math.min(3.0, zoomLevel * 1.2);
     updateTransform();
+    showMessage(`Zoom: ${Math.round(zoomLevel * 100)}%`, 'info', 1000);
 };
 
 // Zoom out
 window.zoomOut = function() {
     zoomLevel = Math.max(0.3, zoomLevel / 1.2);
     updateTransform();
+    showMessage(`Zoom: ${Math.round(zoomLevel * 100)}%`, 'info', 1000);
 };
 
 // Fit to screen (focus on top - generation 0)
@@ -1265,6 +1309,19 @@ window.resetView = function() {
     panY = 0;
     updateTransform();
     showMessage('Visning tilbakestilt', 'success', 2000);
+};
+
+// Pan to specific position (useful for centering on a node)
+window.panTo = function(x, y) {
+    panX = x;
+    panY = y;
+    updateTransform();
+};
+
+// Zoom to specific level
+window.zoomTo = function(level) {
+    zoomLevel = Math.max(0.3, Math.min(3.0, level));
+    updateTransform();
 };
 
 // Get generation label text (user is generation 0, ancestors go down)
