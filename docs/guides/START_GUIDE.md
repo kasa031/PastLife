@@ -309,7 +309,7 @@ git push -u origin main
 ### PWA Check
 Kjør verifiseringsscript:
 ```bash
-node verify-pwa.js
+node scripts/verify-pwa.js
 ```
 
 Alle komponenter skal være ✅ OK.

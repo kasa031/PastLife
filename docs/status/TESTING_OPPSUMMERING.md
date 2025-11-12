@@ -5,10 +5,10 @@
 ### 1. Test-guider Opprettet
 - ✅ **PWA_TEST_GUIDE.md** - Omfattende test-guide for alle PWA-funksjoner
 - ✅ **LIGHTHOUSE_TEST.md** - Detaljert guide for Lighthouse PWA audit
-- ✅ **test-offline.html** - Interaktiv test-side for offline-funksjonalitet
+- ✅ **tests/test-offline.html** - Interaktiv test-side for offline-funksjonalitet
 
 ### 2. Test-verktøy
-- ✅ **test-offline.html** - Test-side med:
+- ✅ **tests/test-offline.html** - Test-side med:
   - Nettverksstatus-sjekk
   - Service Worker-status
   - Cache-status
@@ -32,7 +32,7 @@
    - Fiks eventuelle problemer
 
 2. **Test Offline-funksjonalitet**
-   - Bruk `test-offline.html`
+   - Bruk `tests/test-offline.html`
    - Test på faktiske enheter
    - Verifiser at alt fungerer offline
 
@@ -57,7 +57,7 @@
 PastLife/
 ├── PWA_TEST_GUIDE.md          ✅ Omfattende test-guide
 ├── LIGHTHOUSE_TEST.md          ✅ Lighthouse audit guide
-├── test-offline.html           ✅ Offline test-side
+├── tests/test-offline.html           ✅ Offline test-side
 └── TESTING_OPPSUMMERING.md     ✅ Denne filen
 ```
 
@@ -72,7 +72,7 @@ PastLife/
 - [ ] Dokumenter resultater
 
 ### Offline Testing
-- [ ] Test med `test-offline.html`
+- [ ] Test med `tests/test-offline.html`
 - [ ] Test på faktiske enheter
 - [ ] Verifiser offline-funksjonalitet
 - [ ] Test offline queue

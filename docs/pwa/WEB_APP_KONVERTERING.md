@@ -74,8 +74,8 @@ Konvertere PastLife-prosjektet til en fullverdig Progressive Web App (PWA) som k
 - ✅ `assets/icons/icon-maskable-512x512.png`
 
 **Verktøy:**
-- `generate-icons.js` (Node.js + sharp) - brukt til generering
-- `generate-icons.html` (alternativ HTML-generator)
+- `scripts/generate-icons.js` (Node.js + sharp) - brukt til generering
+- `scripts/generate-icons.html` (alternativ HTML-generator)
 - Generert fra `favicon.svg`
 
 ---
@@ -309,7 +309,7 @@ Konvertere PastLife-prosjektet til en fullverdig Progressive Web App (PWA) som k
 **Fullført:**
 - [x] Test-guide opprettet (`PWA_TEST_GUIDE.md`)
 - [x] Lighthouse test-guide opprettet (`LIGHTHOUSE_TEST.md`)
-- [x] Offline test-side opprettet (`test-offline.html`)
+- [x] Offline test-side opprettet (`tests/test-offline.html`)
 - [x] Offline-indikator forbedret (lukk-knapp)
 
 **Gjenstående (må testes manuelt):**
@@ -326,8 +326,8 @@ Konvertere PastLife-prosjektet til en fullverdig Progressive Web App (PWA) som k
 - ✅ Chrome DevTools (Lighthouse) - guide opprettet
 - ✅ PWA Builder (pwabuilder.com) - nevnt i guide
 - ✅ Web.dev PWA Checklist - nevnt i guide
-- ✅ `test-offline.html` - offline test-side
-- ✅ `verify-pwa.js` - PWA verifiseringsscript
+- ✅ `tests/test-offline.html` - offline test-side
+- ✅ `scripts/verify-pwa.js` - PWA verifiseringsscript
 - ✅ `PWA_KLAR_FOR_TESTING.md` - Testing oppsummering
 
 ---

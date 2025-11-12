@@ -85,11 +85,14 @@ PastLife er en fullverdig Progressive Web App som kan installeres på mobile enh
 - ✅ Automatisk sync når du kommer online igjen
 
 ### PWA-dokumentasjon
-- **`PWA_STATUS.md`** - Detaljert status
-- **`WEB_APP_KONVERTERING.md`** - Teknisk dokumentasjon
-- **`START_GUIDE.md`** - Komplett start-guide
-- **`BRAVE_IPHONE_GUIDE.md`** - Guide for Brave på iPhone
-- **`DEPLOYMENT.md`** - Deploy-instruksjoner
+
+Se `docs/` mappen for all dokumentasjon:
+- **`docs/pwa/PWA_STATUS_KONSOLIDERT.md`** - Konsolidert PWA-status
+- **`docs/pwa/WEB_APP_KONVERTERING.md`** - Teknisk dokumentasjon
+- **`docs/guides/START_GUIDE.md`** - Komplett start-guide
+- **`docs/guides/BRAVE_IPHONE_GUIDE.md`** - Guide for Brave på iPhone
+- **`docs/deployment/DEPLOYMENT.md`** - Deploy-instruksjoner
+- **`docs/README.md`** - Dokumentasjonsoversikt
 
 ## Technology
 
@@ -110,29 +113,56 @@ PastLife er en fullverdig Progressive Web App som kan installeres på mobile enh
 
 ```
 PastLife/
-├── index.html          # Home page
-├── search.html         # Search page
-├── profile.html        # User profile and submission page
-├── login.html          # Login and registration
-├── person.html         # Individual person detail page
+├── index.html              # Hjemmeside
+├── search.html             # Søkeside
+├── person.html             # Person-detaljside
+├── family-tree.html        # Familietre-visualisering
+├── profile.html            # Brukerprofil
+├── login.html              # Innlogging/registrering
+├── about.html              # Om-siden
+├── manifest.json           # PWA manifest
+├── sw.js                   # Service Worker
+├── favicon.svg             # App-ikon (SVG)
+├── pastlife-icon.svg       # PastLife app-ikon
+├── assets/
+│   ├── icons/              # PWA-ikoner (PNG)
+│   └── images/             # Bilder
 ├── css/
-│   └── style.css       # Main stylesheet
+│   ├── style.css           # Hovedstilark
+│   └── family-tree.css     # Familietre-stiler
 ├── js/
-│   ├── auth.js         # Authentication functions
-│   ├── data.js         # Data management (localStorage)
-│   ├── main.js         # Home page functionality
-│   ├── search.js       # Search functionality with autocomplete
-│   ├── profile.js      # Profile page functionality
-│   ├── login.js        # Login/register functionality
-│   ├── person.js       # Person detail page functionality
-│   ├── family-tree.js  # Family tree builder and visualization
-│   └── utils.js        # Utility functions
-├── css/
-│   ├── style.css       # Main stylesheet
-│   └── family-tree.css # Family tree specific styles
-└── assets/
-    └── images/         # Image assets
+│   ├── main.js             # Hovedlogikk
+│   ├── data.js             # Datahåndtering
+│   ├── search.js           # Søkefunksjonalitet
+│   ├── person.js           # Person-håndtering
+│   ├── family-tree.js      # Familietre-logikk
+│   ├── profile.js          # Profil-håndtering
+│   ├── auth.js             # Autentisering
+│   ├── login.js            # Innlogging
+│   ├── theme.js            # Dark mode
+│   ├── install-prompt.js   # PWA install prompt
+│   ├── update-manager.js   # PWA update manager
+│   ├── offline-queue.js    # Offline queue
+│   ├── offline-indicator.js # Offline indicator
+│   ├── lazy-load.js        # Lazy loading
+│   ├── navigation-utils.js # Navigasjon
+│   └── utils.js           # Hjelpefunksjoner
+├── scripts/                # Utviklingsscripts
+│   ├── generate-icons.js    # Ikon-generator (Node.js)
+│   ├── generate-icons.html # Ikon-generator (HTML)
+│   └── verify-pwa.js        # PWA verifisering
+├── tests/                  # Test-filer
+│   └── test-offline.html    # Offline test-side
+├── docs/                   # Dokumentasjon
+│   ├── deployment/         # Deploy-instruksjoner
+│   ├── guides/             # Brukerguider
+│   ├── pwa/                # PWA-dokumentasjon
+│   └── status/             # Statusrapporter
+├── TODO_KONSOLIDERT.md     # Konsolidert TODO-liste
+└── node_modules/           # NPM-avhengigheter
 ```
+
+**Se `docs/README.md` for detaljert dokumentasjonsoversikt.**
 
 ## Getting Started
 
@@ -180,7 +210,7 @@ PastLife/
 
 ## 🔒 Security
 
-**IMPORTANT**: Never commit API keys, passwords, or other sensitive information to git. See [SECURITY.md](SECURITY.md) for detailed security guidelines.
+**IMPORTANT**: Never commit API keys, passwords, or other sensitive information to git. See [docs/guides/SECURITY.md](docs/guides/SECURITY.md) for detailed security guidelines.
 
 ## Recent Updates
 
