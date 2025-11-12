@@ -728,34 +728,154 @@ Be particularly careful to:
     }
 }
 
-// Basic text analysis (fallback)
+// Basic text analysis (fallback) - Improved version
 async function basicTextAnalysis(text) {
-    // Extract names (simple pattern matching)
-    const namePattern = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/g;
-    const matches = [...new Set(text.match(namePattern) || [])];
+    const relationships = [];
+    const textLower = text.toLowerCase();
     
-    // Extract years
-    const yearPattern = /\b(1[89]\d{2}|20[0-2]\d)\b/g;
-    const years = [...new Set(text.match(yearPattern) || [])];
+    // Improved name patterns - supports Norwegian and English names
+    // Matches: "Edvard Jensen", "Anna Maria Larsen", "Olav Edvard Jensen"
+    const namePatterns = [
+        /([A-ZÆØÅ][a-zæøå]+(?:\s+[A-ZÆØÅ][a-zæøå]+)+)/g, // Norwegian names with special characters
+        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/g, // English names
+        /([A-ZÆØÅ][a-zæøå]+(?:\s+[A-ZÆØÅ][a-zæøå]+)*(?:\s+\([^)]+\))?)/g // Names with parentheses (e.g., "Edvard (Eddie) Jensen")
+    ];
+    
+    const allMatches = new Set();
+    namePatterns.forEach(pattern => {
+        const matches = text.match(pattern);
+        if (matches) {
+            matches.forEach(match => {
+                // Filter out common false positives
+                const matchLower = match.toLowerCase();
+                if (!matchLower.match(/^(january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|mars|april|mai|juni|juli|august|september|oktober|november|desember|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mandag|tirsdag|onsdag|torsdag|fredag|lørdag|søndag)$/i)) {
+                    allMatches.add(match.trim());
+                }
+            });
+        }
+    });
+    
+    const matches = Array.from(allMatches);
+    
+    // Improved year extraction - supports various date formats
+    const yearPatterns = [
+        /\b(1[89]\d{2}|20[0-2]\d)\b/g, // Years 1800-2029
+        /(?:født|born|død|died|døde|dead)\s+(?:i\s+)?(\d{4})/gi, // "født 1885", "born in 1885"
+        /\((\d{4})[-\s]?(\d{4})?\)/g // Years in parentheses: (1885-1950)
+    ];
+    
+    const allYears = new Set();
+    yearPatterns.forEach(pattern => {
+        const yearMatches = text.match(pattern);
+        if (yearMatches) {
+            yearMatches.forEach(match => {
+                const years = match.match(/\d{4}/g);
+                if (years) {
+                    years.forEach(y => {
+                        const year = parseInt(y);
+                        if (year >= 1700 && year <= 2100) {
+                            allYears.add(year);
+                        }
+                    });
+                }
+            });
+        }
+    });
     
     const persons = matches.slice(0, 50).map((name, index) => {
-        // Try to find related information
-        const nameContext = text.substring(
-            Math.max(0, text.indexOf(name) - 200),
-            Math.min(text.length, text.indexOf(name) + 500)
-        );
+        // Find all occurrences of this name in text
+        const nameRegex = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        const occurrences = [];
+        let match;
+        while ((match = nameRegex.exec(text)) !== null) {
+            occurrences.push(match.index);
+        }
         
-        const birthYear = years.find(y => 
-            nameContext.includes(y) && 
-            (nameContext.includes('born') || nameContext.includes('født') || nameContext.includes('birth'))
+        // Get context from first occurrence (usually most detailed)
+        const firstOccurrence = occurrences[0] || text.indexOf(name);
+        const nameContext = text.substring(
+            Math.max(0, firstOccurrence - 300),
+            Math.min(text.length, firstOccurrence + 600)
         );
+        const contextLower = nameContext.toLowerCase();
+        
+        // Extract birth year - improved detection
+        let birthYear = null;
+        let deathYear = null;
+        
+        // Look for birth year patterns
+        const birthPatterns = [
+            new RegExp(`${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*?(?:født|born|birth)[^.]*?(\\d{4})`, 'gi'),
+            new RegExp(`(?:født|born|birth)[^.]*?${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*?(\\d{4})`, 'gi'),
+            new RegExp(`${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*?\\((\\d{4})`, 'gi')
+        ];
+        
+        for (const pattern of birthPatterns) {
+            const match = nameContext.match(pattern);
+            if (match) {
+                const year = parseInt(match[1]);
+                if (year >= 1700 && year <= 2100) {
+                    birthYear = year;
+                    break;
+                }
+            }
+        }
+        
+        // Look for death year patterns
+        const deathPatterns = [
+            new RegExp(`${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*?(?:død|died|dead|døde)[^.]*?(\\d{4})`, 'gi'),
+            new RegExp(`(?:død|died|dead|døde)[^.]*?${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*?(\\d{4})`, 'gi'),
+            new RegExp(`${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*?\\(\\d{4}[-\s]?(\\d{4})\\)`, 'gi')
+        ];
+        
+        for (const pattern of deathPatterns) {
+            const match = nameContext.match(pattern);
+            if (match) {
+                const year = parseInt(match[1]);
+                if (year >= 1700 && year <= 2100) {
+                    deathYear = year;
+                    break;
+                }
+            }
+        }
+        
+        // Extract relationships
+        const relationshipKeywords = {
+            'parent': ['sønn av', 'datter av', 'son of', 'daughter of', 'child of', 'barn av'],
+            'child': ['sønn', 'datter', 'son', 'daughter', 'barn', 'child'],
+            'sibling': ['bror', 'søster', 'brother', 'sister', 'sibling'],
+            'spouse': ['giftet seg med', 'gift med', 'married', 'married to', 'ektefelle', 'spouse', 'husband', 'wife', 'kone', 'mann']
+        };
+        
+        // Detect relationships from context
+        const detectedRelationships = [];
+        Object.entries(relationshipKeywords).forEach(([type, keywords]) => {
+            keywords.forEach(keyword => {
+                if (contextLower.includes(keyword)) {
+                    // Find related person names in context
+                    matches.forEach(otherName => {
+                        if (otherName !== name && nameContext.includes(otherName)) {
+                            detectedRelationships.push({
+                                from: name.trim(),
+                                to: otherName.trim(),
+                                type: type
+                            });
+                        }
+                    });
+                }
+            });
+        });
+        
+        relationships.push(...detectedRelationships);
         
         return {
             id: `tree_${Date.now()}_${index}`,
             name: name.trim(),
-            birthYear: birthYear ? parseInt(birthYear) : null,
+            birthYear: birthYear,
+            deathYear: deathYear,
             birthPlace: extractPlace(nameContext),
-            description: nameContext.substring(0, 200).trim(),
+            deathPlace: extractPlace(nameContext, 'death'),
+            description: nameContext.substring(0, 300).trim(),
             tags: [],
             x: 0,
             y: 0,
@@ -763,20 +883,49 @@ async function basicTextAnalysis(text) {
         };
     });
     
-    return { persons, relationships: [] };
+    return { persons, relationships };
 }
 
-// Extract place from context
-function extractPlace(context) {
+// Extract place from context - improved with Norwegian and English support
+function extractPlace(context, type = 'birth') {
+    const contextLower = context.toLowerCase();
+    
+    // Norwegian and English place keywords
+    const placeKeywords = {
+        birth: ['født i', 'born in', 'born at', 'født', 'birth'],
+        death: ['død i', 'died in', 'died at', 'døde i', 'death']
+    };
+    
+    const keywords = placeKeywords[type] || placeKeywords.birth;
+    
+    // Improved place patterns
     const placePatterns = [
-        /(?:in|fra|from|born in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/gi,
-        /([A-Z][a-z]+(?:,\s*[A-Z][a-z]+)?)/g
+        // "født i Oslo, Norge" / "born in Oslo, Norway"
+        new RegExp(`(?:${keywords.join('|')})\\s+([A-ZÆØÅ][a-zæøå]+(?:\\s+[A-ZÆØÅ][a-zæøå]+)*(?:,\\s*[A-ZÆØÅ][a-zæøå]+)?)`, 'gi'),
+        // "i Christiania (nå Oslo)" / "in Christiania (now Oslo)"
+        /(?:i|in)\s+([A-ZÆØÅ][a-zæøå]+(?:\([^)]+\))?)/gi,
+        // City, Country pattern
+        /([A-ZÆØÅ][a-zæøå]+),\s*([A-ZÆØÅ][a-zæøå]+)/g,
+        // Standalone capitalized place names (context-aware)
+        /([A-ZÆØÅ][a-zæøå]+(?:\s+[A-ZÆØÅ][a-zæøå]+)*)/g
     ];
     
+    // Common place names to prioritize
+    const commonPlaces = ['Oslo', 'Bergen', 'Trondheim', 'Stavanger', 'Drammen', 'Christiania', 'Kristiania', 'Norway', 'Norge', 'Denmark', 'Danmark', 'Sweden', 'Sverige'];
+    
     for (const pattern of placePatterns) {
-        const match = context.match(pattern);
-        if (match && match[0]) {
-            return match[0].replace(/^(in|fra|from|born in)\s+/i, '').trim();
+        const matches = context.match(pattern);
+        if (matches) {
+            for (const match of matches) {
+                const place = match.replace(/^(in|fra|from|born in|i|født i|død i|died in)\s+/i, '').trim();
+                // Filter out names and common false positives
+                if (place && 
+                    place.length > 2 && 
+                    !place.match(/^(January|February|March|April|May|June|July|August|September|October|November|December|Januar|Februar|Mars|April|Mai|Juni|Juli|August|September|Oktober|November|Desember)$/i) &&
+                    (commonPlaces.some(cp => place.includes(cp)) || place.includes(',') || place.length > 5)) {
+                    return place;
+                }
+            }
         }
     }
     

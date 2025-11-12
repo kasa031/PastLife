@@ -107,12 +107,12 @@
   - [x] Forbedret touch-deteksjon (ignorerer knapper/nodes) ✅
   - [x] Pinch-to-zoom implementert ✅
   - [x] Touch pan implementert ✅
-- [ ] Forbedre AI-analyse
-  - [ ] Forbedre `basicTextAnalysis()` med bedre regex-mønstre
-  - [ ] Legge til støtte for flere språk (norsk/engelsk)
-  - [ ] Forbedre relasjonsdeteksjon (f.eks. "sønn av", "giftet seg med")
-  - [ ] Legge til kontekst-forståelse for steder og datoer
-  - [ ] Forbedre håndtering av ufullstendig informasjon
+- [x] Forbedre AI-analyse ✅
+  - [x] Forbedre `basicTextAnalysis()` med bedre regex-mønstre ✅
+  - [x] Legge til støtte for flere språk (norsk/engelsk) ✅
+  - [x] Forbedre relasjonsdeteksjon (f.eks. "sønn av", "giftet seg med") ✅
+  - [x] Legge til kontekst-forståelse for steder og datoer ✅
+  - [x] Forbedre håndtering av ufullstendig informasjon ✅
 
 ### 5. Bildehåndtering
 - [ ] Legge til bilde-redigering (crop, rotate)
@@ -121,7 +121,7 @@
 - [ ] Forbedre lazy loading (delvis implementert)
 
 ### 6. Kommentarer og Sosialt
-- [ ] Legge til emoji-støtte i kommentarer
+- [x] Legge til emoji-støtte i kommentarer ✅ (Unicode emojis støttes automatisk)
 - [ ] Forbedre @mention-funksjonalitet
 - [ ] Legge til kommentar-notifikasjoner
 - [ ] Forbedre kommentar-søk

@@ -596,9 +596,10 @@ function setupLazyLoading() {
     // Relatives are already loaded in loadPersonDetails, no need for lazy loading
 }
 
-// Process comment text (mentions, links, etc.)
+// Process comment text (mentions, links, emojis, etc.)
 function processCommentText(text) {
-    // Escape HTML first
+    // escapeHtml preserves Unicode emojis correctly, so we can use it directly
+    // Emojis are valid Unicode characters and will display correctly
     text = escapeHtml(text);
     
     // Convert @mentions to highlighted text
@@ -611,6 +612,9 @@ function processCommentText(text) {
     // Convert email addresses to mailto links
     const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
     text = text.replace(emailRegex, '<a href="mailto:$1" style="color: var(--turquoise-primary); text-decoration: underline;">$1</a>');
+    
+    // Emojis are already supported - escapeHtml preserves Unicode characters
+    // Users can type emojis directly (😀, ❤️, 🌳, etc.) and they will display correctly
     
     return text;
 }
