@@ -68,31 +68,31 @@
                 
                 <div class="filter-group">
                     <label for="searchName">Name <span class="required-indicator">*</span></label>
-                    <input type="text" id="searchName" placeholder="e.g., Edvard Jensen" autocomplete="off">
-                    <div id="nameSuggestions" class="autocomplete-suggestions"></div>
+                    <input type="text" id="searchName" placeholder="e.g., Edvard Jensen" autocomplete="off" aria-label="Search by name" aria-describedby="nameSuggestions">
+                    <div id="nameSuggestions" class="autocomplete-suggestions" role="listbox" aria-label="Name suggestions"></div>
                 </div>
                 <div class="filter-group">
                     <label for="searchCountry">Country</label>
-                    <input type="text" id="searchCountry" placeholder="e.g., Norway">
+                    <input type="text" id="searchCountry" placeholder="e.g., Norway" aria-label="Search by country">
                 </div>
                 <div class="filter-group">
                     <label for="searchCity">City</label>
-                    <input type="text" id="searchCity" placeholder="e.g., Christiania">
+                    <input type="text" id="searchCity" placeholder="e.g., Christiania" aria-label="Search by city">
                 </div>
                 <div class="filter-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div>
                         <label for="searchYearFrom">From Year</label>
-                        <input type="number" id="searchYearFrom" placeholder="e.g., 1880">
+                        <input type="number" id="searchYearFrom" placeholder="e.g., 1880" aria-label="Search from year">
                     </div>
                     <div>
                         <label for="searchYearTo">To Year</label>
-                        <input type="number" id="searchYearTo" placeholder="e.g., 1920">
+                        <input type="number" id="searchYearTo" placeholder="e.g., 1920" aria-label="Search to year">
                     </div>
                 </div>
                 <div class="filter-group">
                     <label for="searchTags">Tags (comma-separated)</label>
-                    <input type="text" id="searchTags" placeholder="e.g., morsside, farsside, farmer">
-                    <small class="help-text">Search by tags (separate multiple tags with commas)</small>
+                    <input type="text" id="searchTags" placeholder="e.g., morsside, farsside, farmer" aria-label="Search by tags" aria-describedby="searchTagsHelp">
+                    <small id="searchTagsHelp" class="help-text">Search by tags (separate multiple tags with commas)</small>
                 </div>
                 <div class="filter-group" style="grid-column: 1 / -1;">
                     <label for="searchRelationship">Find Related Persons</label>
@@ -130,8 +130,8 @@
                     <small class="help-text">Find persons born in or near the specified location. "Exact match" finds same city, "Nearby" finds same country, "Region" finds similar place names.</small>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <button class="submit-btn" onclick="performSearch()" style="flex: 1;" title="Search for ancestors matching all criteria">🔍 Search</button>
-                    <button class="btn-import" onclick="clearAllFilters()" style="padding: 15px 30px;" title="Clear all search filters">🗑️ Clear Filters</button>
+                    <button class="submit-btn" onclick="performSearch()" style="flex: 1;" title="Search for ancestors matching all criteria" aria-label="Search for ancestors matching all criteria">🔍 Search</button>
+                    <button class="btn-import" onclick="clearAllFilters()" style="padding: 15px 30px;" title="Clear all search filters" aria-label="Clear all search filters">🗑️ Clear Filters</button>
                 </div>
             </div>
 
@@ -139,7 +139,7 @@
                 <div class="sort-filter-bar">
                     <h2 id="resultsTitle" style="color: var(--turquoise-dark); margin: 0; flex: 1;"></h2>
                     <label for="sortBy">Sort by:</label>
-                    <select id="sortBy" onchange="applySorting()" title="Choose how to sort search results">
+                    <select id="sortBy" onchange="applySorting()" title="Choose how to sort search results" aria-label="Sort search results">
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
                         <option value="name-asc">Name (A-Z)</option>

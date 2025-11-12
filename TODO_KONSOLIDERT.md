@@ -122,7 +122,11 @@
 
 ### 6. Kommentarer og Sosialt
 - [x] Legge til emoji-støtte i kommentarer ✅ (Unicode emojis støttes automatisk)
-- [ ] Forbedre @mention-funksjonalitet
+- [x] Forbedre @mention-funksjonalitet ✅
+  - [x] Lagt til autocomplete for @mentions ✅
+  - [x] Keyboard-navigasjon (piler, Enter, Escape) ✅
+  - [x] Validering av @mentions ved innlegging ✅
+  - [x] Filtrerer private personer fra forslag ✅
 - [ ] Legge til kommentar-notifikasjoner
 - [ ] Forbedre kommentar-søk
 
@@ -148,7 +152,11 @@
 - [ ] Implementere lazy loading for komponenter (delvis implementert)
 
 ### 10. Tilgjengelighet
-- [ ] Legge til flere ARIA-labels
+- [x] Legge til flere ARIA-labels ✅
+  - [x] Lagt til ARIA-labels på alle form inputs ✅
+  - [x] Lagt til ARIA-labels på knapper ✅
+  - [x] Lagt til ARIA-labels på søkefelter ✅
+  - [x] Lagt til ARIA-labels på autocomplete-lister ✅
 - [ ] Forbedre keyboard-navigasjon (delvis implementert)
 - [ ] Legge til screen reader-støtte
 - [ ] Forbedre kontrast

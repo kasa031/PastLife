@@ -87,55 +87,55 @@
                 <form id="ancestorForm">
                     <div class="form-group">
                         <label for="personName">Full Name *</label>
-                        <input type="text" id="personName" required placeholder="e.g., Edvard Jensen" title="Skriv inn forfedrens fulle navn (fornavn og etternavn)">
+                        <input type="text" id="personName" required placeholder="e.g., Edvard Jensen" title="Skriv inn forfedrens fulle navn (fornavn og etternavn)" aria-label="Full name of ancestor" aria-required="true">
                         <small class="help-text">Enter the complete name as it appears in historical records</small>
                     </div>
 
                     <div class="form-group">
                         <label for="birthYear">Birth Year</label>
-                        <input type="number" id="birthYear" placeholder="e.g., 1885">
+                        <input type="number" id="birthYear" placeholder="e.g., 1885" aria-label="Birth year">
                     </div>
 
                     <div class="form-group">
                         <label for="deathYear">Death Year</label>
-                        <input type="number" id="deathYear" placeholder="e.g., 1950">
+                        <input type="number" id="deathYear" placeholder="e.g., 1950" aria-label="Death year">
                     </div>
 
                     <div class="form-group">
                         <label for="birthPlace">Birth Place</label>
-                        <input type="text" id="birthPlace" placeholder="e.g., Christiania, Norway">
+                        <input type="text" id="birthPlace" placeholder="e.g., Christiania, Norway" aria-label="Birth place">
                     </div>
 
                     <div class="form-group">
                         <label for="deathPlace">Death Place</label>
-                        <input type="text" id="deathPlace" placeholder="e.g., Oslo, Norway">
+                        <input type="text" id="deathPlace" placeholder="e.g., Oslo, Norway" aria-label="Death place">
                     </div>
 
                     <div class="form-group">
                         <label for="country">Country</label>
-                        <input type="text" id="country" placeholder="e.g., Norway">
+                        <input type="text" id="country" placeholder="e.g., Norway" aria-label="Country">
                     </div>
 
                     <div class="form-group">
                         <label for="city">City</label>
-                        <input type="text" id="city" placeholder="e.g., Christiania">
+                        <input type="text" id="city" placeholder="e.g., Christiania" aria-label="City">
                     </div>
 
                     <div class="form-group">
                         <label for="description">Description / Biography</label>
-                        <textarea id="description" placeholder="Additional information about this person..."></textarea>
+                        <textarea id="description" placeholder="Additional information about this person..." aria-label="Description or biography"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label for="photo">Photo</label>
-                        <input type="file" id="photo" accept="image/*">
-                        <div id="photoPreview" style="margin-top: 1rem;"></div>
+                        <input type="file" id="photo" accept="image/*" aria-label="Upload photo">
+                        <div id="photoPreview" style="margin-top: 1rem;" role="img" aria-label="Photo preview"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="tagsInput">Tags (separate with commas)</label>
-                        <input type="text" id="tagsInput" placeholder="e.g., Christiania, 1910, family">
-                        <div id="tagsDisplay" class="tags-input"></div>
+                        <input type="text" id="tagsInput" placeholder="e.g., Christiania, 1910, family" aria-label="Tags for this person">
+                        <div id="tagsDisplay" class="tags-input" role="list" aria-label="Selected tags"></div>
                     </div>
 
                     <div class="form-group">
@@ -146,13 +146,13 @@
 
                     <div class="form-group" style="padding: 1rem; background: var(--gray-light); border-radius: 5px; border: 2px solid var(--turquoise-primary);">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: bold; color: var(--turquoise-dark);">
-                            <input type="checkbox" id="isPrivate" style="width: 20px; height: 20px; cursor: pointer;">
+                            <input type="checkbox" id="isPrivate" style="width: 20px; height: 20px; cursor: pointer;" aria-label="Make this person private - only visible to you">
                             <span>🔒 Kun jeg kan se (Privat modus)</span>
                         </label>
                         <small style="color: var(--gray-dark); font-size: 0.85rem; display: block; margin-top: 0.5rem; margin-left: 1.75rem;">Hvis du huker av denne, vil denne personen kun være synlig for deg og ikke vises i søkeresultater for andre brukere.</small>
                     </div>
 
-                    <button type="submit" class="submit-btn" title="Lagre denne forfedrens informasjon til din profil">💾 Submit Ancestor Information</button>
+                    <button type="submit" class="submit-btn" title="Lagre denne forfedrens informasjon til din profil" aria-label="Submit ancestor information">💾 Submit Ancestor Information</button>
                 </form>
             </div>
 

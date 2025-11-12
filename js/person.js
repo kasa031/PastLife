@@ -1,5 +1,5 @@
 // Person detail page functionality
-import { getPersonById, getCommentsForPerson, addComment, deleteComment, searchByRelationship } from './data.js';
+import { getPersonById, getCommentsForPerson, addComment, deleteComment, searchByRelationship, getAllPersons } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
 import { copyToClipboard, showMessage, formatDate, logError, confirmAction, initKeyboardShortcuts, initBreadcrumbs, sanitizeInput, enhanceKeyboardNavigation, escapeHtml, showLoadingOverlay, hideLoadingOverlay } from './utils.js';
 import { loadTheme, toggleDarkMode } from './theme.js';
@@ -732,6 +732,143 @@ function updateFavoriteButton() {
     }
 }
 
+// Setup @mention autocomplete
+function setupMentionAutocomplete() {
+    const commentTextarea = document.getElementById('commentText');
+    const suggestionsDiv = document.getElementById('mentionSuggestions');
+    
+    if (!commentTextarea || !suggestionsDiv) return;
+    
+    let mentionStartPos = -1;
+    let selectedSuggestionIndex = -1;
+    let mentionSuggestions = [];
+    
+    commentTextarea.addEventListener('input', (e) => {
+        const text = e.target.value;
+        const cursorPos = e.target.selectionStart;
+        
+        // Find @mention pattern before cursor
+        const textBeforeCursor = text.substring(0, cursorPos);
+        const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+        
+        if (mentionMatch) {
+            mentionStartPos = cursorPos - mentionMatch[0].length;
+            const query = mentionMatch[1].toLowerCase();
+            
+            // Get all persons for autocomplete
+            const allPersons = getAllPersons();
+            const currentUser = getCurrentUser();
+            
+            // Filter persons (exclude private ones if not owner)
+            const availablePersons = allPersons.filter(p => {
+                if (p.isPrivate && currentUser && p.createdBy !== currentUser.username) {
+                    return false;
+                }
+                return true;
+            });
+            
+            // Get matching names
+            mentionSuggestions = availablePersons
+                .map(p => p.name)
+                .filter(name => {
+                    const nameLower = name.toLowerCase();
+                    return nameLower.includes(query) || query.length === 0;
+                })
+                .slice(0, 5) // Limit to 5 suggestions
+                .map(name => ({ name: name, display: name }));
+            
+            if (mentionSuggestions.length > 0) {
+                showMentionSuggestions(mentionSuggestions, mentionStartPos);
+                selectedSuggestionIndex = -1;
+            } else {
+                hideMentionSuggestions();
+            }
+        } else {
+            hideMentionSuggestions();
+        }
+    });
+    
+    commentTextarea.addEventListener('keydown', (e) => {
+        if (mentionSuggestions.length > 0 && suggestionsDiv.style.display !== 'none') {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, mentionSuggestions.length - 1);
+                updateMentionSelection();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+                updateMentionSelection();
+            } else if (e.key === 'Enter' && selectedSuggestionIndex >= 0) {
+                e.preventDefault();
+                insertMention(mentionSuggestions[selectedSuggestionIndex].name);
+            } else if (e.key === 'Escape') {
+                hideMentionSuggestions();
+            }
+        }
+    });
+    
+    function showMentionSuggestions(suggestions, startPos) {
+        suggestionsDiv.innerHTML = suggestions.map((suggestion, index) => `
+            <div class="mention-suggestion ${index === selectedSuggestionIndex ? 'selected' : ''}" 
+                 data-index="${index}" 
+                 role="option"
+                 aria-selected="${index === selectedSuggestionIndex}"
+                 onclick="insertMentionFromSuggestion('${suggestion.name.replace(/'/g, "\\'")}')">
+                @${escapeHtml(suggestion.display)}
+            </div>
+        `).join('');
+        
+        suggestionsDiv.style.display = 'block';
+        suggestionsDiv.setAttribute('aria-expanded', 'true');
+    }
+    
+    function hideMentionSuggestions() {
+        suggestionsDiv.style.display = 'none';
+        suggestionsDiv.setAttribute('aria-expanded', 'false');
+        mentionSuggestions = [];
+        selectedSuggestionIndex = -1;
+    }
+    
+    function updateMentionSelection() {
+        const items = suggestionsDiv.querySelectorAll('.mention-suggestion');
+        items.forEach((item, index) => {
+            if (index === selectedSuggestionIndex) {
+                item.classList.add('selected');
+                item.setAttribute('aria-selected', 'true');
+            } else {
+                item.classList.remove('selected');
+                item.setAttribute('aria-selected', 'false');
+            }
+        });
+    }
+    
+    function insertMention(name) {
+        const textarea = commentTextarea;
+        const text = textarea.value;
+        const beforeMention = text.substring(0, mentionStartPos);
+        const afterMention = text.substring(textarea.selectionStart);
+        const newText = beforeMention + '@' + name + ' ' + afterMention;
+        
+        textarea.value = newText;
+        const newCursorPos = mentionStartPos + name.length + 2; // +2 for '@' and space
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        textarea.focus();
+        
+        hideMentionSuggestions();
+    }
+    
+    window.insertMentionFromSuggestion = function(name) {
+        insertMention(name);
+    };
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!suggestionsDiv.contains(e.target) && e.target !== commentTextarea) {
+            hideMentionSuggestions();
+        }
+    });
+}
+
 // Submit comment
 window.submitComment = function() {
     if (!isLoggedIn()) {
@@ -745,6 +882,20 @@ window.submitComment = function() {
     if (!text) {
         showMessage('Please enter a comment', 'error');
         return;
+    }
+    
+    // Validate @mentions (check if mentioned persons exist)
+    const mentionMatches = text.match(/@(\w+)/g);
+    if (mentionMatches) {
+        const allPersons = getAllPersons();
+        const allNames = allPersons.map(p => p.name.toLowerCase());
+        const invalidMentions = mentionMatches
+            .map(m => m.substring(1).toLowerCase())
+            .filter(name => !allNames.includes(name));
+        
+        if (invalidMentions.length > 0) {
+            showMessage(`Warning: @mentions not found: ${invalidMentions.join(', ')}. They will still be highlighted.`, 'info', 3000);
+        }
     }
     
     const user = getCurrentUser();
