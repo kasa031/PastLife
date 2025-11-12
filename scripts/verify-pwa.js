@@ -20,7 +20,9 @@ function log(message, color = 'reset') {
 }
 
 function checkFile(filePath, description) {
-    const fullPath = path.join(__dirname, filePath);
+    // __dirname er scripts/, så vi må gå opp et nivå for rotmappen
+    const rootDir = path.join(__dirname, '..');
+    const fullPath = path.join(rootDir, filePath);
     if (fs.existsSync(fullPath)) {
         log(`✅ ${description}`, 'green');
         return true;
@@ -31,7 +33,8 @@ function checkFile(filePath, description) {
 }
 
 function checkIcon(iconName) {
-    const iconPath = path.join(__dirname, 'assets', 'icons', iconName);
+    const rootDir = path.join(__dirname, '..');
+    const iconPath = path.join(rootDir, 'assets', 'icons', iconName);
     if (fs.existsSync(iconPath)) {
         const stats = fs.statSync(iconPath);
         log(`  ✅ ${iconName} (${(stats.size / 1024).toFixed(1)} KB)`, 'green');
@@ -44,7 +47,8 @@ function checkIcon(iconName) {
 
 function checkManifest() {
     log('\n📄 Sjekker manifest.json...', 'cyan');
-    const manifestPath = path.join(__dirname, 'manifest.json');
+    const rootDir = path.join(__dirname, '..');
+    const manifestPath = path.join(rootDir, 'manifest.json');
     if (!fs.existsSync(manifestPath)) {
         log('❌ manifest.json finnes ikke!', 'red');
         return false;
@@ -82,7 +86,8 @@ function checkManifest() {
 
 function checkServiceWorker() {
     log('\n⚙️ Sjekker Service Worker...', 'cyan');
-    const swPath = path.join(__dirname, 'sw.js');
+    const rootDir = path.join(__dirname, '..');
+    const swPath = path.join(rootDir, 'sw.js');
     if (!fs.existsSync(swPath)) {
         log('❌ sw.js finnes ikke!', 'red');
         return false;
@@ -120,6 +125,7 @@ function checkServiceWorker() {
 
 function checkHTMLFiles() {
     log('\n📄 Sjekker HTML-filer...', 'cyan');
+    const rootDir = path.join(__dirname, '..');
     const htmlFiles = [
         'index.html',
         'search.html',
@@ -132,7 +138,7 @@ function checkHTMLFiles() {
     
     let allOk = true;
     htmlFiles.forEach(file => {
-        const filePath = path.join(__dirname, file);
+        const filePath = path.join(rootDir, file);
         if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf8');
             let fileOk = true;
@@ -205,7 +211,8 @@ function checkJSFiles() {
     jsFiles.forEach(({ path: filePath, desc }) => {
         if (checkFile(filePath, desc)) {
             // File exists, check if it's not empty
-            const fullPath = path.join(__dirname, filePath);
+            const rootDir = path.join(__dirname, '..');
+            const fullPath = path.join(rootDir, filePath);
             const stats = fs.statSync(fullPath);
             if (stats.size > 0) {
                 log(`  ✅ ${desc} - Filen er ikke tom`, 'green');
