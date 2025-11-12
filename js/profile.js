@@ -212,6 +212,7 @@ async function submitForm() {
         city: sanitizeInput(document.getElementById('city').value.trim()),
         description: sanitizeInput(document.getElementById('description').value.trim()),
         tags: tags.map(tag => sanitizeInput(tag)),
+        isPrivate: document.getElementById('isPrivate')?.checked || false,
         createdBy: user.username
     };
     
@@ -433,12 +434,13 @@ function createPersonCard(person) {
     const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
     const user = getCurrentUser();
     const isOwner = user && person.createdBy === user.username;
+    const privateIndicator = person.isPrivate ? '<span style="color: var(--turquoise-primary); font-size: 1.2rem; margin-left: 0.5rem;" title="Privat - kun synlig for deg">🔒</span>' : '';
     
     return `
         <div class="person-card">
             <img src="${photo}" alt="${person.name}" class="person-card-image" onclick="viewPerson('${person.id}')" onerror="this.src='assets/images/oldphoto2.jpg'" style="cursor: pointer;">
             <div class="person-card-info">
-                <h3 onclick="viewPerson('${person.id}')" style="cursor: pointer;">${escapeHtml(person.name)}</h3>
+                <h3 onclick="viewPerson('${person.id}')" style="cursor: pointer;">${escapeHtml(person.name)}${privateIndicator}</h3>
                 ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
                 ${person.birthPlace ? `<p><span class="info-label">From:</span> ${escapeHtml(person.birthPlace)}</p>` : ''}
                 <div class="person-tags">${tags}</div>
@@ -570,6 +572,10 @@ window.editPerson = function(id) {
     document.getElementById('birthPlace').value = person.birthPlace || '';
     document.getElementById('deathPlace').value = person.deathPlace || '';
     document.getElementById('country').value = person.country || '';
+    const isPrivateCheckbox = document.getElementById('isPrivate');
+    if (isPrivateCheckbox) {
+        isPrivateCheckbox.checked = person.isPrivate || false;
+    }
     document.getElementById('city').value = person.city || '';
     document.getElementById('description').value = person.description || '';
     tags = person.tags || [];

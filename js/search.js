@@ -1,6 +1,6 @@
 // Search page functionality
 import { searchPersons, searchByRelationship, getAllPersons } from './data.js';
-import { updateNavigation } from './auth.js';
+import { updateNavigation, getCurrentUser } from './auth.js';
 import { showMessage, debounce, initKeyboardShortcuts, initBreadcrumbs, enhanceKeyboardNavigation } from './utils.js';
 import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
 import { loadTheme, toggleDarkMode } from './theme.js';
@@ -136,7 +136,9 @@ function performSearchInternal() {
     // Reload history dropdown
     loadSearchHistory();
     
-    const results = searchPersons(filters);
+    // Get current user for private person filtering
+    const currentUser = getCurrentUser();
+    const results = searchPersons(filters, currentUser);
     displaySearchResults(results);
     
     // Reset navigation index
@@ -210,12 +212,13 @@ window.applySorting = function() {
 function createPersonCard(person) {
     const photo = person.photo || 'assets/images/oldphoto2.jpg';
     const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+    const privateIndicator = person.isPrivate ? '<span style="color: var(--turquoise-primary); font-size: 1.2rem; margin-left: 0.5rem;" title="Privat - kun synlig for deg">🔒</span>' : '';
     
     return `
         <div class="person-card" onclick="viewPerson('${person.id}')">
             <img src="assets/images/oldphoto2.jpg" data-src="${photo}" alt="${person.name}" class="person-card-image lazy-load loading" onerror="this.src='assets/images/oldphoto2.jpg'; this.classList.remove('loading');" onload="this.classList.remove('loading');">
             <div class="person-card-info">
-                <h3>${escapeHtml(person.name)}</h3>
+                <h3>${escapeHtml(person.name)}${privateIndicator}</h3>
                 ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
                 ${person.deathYear ? `<p><span class="info-label">Died:</span> ${person.deathYear}</p>` : ''}
                 ${person.birthPlace ? `<p><span class="info-label">From:</span> ${escapeHtml(person.birthPlace)}</p>` : ''}

@@ -164,6 +164,7 @@ export function savePerson(personData, personId = null) {
                 mainImage: personData.mainImage !== undefined ? personData.mainImage : (persons[index].mainImage || persons[index].photo),
                 sources: personData.sources !== undefined ? personData.sources : (persons[index].sources || []),
                 tags: personData.tags !== undefined ? personData.tags : persons[index].tags,
+                isPrivate: personData.isPrivate !== undefined ? personData.isPrivate : (persons[index].isPrivate || false),
                 lastModified: new Date().toISOString()
             };
             localStorage.setItem(PERSONS_KEY, JSON.stringify(persons));
@@ -189,6 +190,7 @@ export function savePerson(personData, personId = null) {
         mainImage: personData.mainImage || personData.photo || null, // Main image for display
         sources: personData.sources || [], // Sources array
         tags: personData.tags || [],
+        isPrivate: personData.isPrivate || false, // Private mode flag
         createdBy: personData.createdBy,
         createdAt: personData.createdAt || new Date().toISOString(),
         lastModified: new Date().toISOString()
@@ -248,7 +250,7 @@ export function getPersonById(id) {
 }
 
 // Search persons with improved fuzzy search and indexing
-export function searchPersons(filters) {
+export function searchPersons(filters, currentUser = null) {
     // Use index for simple exact matches to improve performance
     const index = getSearchIndex();
     let candidates = null;
@@ -475,6 +477,14 @@ export function searchPersons(filters) {
             
             if (!locationMatch) {
                 matches = false;
+            }
+        }
+        
+        // Filter private persons: only show if user is the creator or if person is not private
+        if (person.isPrivate) {
+            const currentUsername = currentUser?.username || currentUser;
+            if (person.createdBy !== currentUsername) {
+                matches = false; // Hide private person from other users
             }
         }
         

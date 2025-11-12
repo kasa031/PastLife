@@ -1,13 +1,25 @@
 // Main page functionality
 import { getAllPersons } from './data.js';
-import { updateNavigation } from './auth.js';
+import { updateNavigation, getCurrentUser } from './auth.js';
 import { escapeHtml, initKeyboardShortcuts, enhanceKeyboardNavigation } from './utils.js';
 import { initLazyLoading, refreshLazyLoading } from './lazy-load.js';
 import { loadTheme, toggleDarkMode } from './theme.js';
 
 // Load recent persons
 function loadRecentPersons() {
-    const persons = getAllPersons();
+    const currentUser = getCurrentUser();
+    let persons = getAllPersons();
+    
+    // Filter out private persons that don't belong to current user
+    if (currentUser) {
+        persons = persons.filter(person => 
+            !person.isPrivate || person.createdBy === currentUser.username
+        );
+    } else {
+        // If not logged in, hide all private persons
+        persons = persons.filter(person => !person.isPrivate);
+    }
+    
     const recentPersons = persons
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 6);
@@ -27,12 +39,13 @@ function loadRecentPersons() {
 function createPersonCard(person) {
     const photo = person.photo || 'assets/images/oldphoto2.jpg';
     const tags = person.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+    const privateIndicator = person.isPrivate ? '<span style="color: var(--turquoise-primary); font-size: 1.2rem; margin-left: 0.5rem;" title="Privat - kun synlig for deg">🔒</span>' : '';
     
     return `
         <div class="person-card" onclick="viewPerson('${person.id}')">
             <img src="assets/images/oldphoto2.jpg" data-src="${photo}" alt="${person.name}" class="person-card-image lazy-load loading" onerror="this.src='assets/images/oldphoto2.jpg'; this.classList.remove('loading');" onload="this.classList.remove('loading');">
             <div class="person-card-info">
-                <h3>${escapeHtml(person.name)}</h3>
+                <h3>${escapeHtml(person.name)}${privateIndicator}</h3>
                 ${person.birthYear ? `<p><span class="info-label">Born:</span> ${person.birthYear}</p>` : ''}
                 ${person.birthPlace ? `<p><span class="info-label">From:</span> ${escapeHtml(person.birthPlace)}</p>` : ''}
                 ${person.country ? `<p><span class="info-label">Country:</span> ${escapeHtml(person.country)}</p>` : ''}
