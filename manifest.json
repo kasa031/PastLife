@@ -2,7 +2,7 @@
   "name": "PastLife - Journey through time, discover your ancestors",
   "short_name": "PastLife",
   "description": "PastLife - Oppdag og utforsk din familiehistorie. Bygg familietrær, søk etter forfedre, og koble sammen generasjoner gjennom tid. AI-drevet plattform for å oppdage og dele informasjon om forfedre.",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#F8F6F3",

@@ -66,9 +66,21 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // Show install button when app can be installed
+// Only shows on profile page, not as fixed button
 function showInstallButton() {
     // Don't show if already installed
     if (isAppInstalled()) {
+        // Hide any existing button
+        const existingBtn = document.getElementById('installAppButton');
+        if (existingBtn) {
+            existingBtn.style.display = 'none';
+        }
+        return;
+    }
+    
+    // Only show install button on profile page
+    const isProfilePage = window.location.pathname.includes('profile.html');
+    if (!isProfilePage) {
         return;
     }
     
@@ -85,11 +97,29 @@ function showInstallButton() {
         return;
     }
     
-    // Check if button already exists
+    // Check if button already exists in profile section
     if (document.getElementById('installAppButton')) {
         document.getElementById('installAppButton').style.display = 'block';
         return;
     }
+    
+    // Find profile settings section to add button there
+    const profileSection = document.querySelector('.profile-settings-section');
+    if (!profileSection) {
+        // If profile section not found, don't show button
+        return;
+    }
+    
+    // Create install button container
+    const installContainer = document.createElement('div');
+    installContainer.id = 'installAppButtonContainer';
+    installContainer.style.cssText = `
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #F8F6F3 0%, #ffffff 100%);
+        border: 2px solid var(--turquoise-primary, #00897b);
+        border-radius: 12px;
+    `;
     
     // Create install button
     installButton = document.createElement('button');
@@ -98,24 +128,21 @@ function showInstallButton() {
     installButton.innerHTML = '📱 Install PastLife App';
     installButton.title = 'Install PastLife as a web app on your device';
     installButton.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
+        width: 100%;
         background: var(--turquoise-primary, #00897b);
         color: white;
         border: none;
-        border-radius: 25px;
+        border-radius: 8px;
         padding: 12px 24px;
         font-size: 1rem;
         font-weight: bold;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 0.5rem;
         transition: all 0.3s;
-        animation: slideInUp 0.3s ease-out;
     `;
     
     // Add hover effect
@@ -125,42 +152,27 @@ function showInstallButton() {
     });
     installButton.addEventListener('mouseleave', () => {
         installButton.style.transform = 'translateY(0)';
-        installButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+        installButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
     });
     
     // Add click handler
     installButton.addEventListener('click', handleInstallClick);
     
-    document.body.appendChild(installButton);
+    installContainer.appendChild(installButton);
     
-    // Add CSS animation if not already added
-    if (!document.getElementById('installPromptStyles')) {
-        const style = document.createElement('style');
-        style.id = 'installPromptStyles';
-        style.textContent = `
-            @keyframes slideInUp {
-                from {
-                    transform: translateY(100px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-            
-            @media (max-width: 768px) {
-                #installAppButton {
-                    bottom: 10px;
-                    right: 10px;
-                    left: 10px;
-                    width: calc(100% - 20px);
-                    justify-content: center;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
+    // Add description
+    const description = document.createElement('p');
+    description.style.cssText = `
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+        color: var(--gray-dark, #666);
+        text-align: center;
+    `;
+    description.textContent = 'Installer PastLife som en app på enheten din for raskere tilgang';
+    installContainer.appendChild(description);
+    
+    // Insert after profile settings section
+    profileSection.parentNode.insertBefore(installContainer, profileSection.nextSibling);
 }
 
 // Handle install button click
@@ -462,6 +474,15 @@ function isAppInstalled() {
     if (window.navigator.standalone === true) {
         return true;
     }
+    // Check if launched from home screen (Android)
+    if (window.matchMedia('(display-mode: fullscreen)').matches) {
+        return true;
+    }
+    // Check localStorage for installation status
+    const installStatus = localStorage.getItem('pastlife_app_installed');
+    if (installStatus === 'true') {
+        return true;
+    }
     return false;
 }
 
@@ -469,22 +490,40 @@ function isAppInstalled() {
 window.addEventListener('appinstalled', () => {
     console.log('PastLife app was installed');
     deferredPrompt = null;
+    // Mark as installed in localStorage
+    localStorage.setItem('pastlife_app_installed', 'true');
+    // Hide install button
     if (installButton) {
         installButton.style.display = 'none';
+        const container = document.getElementById('installAppButtonContainer');
+        if (container) {
+            container.style.display = 'none';
+        }
     }
     showMessageSafe('PastLife app installed successfully! 🎉', 'success');
 });
 
-// Auto-show install button on page load for iOS/Brave
+// Auto-show install button on page load for iOS/Brave (only on profile page)
 window.addEventListener('load', () => {
     // Wait a bit for everything to load
     setTimeout(() => {
+        // Only show on profile page
+        const isProfilePage = window.location.pathname.includes('profile.html');
+        if (!isProfilePage) {
+            return;
+        }
+        
+        // Don't show if already installed
+        if (isAppInstalled()) {
+            return;
+        }
+        
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         const browser = detectBrowser();
         const isBrave = browser === 'brave';
         
-        // Auto-show for iOS or Brave
-        if (isIOS || isBrave) {
+        // Auto-show for iOS or Brave, or if deferredPrompt exists
+        if (isIOS || isBrave || deferredPrompt) {
             showInstallButton();
         }
     }, 1000);

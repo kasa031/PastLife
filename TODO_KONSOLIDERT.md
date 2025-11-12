@@ -148,7 +148,15 @@
 - [ ] Legge til screen reader-støtte
 - [ ] Forbedre kontrast
 
-### 11. Sikkerhet
+### 11. Sikkerhet og Privatliv
+- [ ] **Privat modus / Private innstillinger** 🔴 HØY PRIORITET
+  - [ ] Legge til "Privat modus" toggle i profilinnstillinger
+  - [ ] Implementere privat slektstre (kun synlig for eier)
+  - [ ] Implementere privat informasjon om familiemedlemmer
+  - [ ] Skjule private personer fra søkeresultater
+  - [ ] Skjule private slektstre fra deling
+  - [ ] Legge til "Kun jeg kan se" checkbox ved opprettelse av person/slektstre
+  - [ ] Vise privat-indikator (🔒) på private elementer
 - [ ] Implementere rate limiting
 - [ ] Forbedre input-validering (delvis implementert)
 - [ ] Legge til CSRF-beskyttelse
