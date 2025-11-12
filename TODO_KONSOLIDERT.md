@@ -108,6 +108,11 @@
   - [x] Pinch-to-zoom implementert ✅
   - [x] Touch pan implementert ✅
 - [ ] Forbedre AI-analyse
+  - [ ] Forbedre `basicTextAnalysis()` med bedre regex-mønstre
+  - [ ] Legge til støtte for flere språk (norsk/engelsk)
+  - [ ] Forbedre relasjonsdeteksjon (f.eks. "sønn av", "giftet seg med")
+  - [ ] Legge til kontekst-forståelse for steder og datoer
+  - [ ] Forbedre håndtering av ufullstendig informasjon
 
 ### 5. Bildehåndtering
 - [ ] Legge til bilde-redigering (crop, rotate)
