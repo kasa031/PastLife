@@ -240,9 +240,14 @@ function loadPersonDetails() {
                                      title="${isMain ? 'Hovedbilde (klikk for å endre)' : 'Klikk for å sette som hovedbilde'}">
                                 ${isMain ? '<span class="main-badge">Hovedbilde</span>' : ''}
                                 ${isOwner ? `
-                                    <button class="gallery-tag-btn" onclick="editImageTags('${escapedImg}', '${currentPersonId}')" title="Tagge hvem som er på bildet" style="position: absolute; bottom: ${imageTags.length > 0 ? '2.5rem' : '0.5rem'}; left: 0.5rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 4px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer; z-index: 20;">
-                                        🏷️ Tag
-                                    </button>
+                                    <div style="position: absolute; bottom: ${imageTags.length > 0 ? '2.5rem' : '0.5rem'}; left: 0.5rem; display: flex; gap: 0.3rem; z-index: 20;">
+                                        <button class="gallery-tag-btn" onclick="editImageTags('${escapedImg}', '${currentPersonId}')" title="Tagge hvem som er på bildet" style="background: var(--turquoise-primary); color: white; border: none; border-radius: 4px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer;">
+                                            🏷️ Tag
+                                        </button>
+                                        <button class="gallery-rotate-btn" onclick="rotateImageInGallery('${escapedImg}', '${currentPersonId}')" title="Roter bilde 90°" style="background: var(--orange-primary); color: white; border: none; border-radius: 4px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer;">
+                                            🔄 Roter
+                                        </button>
+                                    </div>
                                 ` : ''}
                                 ${isOwner && allImages.length > 1 ? `
                                     <button class="gallery-delete-btn" onclick="removeImageFromGallery('${escapedImg}', '${currentPersonId}')" title="Slett bilde">
@@ -1037,6 +1042,66 @@ window.handleGalleryImageUpload = async function(event, personId) {
         hideLoadingOverlay();
         console.error('Error uploading images:', error);
         showMessage('Feil ved opplasting av bilder: ' + error.message, 'error');
+    }
+};
+
+// Rotate image in gallery
+window.rotateImageInGallery = async function(imageUrl, personId) {
+    const person = getPersonById(personId);
+    if (!person) {
+        showMessage('Person ikke funnet', 'error');
+        return;
+    }
+    
+    // Check if user is owner
+    const user = getCurrentUser();
+    if (!user || person.createdBy !== user.username) {
+        showMessage('Du kan bare rotere bilder fra dine egne personer', 'error');
+        return;
+    }
+    
+    try {
+        showMessage('Roterer bilde...', 'info');
+        
+        // Rotate image 90 degrees
+        const rotatedImage = await rotateImage(imageUrl, 90);
+        
+        // Update image in array
+        const currentImages = person.images || (person.photo ? [person.photo] : []);
+        const imageIndex = currentImages.indexOf(imageUrl);
+        
+        if (imageIndex === -1) {
+            showMessage('Bilde ikke funnet i galleriet', 'error');
+            return;
+        }
+        
+        // Replace old image with rotated version
+        const updatedImages = [...currentImages];
+        updatedImages[imageIndex] = rotatedImage;
+        
+        // Update main image if it was the rotated one
+        let newMainImage = person.mainImage;
+        if (person.mainImage === imageUrl) {
+            newMainImage = rotatedImage;
+        }
+        
+        // Update person
+        const updatedPerson = {
+            ...person,
+            images: updatedImages,
+            mainImage: newMainImage,
+            photo: person.photo === imageUrl ? rotatedImage : person.photo
+        };
+        
+        // Save updated person
+        const { savePerson } = await import('./data.js');
+        savePerson(updatedPerson, personId);
+        
+        showMessage('Bilde rotert!', 'success');
+        loadPersonDetails(); // Reload to show rotated image
+    } catch (error) {
+        console.error('Error rotating image:', error);
+        showMessage('Feil ved rotasjon av bilde: ' + error.message, 'error');
     }
 };
 

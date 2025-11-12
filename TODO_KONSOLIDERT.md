@@ -115,8 +115,12 @@
   - [x] Forbedre håndtering av ufullstendig informasjon ✅
 
 ### 5. Bildehåndtering
-- [ ] Legge til bilde-redigering (crop, rotate)
-- [ ] Konverter bilder til WebP format for bedre komprimering
+- [x] Legge til bilde-redigering (crop, rotate) ✅
+  - [x] Roter-funksjonalitet implementert (90° rotasjon) ✅
+  - [ ] Crop-funksjonalitet (krever mer avansert UI)
+- [x] Konverter bilder til WebP format for bedre komprimering ✅
+  - [x] WebP prioriteres automatisk ved komprimering ✅
+  - [x] Fallback til JPEG hvis WebP ikke støttes ✅
 - [ ] Legge til bilde-metadata
 - [ ] Forbedre lazy loading (delvis implementert)
 

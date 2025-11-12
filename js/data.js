@@ -614,9 +614,49 @@ export function getCommentsForPerson(personId) {
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
+// Rotate image (90 degrees clockwise)
+export function rotateImage(imageSrc, degrees = 90) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Calculate new dimensions based on rotation
+            if (degrees === 90 || degrees === 270) {
+                canvas.width = img.height;
+                canvas.height = img.width;
+            } else {
+                canvas.width = img.width;
+                canvas.height = img.height;
+            }
+            
+            // Translate and rotate
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate((degrees * Math.PI) / 180);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+            
+            // Convert to base64 (prefer WebP)
+            let result;
+            try {
+                result = canvas.toDataURL('image/webp', 0.9);
+                if (!result || result.length === 0 || result === 'data:,') {
+                    result = canvas.toDataURL('image/jpeg', 0.9);
+                }
+            } catch (e) {
+                result = canvas.toDataURL('image/jpeg', 0.9);
+            }
+            
+            resolve(result);
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = imageSrc;
+    });
+}
+
 // Compress and convert image to base64
 // Optimized for different use cases: profile photos (800px), thumbnails (300px), full size (1200px)
-// Improved compression: uses adaptive quality based on file size
+// Improved compression: uses adaptive quality based on file size, prioritizes WebP format
 export function imageToBase64(file, maxWidth = 800, quality = null) {
     // Adaptive quality based on original file size
     if (quality === null) {
@@ -689,17 +729,20 @@ export function imageToBase64(file, maxWidth = 800, quality = null) {
                     ctx.drawImage(img, 0, 0, width, height);
                     
                     // Convert to base64 with compression
-                    // Try WebP first if supported, otherwise use JPEG for better compression
+                    // Prioritize WebP for better compression (smaller file size, better quality)
                     let compressed;
+                    let format = 'webp';
                     try {
-                        // Try WebP for better compression (smaller file size)
+                        // Try WebP first - better compression than JPEG
                         compressed = canvas.toDataURL('image/webp', quality);
-                        // If WebP fails or returns data URL that's too large, fall back to JPEG
-                        if (!compressed || compressed.length === 0 || compressed === 'data:,') {
+                        // If WebP fails or returns invalid data, fall back to JPEG
+                        if (!compressed || compressed.length === 0 || compressed === 'data:,' || compressed.length < 100) {
+                            format = 'jpeg';
                             compressed = canvas.toDataURL('image/jpeg', quality);
                         }
                     } catch (e) {
                         // Fallback to JPEG if WebP is not supported
+                        format = 'jpeg';
                         compressed = canvas.toDataURL('image/jpeg', quality);
                     }
                     
@@ -712,7 +755,7 @@ export function imageToBase64(file, maxWidth = 800, quality = null) {
                     const originalSizeKB = (file.size / 1024).toFixed(2);
                     const compressedSizeKB = ((compressed.length * 3) / 4 / 1024).toFixed(2);
                     const compressionRatio = ((1 - (compressed.length * 3) / 4 / file.size) * 100).toFixed(1);
-                    console.log(`Image compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${compressionRatio}% reduction)`);
+                    console.log(`Image compressed (${format.toUpperCase()}): ${originalSizeKB}KB → ${compressedSizeKB}KB (${compressionRatio}% reduction)`);
                     
                     resolve(compressed);
                 } catch (error) {
