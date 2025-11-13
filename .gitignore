@@ -38,6 +38,11 @@ secrets.js
 .env.local
 .env.production
 
+# CRITICAL: Never commit files containing API keys
+# Check for API keys before committing:
+# git diff | grep -i "sk-or-v1-"
+# If found, DO NOT COMMIT!
+
 # Temporary files
 *.tmp
 *.temp

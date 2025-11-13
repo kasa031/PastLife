@@ -698,6 +698,57 @@ export function sanitizeInput(input) {
     return div.innerHTML;
 }
 
+// Enhanced XSS protection - sanitize HTML while preserving safe formatting
+export function sanitizeHTML(html) {
+    if (typeof html !== 'string') {
+        if (html === null || html === undefined) return '';
+        return String(html);
+    }
+    
+    // Remove potentially dangerous script tags and event handlers
+    const dangerousPatterns = [
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        /javascript:/gi,
+        /on\w+\s*=/gi, // Remove event handlers like onclick, onerror, etc.
+        /<iframe/gi,
+        /<object/gi,
+        /<embed/gi,
+        /<link/gi,
+        /<meta/gi,
+        /<style/gi
+    ];
+    
+    let sanitized = html;
+    dangerousPatterns.forEach(pattern => {
+        sanitized = sanitized.replace(pattern, '');
+    });
+    
+    return sanitized;
+}
+
+// Validate and sanitize URL
+export function sanitizeURL(url) {
+    if (typeof url !== 'string') return '';
+    
+    try {
+        const urlObj = new URL(url);
+        // Only allow http, https, and mailto protocols
+        if (!['http:', 'https:', 'mailto:'].includes(urlObj.protocol)) {
+            return '';
+        }
+        return urlObj.href;
+    } catch (e) {
+        // If URL parsing fails, try to construct a safe URL
+        if (url.startsWith('mailto:')) {
+            return url;
+        }
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        return '';
+    }
+}
+
 // Sanitize object recursively
 export function sanitizeObject(obj) {
     if (obj === null || obj === undefined) return obj;
@@ -975,27 +1026,44 @@ export function showKeyboardShortcuts() {
 // Initialize keyboard shortcuts help (press ? to show)
 // Screen reader announcements for dynamic content
 export function announceToScreenReader(message, priority = 'polite') {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('role', priority === 'assertive' ? 'alert' : 'status');
-    announcement.setAttribute('aria-live', priority);
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    announcement.style.cssText = `
-        position: absolute;
-        left: -10000px;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-    `;
-    document.body.appendChild(announcement);
+    // Create or reuse a live region for announcements
+    let liveRegion = document.getElementById('screen-reader-live-region');
+    if (!liveRegion) {
+        liveRegion = document.createElement('div');
+        liveRegion.id = 'screen-reader-live-region';
+        liveRegion.setAttribute('role', 'status');
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.setAttribute('aria-atomic', 'true');
+        liveRegion.className = 'sr-only';
+        liveRegion.style.cssText = `
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+        `;
+        document.body.appendChild(liveRegion);
+    }
     
-    // Remove after announcement
-    setTimeout(() => {
-        if (announcement.parentNode) {
-            announcement.parentNode.removeChild(announcement);
-        }
-    }, 1000);
+    // Update live region priority if needed
+    if (priority === 'assertive') {
+        liveRegion.setAttribute('role', 'alert');
+        liveRegion.setAttribute('aria-live', 'assertive');
+    } else {
+        liveRegion.setAttribute('role', 'status');
+        liveRegion.setAttribute('aria-live', 'polite');
+    }
+    
+    // Update content to trigger announcement
+    liveRegion.textContent = message;
+    
+    // Clear after announcement (for assertive messages)
+    if (priority === 'assertive') {
+        setTimeout(() => {
+            liveRegion.textContent = '';
+        }, 1000);
+    }
 }
 
 // Enhanced keyboard navigation support

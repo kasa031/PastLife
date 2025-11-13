@@ -178,11 +178,12 @@ function showInstallButton() {
 // Handle install button click
 async function handleInstallClick() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isWindows = /Windows/i.test(navigator.userAgent);
     const browser = detectBrowser();
     const isBrave = browser === 'brave';
     
-    // For iOS or Brave without deferredPrompt, show instructions
-    if ((isIOS || isBrave) && !deferredPrompt) {
+    // For iOS, Brave, or Windows without deferredPrompt, show instructions
+    if ((isIOS || isBrave || isWindows) && !deferredPrompt) {
         showIOSInstructions();
         return;
     }
@@ -250,6 +251,7 @@ function showIOSInstructions() {
     const isBrave = browser === 'brave';
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/i.test(navigator.userAgent);
+    const isWindows = /Windows/i.test(navigator.userAgent);
     
     let instructionsHTML = '';
     
@@ -372,12 +374,128 @@ function showIOSInstructions() {
                 " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(139, 111, 71, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)';">Lukk</button>
             </div>
         `;
+    } else if (isBrave && /Windows/i.test(navigator.userAgent)) {
+        instructionsHTML = `
+            <div style="padding: 1.5rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 4rem; margin-bottom: 0.5rem;">💻</div>
+                    <h3 style="color: var(--turquoise-dark, #8B6F47); margin-top: 0; font-size: 1.5rem;">Install PastLife on Windows (Brave)</h3>
+                </div>
+                <div style="background: linear-gradient(135deg, #F8F6F3 0%, #ffffff 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #8B6F47;">
+                    <ol style="line-height: 2.2; color: var(--text-dark, #333); margin: 0; padding-left: 1.5rem; list-style: none; counter-reset: step-counter;">
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">1</span>
+                            <strong style="color: #8B6F47;">Click the menu button</strong> 
+                            <span style="font-size: 1.5rem; vertical-align: middle; margin-left: 0.5rem;">☰</span>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">In the top-right corner of Brave browser</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">2</span>
+                            <strong style="color: #8B6F47;">Select "Install PastLife" or "Create Shortcut"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">📲 In the menu</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">3</span>
+                            <strong style="color: #8B6F47;">Confirm installation</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">Click "Install" in the confirmation dialog</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 0; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #4caf50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">✓</span>
+                            <strong style="color: #4caf50;">PastLife is now installed! 🎉</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">On your desktop and/or taskbar</div>
+                        </li>
+                    </ol>
+                </div>
+                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <div style="display: flex; align-items: start;">
+                        <span style="font-size: 1.5rem; margin-right: 0.5rem;">💡</span>
+                        <div>
+                            <strong style="color: #856404;">Tip:</strong>
+                            <div style="color: #856404; font-size: 0.9rem; margin-top: 0.3rem;">You can also pin the app to your taskbar by right-clicking the installed app icon.</div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="this.closest('.install-instructions-modal').remove(); this.closest('.install-instructions-overlay').remove();" style="
+                    margin-top: 1.5rem;
+                    padding: 0.875rem 1.5rem;
+                    background: linear-gradient(135deg, #8B6F47 0%, #6B5F3F 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    width: 100%;
+                    font-size: 1rem;
+                    box-shadow: 0 4px 12px rgba(139, 111, 71, 0.3);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(139, 111, 71, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)';">Close</button>
+            </div>
+        `;
+    } else if (/Windows/i.test(navigator.userAgent)) {
+        const browser = detectBrowser();
+        const browserName = browser === 'chrome' ? 'Chrome' : browser === 'edge' ? 'Edge' : 'Browser';
+        instructionsHTML = `
+            <div style="padding: 1.5rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 4rem; margin-bottom: 0.5rem;">💻</div>
+                    <h3 style="color: var(--turquoise-dark, #8B6F47); margin-top: 0; font-size: 1.5rem;">Install PastLife on Windows (${browserName})</h3>
+                </div>
+                <div style="background: linear-gradient(135deg, #F8F6F3 0%, #ffffff 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #8B6F47;">
+                    <ol style="line-height: 2.2; color: var(--text-dark, #333); margin: 0; padding-left: 1.5rem; list-style: none; counter-reset: step-counter;">
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">1</span>
+                            <strong style="color: #8B6F47;">Look for the install icon</strong> 
+                            <span style="font-size: 1.5rem; vertical-align: middle; margin-left: 0.5rem;">➕</span>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">In the address bar (right side) of ${browserName}</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">2</span>
+                            <strong style="color: #8B6F47;">Click "Install" or "Install PastLife"</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">📲 In the install prompt</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 1.2rem; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #8B6F47; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">3</span>
+                            <strong style="color: #8B6F47;">Confirm installation</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">The app will be added to your desktop and Start menu</div>
+                        </li>
+                        <li style="counter-increment: step-counter; margin-bottom: 0; position: relative; padding-left: 2.5rem;">
+                            <span style="position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; background: #4caf50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem;">✓</span>
+                            <strong style="color: #4caf50;">PastLife is now installed! 🎉</strong>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">You can pin it to your taskbar for quick access</div>
+                        </li>
+                    </ol>
+                </div>
+                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <div style="display: flex; align-items: start;">
+                        <span style="font-size: 1.5rem; margin-right: 0.5rem;">💡</span>
+                        <div>
+                            <strong style="color: #856404;">Tip:</strong>
+                            <div style="color: #856404; font-size: 0.9rem; margin-top: 0.3rem;">Right-click the installed app icon to pin it to your taskbar for even faster access.</div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="this.closest('.install-instructions-modal').remove(); this.closest('.install-instructions-overlay').remove();" style="
+                    margin-top: 1.5rem;
+                    padding: 0.875rem 1.5rem;
+                    background: linear-gradient(135deg, #8B6F47 0%, #6B5F3F 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    width: 100%;
+                    font-size: 1rem;
+                    box-shadow: 0 4px 12px rgba(139, 111, 71, 0.3);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(139, 111, 71, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)';">Close</button>
+            </div>
+        `;
     } else if (isIOS) {
         instructionsHTML = `
             <div style="padding: 1.5rem;">
                 <div style="text-align: center; margin-bottom: 1.5rem;">
                     <div style="font-size: 4rem; margin-bottom: 0.5rem;">📱</div>
-                    <h3 style="color: var(--turquoise-dark, #8B6F47); margin-top: 0; font-size: 1.5rem;">Install PastLife på iOS</h3>
+                    <h3 style="color: var(--turquoise-dark, #8B6F47); margin-top: 0; font-size: 1.5rem;">Install PastLife on iOS</h3>
                 </div>
                 <div style="background: linear-gradient(135deg, #F8F6F3 0%, #ffffff 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #8B6F47;">
                     <ol style="line-height: 2.2; color: var(--text-dark, #333); margin: 0; padding-left: 1.5rem; list-style: none; counter-reset: step-counter;">
@@ -519,11 +637,12 @@ window.addEventListener('load', () => {
         }
         
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isWindows = /Windows/i.test(navigator.userAgent);
         const browser = detectBrowser();
         const isBrave = browser === 'brave';
         
-        // Auto-show for iOS or Brave, or if deferredPrompt exists
-        if (isIOS || isBrave || deferredPrompt) {
+        // Auto-show for iOS, Windows, Brave, or if deferredPrompt exists
+        if (isIOS || isWindows || isBrave || deferredPrompt) {
             showInstallButton();
         }
     }, 1000);

@@ -1,7 +1,7 @@
 // Person detail page functionality
-import { getPersonById, getCommentsForPerson, addComment, deleteComment, searchByRelationship, getAllPersons } from './data.js';
+import { getPersonById, getCommentsForPerson, addComment, deleteComment, searchByRelationship, getAllPersons, rotateImage } from './data.js';
 import { getCurrentUser, isLoggedIn, updateNavigation } from './auth.js';
-import { copyToClipboard, showMessage, formatDate, logError, confirmAction, initKeyboardShortcuts, initBreadcrumbs, sanitizeInput, enhanceKeyboardNavigation, escapeHtml, showLoadingOverlay, hideLoadingOverlay } from './utils.js';
+import { copyToClipboard, showMessage, formatDate, logError, confirmAction, initKeyboardShortcuts, initBreadcrumbs, sanitizeInput, sanitizeURL, enhanceKeyboardNavigation, escapeHtml, showLoadingOverlay, hideLoadingOverlay } from './utils.js';
 import { loadTheme, toggleDarkMode } from './theme.js';
 
 let currentPersonId = null;
@@ -234,11 +234,19 @@ function loadPersonDetails() {
                         return `
                             <div class="gallery-item" style="position: relative;">
                                 <img src="${img}" alt="${escapeHtml(person.name)} - Image ${idx + 1}" 
-                                     class="gallery-image ${isMain ? 'main' : ''}" 
+                                     class="gallery-image ${isMain ? 'main' : ''} lazy-gallery-image" 
                                      onclick="setMainImage('${escapedImg}', '${currentPersonId}')" 
                                      onerror="this.src='assets/images/oldphoto2.jpg'"
-                                     title="${isMain ? 'Hovedbilde (klikk for å endre)' : 'Klikk for å sette som hovedbilde'}">
+                                     title="${isMain ? 'Hovedbilde (klikk for å endre)' : 'Klikk for å sette som hovedbilde'}"
+                                     loading="lazy">
                                 ${isMain ? '<span class="main-badge">Hovedbilde</span>' : ''}
+                                ${imageMeta ? `
+                                    <div class="image-metadata" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.7); color: white; padding: 0.3rem 0.5rem; border-radius: 4px; font-size: 0.7rem; max-width: 150px; cursor: pointer;" 
+                                         onclick="showImageMetadata('${escapedImg}', '${currentPersonId}')" 
+                                         title="Klikk for å se bildeinformasjon">
+                                        📷 Info
+                                    </div>
+                                ` : ''}
                                 ${isOwner ? `
                                     <div style="position: absolute; bottom: ${imageTags.length > 0 ? '2.5rem' : '0.5rem'}; left: 0.5rem; display: flex; gap: 0.3rem; z-index: 20;">
                                         <button class="gallery-tag-btn" onclick="editImageTags('${escapedImg}', '${currentPersonId}')" title="Tagge hvem som er på bildet" style="background: var(--turquoise-primary); color: white; border: none; border-radius: 4px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer;">
@@ -607,16 +615,29 @@ function processCommentText(text) {
     // Emojis are valid Unicode characters and will display correctly
     text = escapeHtml(text);
     
-    // Convert @mentions to highlighted text
-    text = text.replace(/@(\w+)/g, '<span style="background: var(--orange-light); padding: 0.2rem 0.4rem; border-radius: 3px; font-weight: bold; color: var(--orange-dark);">@$1</span>');
+    // Convert @mentions to highlighted text (sanitize mention name)
+    text = text.replace(/@(\w+)/g, (match, name) => {
+        const sanitizedName = escapeHtml(name);
+        return `<span style="background: var(--orange-light); padding: 0.2rem 0.4rem; border-radius: 3px; font-weight: bold; color: var(--orange-dark);">@${sanitizedName}</span>`;
+    });
     
-    // Convert URLs to clickable links
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    text = text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--turquoise-primary); text-decoration: underline;">$1</a>');
+    // Convert URLs to clickable links (with validation)
+    const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
+    text = text.replace(urlRegex, (match) => {
+        const safeUrl = sanitizeURL(match);
+        if (safeUrl) {
+            const displayUrl = escapeHtml(match);
+            return `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" style="color: var(--turquoise-primary); text-decoration: underline;">${displayUrl}</a>`;
+        }
+        return escapeHtml(match); // If URL is invalid, just escape it
+    });
     
-    // Convert email addresses to mailto links
+    // Convert email addresses to mailto links (with validation)
     const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
-    text = text.replace(emailRegex, '<a href="mailto:$1" style="color: var(--turquoise-primary); text-decoration: underline;">$1</a>');
+    text = text.replace(emailRegex, (match) => {
+        const safeEmail = escapeHtml(match);
+        return `<a href="mailto:${safeEmail}" style="color: var(--turquoise-primary); text-decoration: underline;">${safeEmail}</a>`;
+    });
     
     // Emojis are already supported - escapeHtml preserves Unicode characters
     // Users can type emojis directly (😀, ❤️, 🌳, etc.) and they will display correctly
@@ -875,10 +896,19 @@ function setupMentionAutocomplete() {
 }
 
 // Submit comment
-window.submitComment = function() {
+window.submitComment = async function() {
     if (!isLoggedIn()) {
         showMessage('Please login to leave comments', 'error');
         setTimeout(() => window.location.href = 'login.html', 1500);
+        return;
+    }
+    
+    // Check rate limit for comments
+    const { checkRateLimit, recordAction } = await import('./rate-limiter.js');
+    const rateLimitCheck = checkRateLimit('commentPosting');
+    
+    if (!rateLimitCheck.allowed) {
+        showMessage(rateLimitCheck.message || 'Rate limit exceeded. Please try again later.', 'error');
         return;
     }
     
@@ -906,11 +936,19 @@ window.submitComment = function() {
     const user = getCurrentUser();
     addComment(currentPersonId, text, user.username);
     
+    // Record comment action
+    recordAction('commentPosting');
+    
     // Clear textarea
     document.getElementById('commentText').value = '';
     
     // Show success and reload comments
     showMessage('Comment posted successfully!', 'success');
+    
+    // Announce to screen readers
+    const { announceToScreenReader } = await import('./utils.js');
+    announceToScreenReader('Comment posted successfully', 'polite');
+    
     loadComments();
 };
 
@@ -959,6 +997,127 @@ window.setMainImage = function(imageUrl, personId) {
     });
 };
 
+// Show image consent dialog
+function showImageConsentDialog() {
+    return new Promise((resolve) => {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        `;
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        `;
+        
+        modal.innerHTML = `
+            <h2 style="color: var(--turquoise-dark); margin-top: 0;">⚠️ Image Consent Required</h2>
+            <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <p style="margin: 0; color: #721c24;">
+                    <strong>Legal Notice:</strong> By uploading images, you confirm that you have obtained proper consent from all identifiable individuals in the photos, 
+                    or that you have the legal right to share these images.
+                </p>
+            </div>
+            <div style="margin: 1.5rem 0;">
+                <p><strong>You must ensure:</strong></p>
+                <ul style="line-height: 1.8;">
+                    <li>You have obtained explicit consent from all identifiable individuals</li>
+                    <li>For minors, you have parental/guardian consent</li>
+                    <li>You have the legal right to share the images</li>
+                    <li>The images do not violate privacy rights or GDPR regulations</li>
+                </ul>
+            </div>
+            <div style="margin: 1.5rem 0;">
+                <label style="display: flex; align-items: start; cursor: pointer; gap: 0.75rem;">
+                    <input type="checkbox" id="imageConsentCheckbox" required style="margin-top: 0.25rem; width: 20px; height: 20px; cursor: pointer;">
+                    <span style="line-height: 1.6;">
+                        I confirm that I have obtained all necessary consents and have the legal right to upload these images. 
+                        I understand that I am legally responsible for ensuring compliance with privacy laws and GDPR.
+                    </span>
+                </label>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <a href="terms.html#image-consent" target="_blank" style="color: var(--turquoise-primary); text-decoration: underline;">
+                    Read full Terms of Service regarding image consent
+                </a>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button id="consentCancel" style="
+                    flex: 1;
+                    padding: 0.875rem 1.5rem;
+                    background: var(--gray-medium);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 1rem;
+                ">Cancel</button>
+                <button id="consentConfirm" style="
+                    flex: 1;
+                    padding: 0.875rem 1.5rem;
+                    background: var(--turquoise-primary);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 1rem;
+                ">I Agree & Continue</button>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        // Handle confirm
+        const confirmBtn = modal.querySelector('#consentConfirm');
+        const cancelBtn = modal.querySelector('#consentCancel');
+        const checkbox = modal.querySelector('#imageConsentCheckbox');
+        
+        confirmBtn.addEventListener('click', () => {
+            if (!checkbox.checked) {
+                showMessage('Please check the consent box to continue', 'error');
+                return;
+            }
+            overlay.remove();
+            resolve(true);
+        });
+        
+        cancelBtn.addEventListener('click', () => {
+            overlay.remove();
+            resolve(false);
+        });
+        
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+                resolve(false);
+            }
+        });
+    });
+}
+
 // Add image to gallery
 window.addImageToGallery = function(personId) {
     const input = document.getElementById('galleryImageInput');
@@ -985,6 +1144,24 @@ window.handleGalleryImageUpload = async function(event, personId) {
         return;
     }
     
+    // Show consent dialog before uploading
+    const consentGiven = await showImageConsentDialog();
+    if (!consentGiven) {
+        // Reset input
+        event.target.value = '';
+        return;
+    }
+    
+    // Check rate limit for image uploads
+    const { checkRateLimit, recordAction } = await import('./rate-limiter.js');
+    const rateLimitCheck = checkRateLimit('imageUploads');
+    
+    if (!rateLimitCheck.allowed) {
+        showMessage(rateLimitCheck.message || 'Rate limit exceeded. Please try again later.', 'error');
+        event.target.value = '';
+        return;
+    }
+    
     const loadingOverlay = showLoadingOverlay(`Laster opp ${files.length} bilde(r)...`);
     
     try {
@@ -994,6 +1171,8 @@ window.handleGalleryImageUpload = async function(event, personId) {
         
         // Process all files
         for (const file of files) {
+            // Record image upload action
+            recordAction('imageUploads');
             // Validate file type
             if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
                 showMessage(`Ugyldig bildeformat: ${file.name}. Bruk JPEG, PNG, GIF eller WebP.`, 'error');
@@ -1008,6 +1187,15 @@ window.handleGalleryImageUpload = async function(event, personId) {
             
             // Compress and convert to base64
             const base64 = await imageToBase64(file, 800, 0.75);
+            
+            // Get and store image metadata
+            const { getImageMetadata } = await import('./data.js');
+            const metadata = await getImageMetadata(file, base64, user.username);
+            
+            // Store metadata with image URL (base64)
+            if (!person.imageMetadata) person.imageMetadata = {};
+            person.imageMetadata[base64] = metadata;
+            
             newImages.push(base64);
         }
         
@@ -1162,6 +1350,107 @@ window.removeImageFromGallery = async function(imageUrl, personId) {
     
     showMessage('Bilde slettet', 'success');
     loadPersonDetails(); // Reload to show updated gallery
+};
+
+// Show image metadata
+window.showImageMetadata = function(imageUrl, personId) {
+    const person = getPersonById(personId);
+    if (!person) return;
+    
+    const metadata = (person.imageMetadata && person.imageMetadata[imageUrl]) || null;
+    if (!metadata) {
+        showMessage('No metadata available for this image', 'info');
+        return;
+    }
+    
+    // Create modal to display metadata
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    `;
+    
+    const formatSize = (bytes) => {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    };
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    `;
+    
+    modal.innerHTML = `
+        <h2 style="color: var(--turquoise-dark); margin-top: 0;">📷 Image Information</h2>
+        <div style="margin-top: 1.5rem;">
+            <div style="margin-bottom: 1rem;">
+                <strong>Filename:</strong> ${escapeHtml(metadata.filename || 'Unknown')}
+            </div>
+            ${metadata.dimensions ? `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Dimensions:</strong> ${metadata.dimensions.width} × ${metadata.dimensions.height} pixels
+                </div>
+            ` : ''}
+            <div style="margin-bottom: 1rem;">
+                <strong>Original Size:</strong> ${formatSize(metadata.originalSize || 0)}
+            </div>
+            ${metadata.compressedSize ? `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Compressed Size:</strong> ${formatSize(metadata.compressedSize)}
+                    ${metadata.compressionRatio ? ` (${metadata.compressionRatio}% reduction)` : ''}
+                </div>
+            ` : ''}
+            <div style="margin-bottom: 1rem;">
+                <strong>Format:</strong> ${metadata.format || metadata.mimeType || 'Unknown'}
+            </div>
+            ${metadata.uploadedAt ? `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Uploaded:</strong> ${new Date(metadata.uploadedAt).toLocaleString()}
+                </div>
+            ` : ''}
+            ${metadata.uploadedBy ? `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Uploaded by:</strong> ${escapeHtml(metadata.uploadedBy)}
+                </div>
+            ` : ''}
+        </div>
+        <button onclick="this.closest('.image-metadata-overlay').remove()" style="
+            margin-top: 1.5rem;
+            padding: 0.875rem 1.5rem;
+            background: var(--turquoise-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        ">Close</button>
+    `;
+    
+    overlay.className = 'image-metadata-overlay';
+    overlay.appendChild(modal);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.remove();
+        }
+    });
+    
+    document.body.appendChild(overlay);
 };
 
 // Edit image tags

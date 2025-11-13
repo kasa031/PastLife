@@ -93,14 +93,20 @@
             </div>
             <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">☰</button>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="search.html">Search</a></li>
-                <li><a href="profile.html" id="profileLink">Profile</a></li>
-                <li><a href="family-tree.html" class="active">Family Tree</a></li>
-                <li><a href="about.html">Om Meg</a></li>
+                <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                <li><a href="search.html" data-i18n="nav.search">Search</a></li>
+                <li><a href="profile.html" id="profileLink" data-i18n="nav.profile">Profile</a></li>
+                <li><a href="family-tree.html" class="active" data-i18n="nav.familyTree">Family Tree</a></li>
+                <li><a href="about.html" data-i18n="nav.about">About</a></li>
+                <li>
+                    <select id="languageSelector" onchange="changeLanguage(this.value)" style="background: var(--turquoise-primary); color: white; border: none; padding: 0.5rem; border-radius: 5px; cursor: pointer; margin: 0 0.5rem;">
+                        <option value="en">🇬🇧 English</option>
+                        <option value="no">🇳🇴 Norsk</option>
+                    </select>
+                </li>
                 <li><button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" style="background: none; border: none; color: var(--white); cursor: pointer; padding: 0.5rem 1rem; font-size: 1.2rem;">🌙</button></li>
-                <li><a href="login.html" id="loginLink">Login</a></li>
-                <li><a href="#" id="logoutLink" class="hidden">Logout</a></li>
+                <li><a href="login.html" id="loginLink" data-i18n="nav.login">Login</a></li>
+                <li><a href="#" id="logoutLink" class="hidden" data-i18n="nav.logout">Logout</a></li>
             </ul>
         </div>
     </nav>
@@ -118,17 +124,17 @@
                     Our AI will analyze the text and help build your family tree automatically.
                 </p>
                 <div style="background: var(--orange-light); padding: 1rem; border-radius: 5px; margin-bottom: 1.5rem;">
-                    <strong>💡 Tips:</strong> Inkluder navn, fødselsår, steder og relasjoner (f.eks. "sønn av", "giftet seg med"). 
-                    Jo mer detaljert, jo bedre resultat! Se <a href="AI_FAMILY_TREE_GUIDE.md" target="_blank" style="color: var(--orange-dark); text-decoration: underline;">full guide</a> for eksempler.
+                    <strong>💡 <span data-i18n="familyTree.tips">Tips: Include names, birth years, places and relationships (e.g., "son of", "married to"). The more detailed, the better results!</span></strong>
+                    <span data-i18n="familyTree.tips">See <a href="AI_FAMILY_TREE_GUIDE.md" target="_blank" style="color: var(--orange-dark); text-decoration: underline;">full guide</a> for examples.</span>
                 </div>
                 
                 <div class="form-group">
-                    <label for="familyText">Family Information</label>
+                    <label for="familyText" data-i18n="familyTree.familyInformation">Family Information</label>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <span>Lim inn tekst om familien din her</span>
-                        <button type="button" onclick="loadExampleText()" style="padding: 0.4rem 0.8rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" title="Load example family history text to see format">📝 Load Example</button>
+                        <span data-i18n="familyTree.pasteText">Paste your family information here</span>
+                        <button type="button" onclick="loadExampleText()" style="padding: 0.4rem 0.8rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" data-i18n-title="familyTree.loadExample" data-i18n="familyTree.loadExample">📝 Load Example</button>
                     </div>
-                    <textarea id="familyText" rows="15" placeholder="Eksempel:&#10;&#10;Min oldefar Edvard Jensen ble født i 1885 i Christiania, Norge. Han giftet seg med Anna Larsen i 1910. De fikk tre barn: Olav Jensen (født 1912), Inger Jensen (født 1915), og Knut Jensen (født 1918).&#10;&#10;Edvard døde i 1950 i Oslo. Anna overlevde ham og døde i 1965.&#10;&#10;Olav giftet seg med Maria Hansen i 1935. De fikk to barn: Erik Olsen (født 1938) og Liv Olsen (født 1942)."></textarea>
+                    <textarea id="familyText" rows="15" data-i18n-placeholder="familyTree.examplePlaceholder" placeholder="Example:&#10;&#10;My great-grandfather Edvard Jensen was born in 1885 in Christiania, Norway. He married Anna Larsen in 1910. They had three children: Olav Jensen (born 1912), Inger Jensen (born 1915), and Knut Jensen (born 1918).&#10;&#10;Edvard died in 1950 in Oslo. Anna survived him and died in 1965.&#10;&#10;Olav married Maria Hansen in 1935. They had two children: Erik Olsen (born 1938) and Liv Olsen (born 1942)."></textarea>
                     <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
                         <span id="wordCount" style="color: var(--gray-dark); font-size: 0.9rem;">0 words</span>
                         <span style="color: var(--gray-dark); font-size: 0.9rem;">Max: 10,000+ words</span>
@@ -136,30 +142,26 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="apiKey">OpenRouter API Key (Anbefalt for best resultat)</label>
+                    <label for="apiKey" data-i18n="familyTree.apiKey">OpenRouter API Key (Recommended for best results)</label>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <input type="text" id="apiKey" placeholder="sk-or-..." style="flex: 1; font-family: monospace;">
-                        <button type="button" onclick="pasteApiKey()" style="padding: 0.5rem 1rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;" title="Paste API key from clipboard">📋 Paste</button>
-                        <button type="button" onclick="clearApiKey()" style="padding: 0.5rem 1rem; background: var(--gray-medium); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;" title="Clear API key field">🗑️ Clear</button>
+                        <input type="text" id="apiKey" data-i18n-placeholder="familyTree.apiKeyPlaceholder" placeholder="sk-or-..." style="flex: 1; font-family: monospace;">
+                        <button type="button" onclick="pasteApiKey()" style="padding: 0.5rem 1rem; background: var(--turquoise-primary); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;" data-i18n-title="familyTree.paste" data-i18n="familyTree.paste">📋 Paste</button>
+                        <button type="button" onclick="clearApiKey()" style="padding: 0.5rem 1rem; background: var(--gray-medium); color: white; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap;" data-i18n-title="common.clear" data-i18n="common.clear">🗑️ Clear</button>
                     </div>
                     <small id="apiKeyStatus" style="color: var(--gray-dark); display: block; margin-top: 0.5rem;">
-                        ✅ API-nøkkel er allerede satt opp og klar til bruk! Du kan overskrive den hvis du vil bruke en annen.
+                        <span data-i18n="familyTree.apiKeyLoaded">✅ API key is loaded and ready to use! You can overwrite it if you want to use a different one.</span>
                     </small>
                 </div>
                 
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="submit-btn" onclick="analyzeFamilyText()" id="analyzeBtn">Analyze with AI & Build Tree</button>
-                    <button class="submit-btn" onclick="analyzeAndMerge()" id="mergeBtn" style="background: var(--orange-primary);">➕ Legg til i eksisterende tre</button>
-                    <button class="submit-btn" style="background: var(--turquoise-primary);" onclick="buildTreeFromExisting()">Use Existing Data</button>
-                    <button class="submit-btn" onclick="shareFamilyTree()" style="background: var(--orange-primary);" title="Del familietreet med andre via lenke">🔗 Del Familietre</button>
-                </div>
-                <div style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 5px; border-left: 4px solid var(--turquoise-primary);">
-                    <strong>💡 Tips:</strong> 
-                    <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
-                        <li><strong>"Analyze with AI & Build Tree"</strong> - Bygger nytt tre (erstatter eksisterende)</li>
-                        <li><strong>"➕ Legg til i eksisterende tre"</strong> - Legger til nye personer uten å slette eksisterende (perfekt for morsside/farsside!)</li>
-                        <li><strong>"Use Existing Data"</strong> - Laster inn personer du allerede har lagt til</li>
-                    </ul>
+                    <button class="submit-btn" onclick="analyzeFamilyText()" id="analyzeBtn" data-i18n="familyTree.analyze">🔍 Analyze & Build Tree</button>
+                    <button class="submit-btn" onclick="analyzeAndMerge()" id="mergeBtn" style="background: var(--orange-primary);" data-i18n="familyTree.merge">➕ Add to Existing Tree</button>
+                    <button class="submit-btn" style="background: var(--turquoise-primary);" onclick="buildTreeFromExisting()" data-i18n="familyTree.useExisting">Use Existing Data</button>
+                    <button class="submit-btn" onclick="shareFamilyTree()" style="background: var(--orange-primary);" data-i18n-title="familyTree.share" data-i18n="familyTree.share">🔗 Share Family Tree</button>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; cursor: pointer;">
+                        <input type="checkbox" id="treePrivacyToggle" onchange="toggleTreePrivacy()" style="width: 20px; height: 20px; cursor: pointer;">
+                        <span style="font-weight: 600;">🔒 Make tree private (only visible to me)</span>
+                    </label>
                 </div>
             </div>
 
@@ -179,11 +181,11 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                     <h3 style="color: var(--turquoise-dark); margin: 0;">Tree Controls</h3>
                     <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                        <span style="color: var(--turquoise-dark); font-weight: bold;">Vis:</span>
-                        <button class="tree-filter-btn active" onclick="filterTree('all')" id="filterAll" data-filter="all">Alle</button>
-                        <button class="tree-filter-btn" onclick="filterTree('mother')" id="filterMother" data-filter="mother">👩 Morsside</button>
-                        <button class="tree-filter-btn" onclick="filterTree('father')" id="filterFather" data-filter="father">👨 Farsside</button>
-                        <button class="tree-filter-btn" onclick="filterTree('both')" id="filterBoth" data-filter="both">Begge</button>
+                        <span style="color: var(--turquoise-dark); font-weight: bold;" data-i18n="familyTree.show">Show:</span>
+                        <button class="tree-filter-btn active" onclick="filterTree('all')" id="filterAll" data-filter="all" data-i18n="familyTree.all">All</button>
+                        <button class="tree-filter-btn" onclick="filterTree('mother')" id="filterMother" data-filter="mother" data-i18n="familyTree.motherSide">👩 Mother's Side</button>
+                        <button class="tree-filter-btn" onclick="filterTree('father')" id="filterFather" data-filter="father" data-i18n="familyTree.fatherSide">👨 Father's Side</button>
+                        <button class="tree-filter-btn" onclick="filterTree('both')" id="filterBoth" data-filter="both" data-i18n="familyTree.both">Both</button>
                     </div>
                 </div>
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
@@ -240,6 +242,10 @@
     <footer class="footer">
         <div class="container">
             <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+            <div style="margin-top: 1rem; display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; font-size: 0.9rem;">
+                <a href="privacy.html" style="color: var(--white); text-decoration: underline;">Privacy Policy</a>
+                <a href="terms.html" style="color: var(--white); text-decoration: underline;">Terms of Service</a>
+            </div>
         </div>
     </footer>
 
@@ -247,11 +253,29 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="js/i18n.js"></script>
     <script type="module" src="js/navigation-utils.js"></script>
     <script type="module" src="js/offline-indicator.js"></script>
     <script type="module" src="js/offline-queue.js"></script>
     <script type="module" src="js/install-prompt.js"></script>
     <script type="module" src="js/update-manager.js"></script>
     <script type="module" src="js/family-tree.js"></script>
+    <script>
+        // Language selector handler
+        function changeLanguage(lang) {
+            if (window.i18n && window.i18n.setLanguage) {
+                window.i18n.setLanguage(lang);
+                document.getElementById('languageSelector').value = lang;
+            }
+        }
+        
+        // Initialize language selector on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const selector = document.getElementById('languageSelector');
+            if (selector && window.i18n) {
+                selector.value = window.i18n.getCurrentLanguage();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -206,6 +206,15 @@ window.applySorting = function() {
     
     const container = document.getElementById('searchResults');
     container.innerHTML = sorted.map(person => createPersonCard(person)).join('');
+    
+    // Announce results to screen readers
+    import('./utils.js').then(({ announceToScreenReader }) => {
+        if (sorted.length > 0) {
+            announceToScreenReader(`Found ${sorted.length} result${sorted.length === 1 ? '' : 's'}`, 'polite');
+        } else {
+            announceToScreenReader('No results found', 'polite');
+        }
+    });
 }
 
 // Create person card HTML with lazy loading and skeleton

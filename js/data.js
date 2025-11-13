@@ -161,6 +161,7 @@ export function savePerson(personData, personId = null) {
                 photo: personData.photo !== undefined ? personData.photo : persons[index].photo,
                 images: personData.images !== undefined ? personData.images : (persons[index].images || (persons[index].photo ? [persons[index].photo] : [])),
                 imageTags: personData.imageTags !== undefined ? personData.imageTags : (persons[index].imageTags || {}),
+                imageMetadata: personData.imageMetadata !== undefined ? personData.imageMetadata : (persons[index].imageMetadata || {}),
                 mainImage: personData.mainImage !== undefined ? personData.mainImage : (persons[index].mainImage || persons[index].photo),
                 sources: personData.sources !== undefined ? personData.sources : (persons[index].sources || []),
                 tags: personData.tags !== undefined ? personData.tags : persons[index].tags,
@@ -187,6 +188,7 @@ export function savePerson(personData, personId = null) {
         photo: personData.photo || null,
         images: personData.images || (personData.photo ? [personData.photo] : []), // Support multiple images
         imageTags: personData.imageTags || {}, // Tags per image: { imageUrl: ['person1', 'person2'] }
+        imageMetadata: personData.imageMetadata || {}, // Metadata per image: { imageUrl: { filename, size, uploadedAt, uploadedBy, dimensions, originalSize } }
         mainImage: personData.mainImage || personData.photo || null, // Main image for display
         sources: personData.sources || [], // Sources array
         tags: personData.tags || [],
@@ -411,14 +413,30 @@ export function searchPersons(filters, currentUser = null) {
             matches = matches && yearMatch;
         }
         
-        // Search in comments (full-text search)
+        // Search in comments (full-text search with improved matching)
         if (filters.comments) {
             const commentSearch = filters.comments.toLowerCase().trim();
             const personComments = getCommentsForPerson(person.id);
-            const commentMatch = personComments.some(comment => 
-                comment.text.toLowerCase().includes(commentSearch) ||
-                (comment.author && comment.author.toLowerCase().includes(commentSearch))
-            );
+            const searchTerms = commentSearch.split(/\s+/).filter(term => term.length > 0);
+            
+            const commentMatch = personComments.some(comment => {
+                const commentText = comment.text.toLowerCase();
+                const commentAuthor = (comment.author || '').toLowerCase();
+                
+                // Match all search terms (AND logic) or any term (OR logic for single word)
+                if (searchTerms.length === 1) {
+                    return commentText.includes(searchTerms[0]) || 
+                           commentAuthor.includes(searchTerms[0]) ||
+                           commentText.includes('@' + searchTerms[0]); // Also search in mentions
+                } else {
+                    // For multiple terms, all must match (AND)
+                    return searchTerms.every(term => 
+                        commentText.includes(term) || 
+                        commentAuthor.includes(term)
+                    );
+                }
+            });
+            
             if (!commentMatch) {
                 matches = false;
             }
@@ -767,6 +785,43 @@ export function imageToBase64(file, maxWidth = 800, quality = null) {
         };
         reader.onerror = () => reject(new Error('Failed to read file. Please try again.'));
         reader.readAsDataURL(file);
+    });
+}
+
+// Get image metadata from file
+export function getImageMetadata(file, base64Image, uploadedBy = null) {
+    return new Promise((resolve) => {
+        const metadata = {
+            filename: file.name,
+            originalSize: file.size,
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: uploadedBy,
+            mimeType: file.type,
+            format: file.type.split('/')[1]?.toUpperCase() || 'UNKNOWN'
+        };
+        
+        // Get image dimensions
+        const img = new Image();
+        img.onload = () => {
+            metadata.dimensions = {
+                width: img.width,
+                height: img.height,
+                aspectRatio: (img.width / img.height).toFixed(2)
+            };
+            
+            // Calculate compressed size (approximate from base64)
+            if (base64Image) {
+                metadata.compressedSize = Math.round((base64Image.length * 3) / 4);
+                metadata.compressionRatio = ((1 - metadata.compressedSize / file.size) * 100).toFixed(1);
+            }
+            
+            resolve(metadata);
+        };
+        img.onerror = () => {
+            // If we can't get dimensions, still return other metadata
+            resolve(metadata);
+        };
+        img.src = base64Image || file;
     });
 }
 

@@ -84,13 +84,126 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Enhance keyboard navigation
     enhanceKeyboardNavigation();
+    
+    // Initialize keyboard shortcuts
+    initKeyboardShortcuts();
 });
+
+// Setup real-time validation with visual feedback
+function setupRealTimeValidation() {
+    const nameInput = document.getElementById('personName');
+    const birthYearInput = document.getElementById('birthYear');
+    const deathYearInput = document.getElementById('deathYear');
+    
+    // Name validation
+    if (nameInput) {
+        nameInput.addEventListener('blur', () => validateField(nameInput, 'text', { required: true, maxLength: 200 }));
+        nameInput.addEventListener('input', debounce(() => {
+            if (nameInput.value.trim().length > 0) {
+                validateField(nameInput, 'text', { required: true, maxLength: 200 });
+            }
+        }, 500));
+    }
+    
+    // Birth year validation
+    if (birthYearInput) {
+        birthYearInput.addEventListener('blur', () => {
+            if (birthYearInput.value) {
+                const validation = validateYear(parseInt(birthYearInput.value), 'Birth year');
+                showFieldValidation(birthYearInput, validation.valid, validation.message);
+            } else {
+                clearFieldValidation(birthYearInput);
+            }
+        });
+    }
+    
+    // Death year validation
+    if (deathYearInput) {
+        deathYearInput.addEventListener('blur', () => {
+            if (deathYearInput.value) {
+                const validation = validateYear(parseInt(deathYearInput.value), 'Death year');
+                showFieldValidation(deathYearInput, validation.valid, validation.message);
+                
+                // Also validate date range if both years are filled
+                if (birthYearInput && birthYearInput.value && deathYearInput.value) {
+                    const rangeValidation = validateDateRange(
+                        parseInt(birthYearInput.value),
+                        parseInt(deathYearInput.value)
+                    );
+                    if (!rangeValidation.valid) {
+                        showFieldValidation(deathYearInput, false, rangeValidation.message);
+                    }
+                }
+            } else {
+                clearFieldValidation(deathYearInput);
+            }
+        });
+    }
+}
+
+// Validate field and show visual feedback
+function validateField(field, type, options) {
+    const validation = validateAndSanitizeInput(field.value, type, options);
+    showFieldValidation(field, validation.valid, validation.error);
+    return validation.valid;
+}
+
+// Show validation feedback on field
+function showFieldValidation(field, isValid, message) {
+    // Remove existing validation classes and messages
+    field.classList.remove('valid', 'invalid');
+    const existingError = field.parentElement.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    if (field.value.trim().length === 0 && !field.hasAttribute('required')) {
+        // Empty optional field - no validation needed
+        return;
+    }
+    
+    if (isValid) {
+        field.classList.add('valid');
+    } else {
+        field.classList.add('invalid');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message || 'Invalid input';
+        errorDiv.style.cssText = 'color: #dc3545; font-size: 0.85rem; margin-top: 0.25rem;';
+        field.parentElement.appendChild(errorDiv);
+    }
+}
+
+// Clear validation feedback
+function clearFieldValidation(field) {
+    field.classList.remove('valid', 'invalid');
+    const existingError = field.parentElement.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
+}
+
+// Debounce helper (if not already imported)
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
 // Setup form handlers
 function setupForm() {
     const form = document.getElementById('ancestorForm');
     const tagsInput = document.getElementById('tagsInput');
     const photoInput = document.getElementById('photo');
+    
+    // Real-time validation for form fields
+    setupRealTimeValidation();
     
     // Tags input handler
     tagsInput.addEventListener('keypress', (e) => {
@@ -195,6 +308,18 @@ async function submitForm() {
         return;
     }
     
+    // Check rate limit for person creation
+    const { checkRateLimit, recordAction } = await import('./rate-limiter.js');
+    const rateLimitCheck = checkRateLimit('personCreation');
+    
+    if (!rateLimitCheck.allowed) {
+        showActionableError(rateLimitCheck.message || 'Rate limit exceeded. Please try again later.', {
+            type: 'rate_limit',
+            suggestion: `You can create up to ${rateLimitCheck.limit} persons per hour. Please wait ${rateLimitCheck.minutesUntilReset} minute(s) before trying again.`
+        });
+        return;
+    }
+    
     // Validate and sanitize all inputs
     const nameValidation = validateAndSanitizeInput(document.getElementById('personName').value, 'text', { required: true, maxLength: 200 });
     if (!nameValidation.valid) {
@@ -265,6 +390,14 @@ async function submitForm() {
             try {
                 // Use optimized compression for profile photos
                 formData.photo = await imageToBase64(photoFile, 800, 0.7);
+                
+                // Get and store image metadata
+                const { getImageMetadata } = await import('./data.js');
+                const metadata = await getImageMetadata(photoFile, formData.photo, user.username);
+                
+                // Store metadata
+                if (!formData.imageMetadata) formData.imageMetadata = {};
+                formData.imageMetadata[formData.photo] = metadata;
             } catch (error) {
                 console.error('Error converting image:', error);
                 hideLoadingOverlay();
@@ -305,6 +438,19 @@ async function submitForm() {
                 }
             }
         }
+        
+        // Record action (only for new persons, not updates)
+        if (!editingId) {
+            const { recordAction } = await import('./rate-limiter.js');
+            recordAction('personCreation');
+        }
+        
+        // Announce to screen readers
+        const { announceToScreenReader } = await import('./utils.js');
+        announceToScreenReader(
+            editingId ? 'Ancestor information updated successfully' : 'Ancestor information submitted successfully',
+            'polite'
+        );
         
         // Reload contributions
         loadMyContributions();
@@ -729,17 +875,7 @@ window.importCSVData = async function(event) {
         
         for (let i = 1; i < lines.length; i++) {
             try {
-                const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-                
-                if (values.length < header.length) {
-                    // Try to handle quoted values with commas
-                    const regex = /(".*?"|[^,]+)(?=\s*,|\s*$)/g;
-                    const matches = lines[i].match(regex);
-                    if (matches) {
-                        values.length = 0;
-                        matches.forEach(m => values.push(m.trim().replace(/^"|"$/g, '')));
-                    }
-                }
+                const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, '').trim());
                 
                 const name = values[colIndices.name] || '';
                 if (!name) continue; // Skip empty rows
@@ -1139,7 +1275,6 @@ function loadUserStatistics() {
     
     // Calculate generation distribution from family tree
     const generationDistribution = {};
-    const user = getCurrentUser();
     if (user) {
         const treeKey = `pastlife_tree_${user.username}`;
         const savedTree = localStorage.getItem(treeKey);

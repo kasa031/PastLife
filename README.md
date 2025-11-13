@@ -120,6 +120,8 @@ PastLife/
 ├── profile.html            # Brukerprofil
 ├── login.html              # Innlogging/registrering
 ├── about.html              # Om-siden
+├── privacy.html            # Privacy Policy
+├── terms.html              # Terms of Service
 ├── manifest.json           # PWA manifest
 ├── sw.js                   # Service Worker
 ├── favicon.svg             # App-ikon (SVG)
@@ -146,7 +148,9 @@ PastLife/
 │   ├── offline-indicator.js # Offline indicator
 │   ├── lazy-load.js        # Lazy loading
 │   ├── navigation-utils.js # Navigasjon
-│   └── utils.js           # Hjelpefunksjoner
+│   ├── auto-backup.js      # Automatic backup
+│   ├── i18n.js             # Internationalization
+│   └── utils.js            # Hjelpefunksjoner
 ├── scripts/                # Utviklingsscripts
 │   ├── generate-icons.js    # Ikon-generator (Node.js)
 │   ├── generate-icons.html # Ikon-generator (HTML)
@@ -200,6 +204,12 @@ PastLife/
 - Modern browsers with ES6 module support
 - Chrome, Firefox, Safari, Edge (latest versions)
 
+## Documentation
+
+- **[Developer Guide](docs/guides/DEVELOPER_GUIDE.md)** - Complete guide for developers
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to the project
+- **[Documentation Index](docs/README.md)** - All documentation files
+
 ## Notes
 
 - Data is stored locally in the browser (localStorage)
@@ -207,6 +217,15 @@ PastLife/
 - No backend server required - fully client-side
 - For production use, consider migrating to a proper database and backend
 - AI features require OpenRouter API key (optional - basic analysis available without)
+
+## Screenshots
+
+_Screenshots coming soon!_
+
+To add screenshots:
+1. Take screenshots of key features
+2. Save them in `docs/screenshots/`
+3. Update this section with image links
 
 ## 🔒 Security
 
@@ -220,6 +239,8 @@ PastLife/
 - ✨ **Timeline View** - Interactive timeline showing persons by birth year
 - ✨ **PDF/PNG Export** - Export family tree to PDF or PNG format
 - ✨ **Image Gallery** - Multiple images per person with tagging support
+- ✨ **Image Metadata** - Automatic tracking of image information (filename, size, dimensions, upload date)
+- ✨ **Image Rotation** - Rotate images 90 degrees in gallery
 - ✨ **Relationship Search** - Find relatives based on family tree data
 - ✨ **Location Radius Search** - Find persons near a specific location
 - ✨ **Statistics Dashboard** - Comprehensive statistics with birth year distribution graphs
@@ -233,6 +254,14 @@ PastLife/
 - ✨ **Better Error Handling** - Improved error messages and validation
 - ✨ **Tooltips** - Helpful tooltips throughout the application
 - ✨ **FAQ Section** - Frequently asked questions on homepage
+- ✨ **Automatic Backup** - Automatic backup every 24 hours
+- ✨ **Real-time Validation** - Form validation with visual feedback
+- ✨ **Private Mode** - Mark entries as private (only visible to you)
+- ✨ **Internationalization** - English/Norwegian language support
+- ✨ **Accessibility** - Screen reader support, ARIA labels, improved contrast
+- ✨ **Improved Lazy Loading** - Adaptive lazy loading with animations
+- ✨ **Legal Compliance** - Privacy policy, terms of service, image consent
+- ✨ **PWA Install Support** - Enhanced install prompts for Windows, iOS, and all browsers
 
 ## License
 

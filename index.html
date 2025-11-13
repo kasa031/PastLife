@@ -13,6 +13,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="description" content="Discover and explore your family history. Build family trees, search ancestors, and connect generations through time.">
     
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://openrouter.ai https://api.openrouter.ai; frame-ancestors 'none';">
+    
     <!-- Icons and Manifest -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="assets/icons/icon-180x180.png">
@@ -162,6 +165,10 @@
     <footer class="footer">
         <div class="container">
             <p>&copy; 2025 PastLife. Connecting generations through time.</p>
+            <div style="margin-top: 1rem; display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; font-size: 0.9rem;">
+                <a href="privacy.html" style="color: var(--white); text-decoration: underline;">Privacy Policy</a>
+                <a href="terms.html" style="color: var(--white); text-decoration: underline;">Terms of Service</a>
+            </div>
         </div>
     </footer>
 

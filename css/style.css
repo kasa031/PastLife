@@ -24,6 +24,14 @@
     --gray-medium: #D4C4B0;          /* Warm gray */
     --gray-dark: #5A4D42;           /* Warm dark gray - improved contrast (4.5:1 on white) */
     --text-dark: #2D2520;            /* Warm dark text - improved contrast (7:1 on white) */
+    
+    /* Enhanced contrast for accessibility */
+    --text-on-primary: #FFFFFF;      /* White text on primary background (WCAG AAA) */
+    --text-on-light: #2D2520;        /* Dark text on light background (WCAG AAA) */
+    --border-contrast: #8B6F47;       /* High contrast border */
+    --link-contrast: #6B4E2F;         /* High contrast links (WCAG AA) */
+    --error-contrast: #B71C1C;        /* High contrast error text (WCAG AA) */
+    --success-contrast: #1B5E20;      /* High contrast success text (WCAG AA) */
 }
 
 /* Required field indicator */
@@ -544,6 +552,242 @@ body.keyboard-navigation select:focus {
 .person-card:nth-child(1) { animation-delay: 0.1s; }
 .person-card:nth-child(2) { animation-delay: 0.2s; }
 .person-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* Additional animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Loading skeleton animation */
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--gray-light) 25%, var(--gray-medium) 50%, var(--gray-light) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Image loading animation */
+img.loading {
+    opacity: 0.5;
+    background: var(--gray-light);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+img.loaded {
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Gallery image animations */
+.gallery-image {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gallery-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.gallery-item {
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* Button hover animations */
+button, .btn {
+    transition: all 0.2s ease;
+}
+
+button:hover, .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+button:active, .btn:active {
+    transform: translateY(0);
+}
+
+/* Comment animations */
+.comment {
+    animation: slideInRight 0.3s ease-out;
+}
+
+/* Form input focus animations */
+input:focus, textarea:focus, select:focus {
+    animation: pulse 2s infinite;
+    animation-duration: 0.3s;
+}
+
+/* Real-time validation styles */
+input.valid, textarea.valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+input.invalid, textarea.invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+input.valid:focus, textarea.valid:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+}
+
+input.invalid:focus, textarea.invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5);
+}
+
+.field-error {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.field-error::before {
+    content: '⚠️';
+    font-size: 0.9rem;
+}
+
+/* Keyboard navigation improvements */
+*:focus-visible {
+    outline: 3px solid var(--turquoise-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Skip to content link */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--turquoise-primary);
+    color: var(--text-on-primary);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    z-index: 10000;
+    border-radius: 0 0 4px 0;
+    font-weight: bold;
+}
+
+.skip-to-content:focus {
+    top: 0;
+    outline: 3px solid var(--white);
+    outline-offset: 2px;
+}
+
+/* Screen reader only class */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Enhanced contrast for links */
+a {
+    color: var(--link-contrast);
+    text-decoration: underline;
+}
+
+a:hover, a:focus {
+    color: var(--turquoise-dark);
+    text-decoration: underline;
+    outline: 2px solid var(--turquoise-primary);
+    outline-offset: 2px;
+}
+
+/* Enhanced contrast for help text and labels */
+.help-text, small {
+    color: var(--gray-dark);
+    font-size: 0.85rem;
+}
+
+.info-label {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+/* Enhanced contrast for buttons */
+button, .btn {
+    color: var(--text-on-primary);
+    font-weight: 600;
+}
+
+button:disabled, .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Enhanced contrast for form labels */
+label {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+/* Enhanced contrast for error messages */
+.error, .field-error {
+    color: var(--error-contrast);
+    font-weight: 600;
+}
+
+/* Enhanced contrast for success messages */
+.success {
+    color: var(--success-contrast);
+}
 .person-card:nth-child(4) { animation-delay: 0.4s; }
 .person-card:nth-child(5) { animation-delay: 0.5s; }
 .person-card:nth-child(n+6) { animation-delay: 0.6s; }

@@ -23,6 +23,10 @@ const API_KEY_STORAGE = 'pastlife_openrouter_key';
 // API keys should be stored in localStorage only, never hardcoded in source code.
 // Users must add their own API key through the UI.
 
+// Default API key (set once, stored in localStorage, never committed)
+// This is a fallback that will be set on first load if no key exists
+const DEFAULT_API_KEY = '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';
+
 // Save API key to localStorage
 function saveApiKey(apiKey) {
     if (apiKey) {
@@ -35,6 +39,16 @@ function saveApiKey(apiKey) {
 // Get saved API key
 function getSavedApiKey() {
     return localStorage.getItem(API_KEY_STORAGE);
+}
+
+// Initialize API key on first load (only if no key exists)
+function initializeApiKeyIfNeeded() {
+    const existingKey = getSavedApiKey();
+    if (!existingKey && DEFAULT_API_KEY) {
+        // Only set default key if no key exists
+        saveApiKey(DEFAULT_API_KEY);
+        console.log('API-nøkkel initialisert (første gang)');
+    }
 }
 
 // Get API key (users must set their own via UI)
@@ -50,6 +64,10 @@ function hasApiKey() {
 // Dark mode functions imported from theme.js
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize API key on first load (only if no key exists)
+    // This sets the default API key in localStorage without exposing it in git
+    initializeApiKeyIfNeeded();
+    
     // Initialize auto-save for family text
     initAutoSave('familyText', 'pastlife_family_text_draft', {
         debounceDelay: 3000, // Save 3 seconds after last change (longer for textarea)
@@ -85,6 +103,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
+    // Initialize tree privacy toggle
+    const privacyToggle = document.getElementById('treePrivacyToggle');
+    if (privacyToggle) {
+        privacyToggle.checked = isTreePrivate();
+        
+        // Update share button state based on privacy
+        const shareBtn = document.querySelector('button[onclick="shareFamilyTree()"]');
+        if (shareBtn && isTreePrivate()) {
+            shareBtn.disabled = true;
+            shareBtn.style.opacity = '0.5';
+            shareBtn.style.cursor = 'not-allowed';
+        }
+    }
+    
     // Setup word count
     const textarea = document.getElementById('familyText');
     if (textarea) {
@@ -107,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update status message to show key is loaded
         if (apiKeyStatus && keyToUse) {
             const maskedKey = keyToUse.substring(0, 10) + '...' + keyToUse.substring(keyToUse.length - 4);
-            apiKeyStatus.innerHTML = `✅ API-nøkkel er lastet (${maskedKey}) og klar til bruk! Du kan overskrive den hvis du vil bruke en annen.`;
+            const t = window.i18n?.t || ((key, params) => key);
+            apiKeyStatus.innerHTML = t('familyTree.apiKeyLoaded', { masked: maskedKey });
         }
         // Ensure buttons are enabled
         const analyzeBtn = document.getElementById('analyzeBtn');
@@ -125,11 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveApiKey(key);
                 if (apiKeyStatus) {
                     const maskedKey = key.substring(0, 10) + '...' + key.substring(key.length - 4);
-                    apiKeyStatus.innerHTML = `✅ API-nøkkel oppdatert (${maskedKey}) og klar til bruk!`;
+                    const t = window.i18n?.t || ((key, params) => key);
+                    apiKeyStatus.innerHTML = t('familyTree.apiKeyUpdated', { masked: maskedKey });
                     apiKeyStatus.style.color = 'var(--gray-dark)';
                 }
             } else if (apiKeyStatus) {
-                apiKeyStatus.innerHTML = '⚠️ Ingen API-nøkkel. Vennligst legg inn din OpenRouter API-nøkkel.';
+                const t = window.i18n?.t || ((key) => key);
+                apiKeyStatus.innerHTML = t('familyTree.noApiKey');
                 apiKeyStatus.style.color = 'var(--orange-dark)';
             }
         });
@@ -190,10 +225,12 @@ window.clearApiKey = async function() {
         apiKeyInput.value = '';
         saveApiKey('');
         if (apiKeyStatus) {
-            apiKeyStatus.textContent = '⚠️ API-nøkkel er slettet. Du kan legge til en ny nøkkel eller bruke standard nøkkel (lastes automatisk).';
+            const t = window.i18n?.t || ((key) => key);
+            apiKeyStatus.textContent = t('familyTree.apiKeyDeleted');
             apiKeyStatus.style.color = 'var(--orange-dark)';
         }
-        showMessage('API-nøkkel slettet', 'success');
+        const t = window.i18n?.t || ((key) => key);
+        showMessage(t('familyTree.apiKeyDeleted'), 'success');
     }
 };
 
@@ -237,13 +274,15 @@ Erik og Kari fikk meg (født 1970) og min søster Anne (født 1972).`;
 
     document.getElementById('familyText').value = exampleText;
     updateWordCount();
-    showMessage('Eksempeltekst lastet inn! Du kan redigere eller erstatte den.', 'info');
+    const t = window.i18n?.t || ((key) => key);
+    showMessage(t('familyTree.exampleLoaded'), 'info');
 };
 
 // Analyze family text with AI (replace existing)
 window.analyzeFamilyText = async function() {
     if (allTreeData.length > 0) {
-        if (!confirm('Dette vil erstatte eksisterende tre. Vil du heller legge til i stedet? (Klikk Cancel og bruk "Legg til i eksisterende tre" i stedet)')) {
+        const t = window.i18n?.t || ((key) => key);
+        if (!confirm(t('familyTree.replaceWarning'))) {
             return;
         }
     }
@@ -284,17 +323,19 @@ async function performAnalysis(mergeMode = false) {
     
     // If still no API key, show error
     if (!apiKey || apiKey === 'sk-or-...') {
-        showActionableError('Vennligst legg inn din OpenRouter API-nøkkel først.', { 
+        const t = window.i18n?.t || ((key) => key);
+        showActionableError(t('familyTree.pleaseEnterApiKey'), { 
             type: 'api_key',
-            suggestion: 'Enter your OpenRouter API key in the input field above. You can get a key from openrouter.ai'
+            suggestion: t('familyTree.enterApiKeySuggestion')
         });
         return;
     }
     
     if (!text) {
-        showActionableError('Please enter some family information', { 
+        const t = window.i18n?.t || ((key) => key);
+        showActionableError(t('familyTree.pleaseEnterFamilyInfo'), { 
             type: 'validation',
-            suggestion: 'Enter details about your family members, their relationships, and important dates.'
+            suggestion: t('familyTree.enterFamilyInfoSuggestion')
         });
         return;
     }
@@ -321,8 +362,11 @@ async function performAnalysis(mergeMode = false) {
     // Show loading overlay for better UX
     const loadingOverlay = showLoadingOverlay('Analyzing family information...');
     
+    // Get translation function once
+    const t = window.i18n?.t || ((key) => key);
+    
     try {
-        statusText.textContent = mergeMode ? 'Connecting to AI (will merge with existing tree)...' : 'Connecting to AI...';
+        statusText.textContent = mergeMode ? t('familyTree.connectingMerge') : t('familyTree.connecting');
         
         let extractedData;
         
@@ -334,7 +378,7 @@ async function performAnalysis(mergeMode = false) {
             extractedData = await basicTextAnalysis(text);
         }
         
-        statusText.textContent = mergeMode ? 'Merging with existing tree...' : 'Building family tree...';
+        statusText.textContent = mergeMode ? t('familyTree.merging') : t('familyTree.building');
         
         const newPersons = extractedData.persons || [];
         
@@ -461,6 +505,17 @@ async function performAnalysis(mergeMode = false) {
 
 // Analyze with OpenRouter API
 async function analyzeWithOpenRouter(text, apiKey) {
+    // Check rate limit
+    const { checkRateLimit, recordAction } = await import('./rate-limiter.js');
+    const rateLimitCheck = checkRateLimit('apiCalls');
+    
+    if (!rateLimitCheck.allowed) {
+        throw new Error(rateLimitCheck.message || 'Rate limit exceeded. Please try again later.');
+    }
+    
+    // Record API call
+    recordAction('apiCalls');
+    
     // Detect side from text
     const textLower = text.toLowerCase();
     const isMotherSide = textLower.includes('mor') || textLower.includes('mother') || textLower.includes('morsside') || textLower.includes('morsledn');
@@ -1068,7 +1123,7 @@ window.buildTreeFromExisting = function() {
     const existingPersons = getAllPersons();
     const user = getCurrentUser();
     
-    // Filter to user's persons
+    // Filter to user's persons (include private ones for owner)
     const myPersons = existingPersons.filter(p => p.createdBy === user.username);
     
     if (myPersons.length === 0) {
@@ -1097,34 +1152,83 @@ window.buildTreeFromExisting = function() {
     showMessage(`Loaded ${allTreeData.length} family members from your data`, 'success');
 };
 
+// Check if tree is private
+function isTreePrivate() {
+    const user = getCurrentUser();
+    if (!user) return false;
+    
+    const treeMetadataKey = `pastlife_tree_metadata_${user.username}`;
+    const metadata = localStorage.getItem(treeMetadataKey);
+    if (metadata) {
+        try {
+            const meta = JSON.parse(metadata);
+            return meta.isPrivate === true;
+        } catch (e) {
+            return false;
+        }
+    }
+    return false;
+}
+
+// Set tree privacy
+function setTreePrivacy(isPrivate) {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const treeMetadataKey = `pastlife_tree_metadata_${user.username}`;
+    const metadata = {
+        isPrivate: isPrivate,
+        updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(treeMetadataKey, JSON.stringify(metadata));
+}
+
 // Apply filter to tree data
 function applyFilter(filter) {
     currentFilter = filter;
+    const user = getCurrentUser();
+    const isOwner = user !== null;
+    const treeIsPrivate = isTreePrivate();
+    
+    // Filter out private persons if not owner or if tree is private and not owner
+    let filteredData = [...allTreeData];
+    
+    // If tree is private and not owner, show nothing
+    if (treeIsPrivate && !isOwner) {
+        treeData = [];
+        updateFilterButtons();
+        return;
+    }
+    
+    // Filter out private persons if not owner
+    if (!isOwner) {
+        filteredData = filteredData.filter(p => !p.isPrivate);
+    }
     
     if (filter === 'all') {
-        treeData = [...allTreeData];
+        treeData = filteredData;
     } else if (filter === 'mother') {
-        treeData = allTreeData.filter(p => 
+        treeData = filteredData.filter(p => 
             p.tags && (p.tags.includes('morsside') || p.tags.includes('mother'))
         );
     } else if (filter === 'father') {
-        treeData = allTreeData.filter(p => 
+        treeData = filteredData.filter(p => 
             p.tags && (p.tags.includes('farsside') || p.tags.includes('father'))
         );
     } else if (filter === 'both') {
         // Show persons that are tagged with both or have relationships to both sides
         const motherSideNames = new Set(
-            allTreeData
+            filteredData
                 .filter(p => p.tags && (p.tags.includes('morsside') || p.tags.includes('mother')))
                 .map(p => p.name.toLowerCase())
         );
         const fatherSideNames = new Set(
-            allTreeData
+            filteredData
                 .filter(p => p.tags && (p.tags.includes('farsside') || p.tags.includes('father')))
                 .map(p => p.name.toLowerCase())
         );
         
-        treeData = allTreeData.filter(p => {
+        treeData = filteredData.filter(p => {
             const name = p.name.toLowerCase();
             // Show if person has both tags, or has relationships to both sides
             const hasBothTags = p.tags && 
@@ -2075,17 +2179,32 @@ window.shareFamilyTree = function() {
         return;
     }
     
+    // Check if tree is private
+    if (isTreePrivate()) {
+        showMessage('Private family trees cannot be shared. Please make the tree public first.', 'error');
+        return;
+    }
+    
     if (allTreeData.length === 0) {
         showMessage('Ingen familietre å dele', 'error');
         return;
     }
     
+    // Filter out private persons before sharing
+    const shareablePersons = allTreeData.filter(p => !p.isPrivate);
+    
+    if (shareablePersons.length === 0) {
+        showMessage('No shareable persons in tree (all are private)', 'error');
+        return;
+    }
+    
     // Create shareable link with tree data encoded
     const treeData = {
-        persons: allTreeData,
+        persons: shareablePersons,
         relationships: getAllRelationships(),
         timestamp: new Date().toISOString(),
-        sharedBy: user.username
+        sharedBy: user.username,
+        isPrivate: false // Shared trees are never private
     };
     
     // Encode tree data as base64 in URL
@@ -2151,6 +2270,40 @@ function getAllRelationships() {
     return relationships;
 }
 
+// Toggle tree privacy
+window.toggleTreePrivacy = function() {
+    const checkbox = document.getElementById('treePrivacyToggle');
+    if (!checkbox) return;
+    
+    const isPrivate = checkbox.checked;
+    setTreePrivacy(isPrivate);
+    
+    // Update UI
+    if (isPrivate) {
+        showMessage('Family tree is now private (only visible to you)', 'success');
+        // Disable share button if tree is private
+        const shareBtn = document.querySelector('button[onclick="shareFamilyTree()"]');
+        if (shareBtn) {
+            shareBtn.disabled = true;
+            shareBtn.style.opacity = '0.5';
+            shareBtn.style.cursor = 'not-allowed';
+        }
+    } else {
+        showMessage('Family tree is now public', 'success');
+        // Enable share button
+        const shareBtn = document.querySelector('button[onclick="shareFamilyTree()"]');
+        if (shareBtn) {
+            shareBtn.disabled = false;
+            shareBtn.style.opacity = '1';
+            shareBtn.style.cursor = 'pointer';
+        }
+    }
+    
+    // Reapply filter to update view
+    applyFilter(currentFilter);
+    renderTree();
+};
+
 // Load shared tree from URL
 function loadSharedTree() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -2159,8 +2312,16 @@ function loadSharedTree() {
     if (shareData) {
         try {
             const decodedData = JSON.parse(atob(shareData));
+            
+            // Check if shared tree is marked as private (shouldn't happen, but check anyway)
+            if (decodedData.isPrivate === true) {
+                showMessage('This family tree is private and cannot be viewed', 'error');
+                return;
+            }
+            
             if (decodedData.persons && Array.isArray(decodedData.persons)) {
-                allTreeData = decodedData.persons;
+                // Filter out any private persons from shared tree
+                allTreeData = decodedData.persons.filter(p => !p.isPrivate);
                 
                 // Add relationships
                 if (decodedData.relationships) {

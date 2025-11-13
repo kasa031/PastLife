@@ -150,6 +150,14 @@ document.addEventListener('DOMContentLoaded', () => {
     preloadHeroImage(); // Preload hero image
     initKeyboardShortcuts(); // Initialize keyboard shortcuts help
     enhanceKeyboardNavigation(); // Enhance keyboard navigation
+    
+    // Initialize automatic backup
+    import('./auto-backup.js').then(({ initAutoBackup }) => {
+        initAutoBackup();
+    }).catch(() => {
+        // Auto-backup not critical, continue if it fails
+    });
+    
     // Refresh lazy loading after content is loaded
     setTimeout(() => refreshLazyLoading(), 100);
     

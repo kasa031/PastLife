@@ -16,22 +16,36 @@ export function setupLazyImageLoading() {
         return;
     }
 
-    // Create IntersectionObserver
+    // Create IntersectionObserver with adaptive rootMargin
+    // Use larger margin for better performance on fast connections
+    const isMobile = window.innerWidth < 768;
+    const rootMargin = isMobile ? '100px' : '200px'; // Larger margin for smoother experience
+    
     const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
                 if (img.dataset.src) {
-                    // Add loading class
+                    // Add loading class for animation
                     img.classList.add('loading');
                     
                     // Create new image to preload
                     const imageLoader = new Image();
                     imageLoader.onload = () => {
+                        // Fade in animation
                         img.src = img.dataset.src;
                         img.classList.remove('loading');
                         img.classList.add('loaded');
                         img.removeAttribute('data-src');
+                        
+                        // Trigger fade-in animation
+                        requestAnimationFrame(() => {
+                            img.style.opacity = '0';
+                            img.style.transition = 'opacity 0.3s ease-in';
+                            requestAnimationFrame(() => {
+                                img.style.opacity = '1';
+                            });
+                        });
                     };
                     imageLoader.onerror = () => {
                         img.classList.remove('loading');
@@ -44,12 +58,25 @@ export function setupLazyImageLoading() {
             }
         });
     }, {
-        rootMargin: '50px' // Start loading 50px before image enters viewport
+        rootMargin: rootMargin
     });
 
-    // Observe all lazy images
-    const lazyImages = document.querySelectorAll('img[data-src]');
-    lazyImages.forEach(img => imageObserver.observe(img));
+    // Observe all lazy images (including gallery images)
+    const lazyImages = document.querySelectorAll('img[data-src], img.lazy-gallery-image, img.lazy-load');
+    lazyImages.forEach(img => {
+        // If image already has src, skip
+        if (img.src && !img.dataset.src) {
+            return;
+        }
+        // If it's a lazy-gallery-image or lazy-load, set data-src if not already set
+        if (img.classList.contains('lazy-gallery-image') || img.classList.contains('lazy-load')) {
+            if (!img.dataset.src && img.src) {
+                img.dataset.src = img.src;
+                img.src = ''; // Clear src to trigger lazy load
+            }
+        }
+        imageObserver.observe(img);
+    });
 }
 
 // Lazy load components (e.g., heavy sections)
