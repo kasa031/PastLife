@@ -611,17 +611,66 @@ export function addComment(personId, text, author) {
     initData();
     const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY));
     
+    // Extract @mentions from comment text
+    const mentionMatches = text.match(/@(\w+)/g) || [];
+    const mentionedNames = mentionMatches.map(m => m.substring(1).toLowerCase());
+    
     const comment = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         personId: personId,
         text: text,
         author: author,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        mentions: mentionedNames // Store mentioned names for notifications
     };
     
     comments.push(comment);
     localStorage.setItem(COMMENTS_KEY, JSON.stringify(comments));
+    
+    // Create notifications for mentioned users
+    if (mentionedNames.length > 0) {
+        createMentionNotifications(comment, mentionedNames);
+    }
+    
     return comment;
+}
+
+// Create notifications for @mentioned users
+function createMentionNotifications(comment, mentionedNames) {
+    const notificationsKey = 'pastlife_notifications';
+    let notifications = JSON.parse(localStorage.getItem(notificationsKey) || '[]');
+    
+    // Get all persons to find usernames from names
+    const allPersons = getAllPersons();
+    
+    mentionedNames.forEach(mentionedName => {
+        // Find person by name (case-insensitive)
+        const person = allPersons.find(p => p.name.toLowerCase() === mentionedName);
+        if (person && person.createdBy) {
+            // Check if notification already exists
+            const existing = notifications.find(n => 
+                n.type === 'mention' && 
+                n.commentId === comment.id && 
+                n.userId === person.createdBy
+            );
+            
+            if (!existing) {
+                notifications.push({
+                    id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    type: 'mention',
+                    userId: person.createdBy,
+                    commentId: comment.id,
+                    personId: comment.personId,
+                    author: comment.author,
+                    text: comment.text,
+                    createdAt: comment.createdAt,
+                    read: false
+                });
+            }
+        }
+    });
+    
+    localStorage.setItem(notificationsKey, JSON.stringify(notifications));
 }
 
 // Get comments for person

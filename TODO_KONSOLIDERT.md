@@ -141,7 +141,13 @@
   - [x] Keyboard-navigasjon (piler, Enter, Escape) ✅
   - [x] Validering av @mentions ved innlegging ✅
   - [x] Filtrerer private personer fra forslag ✅
-- [ ] Legge til kommentar-notifikasjoner
+- [x] Legge til kommentar-notifikasjoner ✅
+  - [x] Notifikasjoner for kommentarer på brukerens personer ✅
+  - [x] Notifikasjoner for @mentions i kommentarer ✅
+  - [x] Notification badge i navigasjon ✅
+  - [x] Notifikasjonsliste i profil ✅
+  - [x] Mark as read funksjonalitet ✅
+  - [x] Navigasjon til person fra notifikasjon ✅
 - [x] Forbedre kommentar-søk ✅
   - [x] Forbedret søkelogikk med støtte for flere søkeord ✅
   - [x] Søk i @mentions ✅

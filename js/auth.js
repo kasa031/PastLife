@@ -187,7 +187,23 @@ export function checkAndShowNotifications() {
         return new Date(comment.createdAt) > oneDayAgo;
     });
     
-    if (newComments.length > 0) {
+    // Get @mention notifications
+    const notificationsKey = 'pastlife_notifications';
+    const allNotifications = JSON.parse(localStorage.getItem(notificationsKey) || '[]');
+    const userNotifications = allNotifications.filter(n => {
+        if (n.userId !== user.username) return false;
+        if (n.read) return false;
+        
+        if (lastCheck) {
+            return new Date(n.createdAt) > new Date(lastCheck);
+        }
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return new Date(n.createdAt) > oneDayAgo;
+    });
+    
+    const totalCount = newComments.length + userNotifications.length;
+    
+    if (totalCount > 0) {
         const profileLink = document.getElementById('profileLink');
         if (profileLink) {
             // Remove existing badge
@@ -196,7 +212,7 @@ export function checkAndShowNotifications() {
             
             const badge = document.createElement('span');
             badge.id = 'notificationBadge';
-            badge.textContent = newComments.length > 9 ? '9+' : newComments.length;
+            badge.textContent = totalCount > 9 ? '9+' : totalCount;
             badge.style.cssText = 'position: absolute; background: #c62828; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; margin-left: -10px; margin-top: -5px; z-index: 1000;';
             profileLink.style.position = 'relative';
             profileLink.appendChild(badge);

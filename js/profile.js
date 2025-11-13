@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMyContributions();
     loadUserStatistics();
     loadMyFavorites();
+    loadNotifications();
     
     // Setup search and filter
     setupSearchAndFilter();
@@ -1480,7 +1481,7 @@ function loadMyFavorites() {
     }).join('');
 }
 
-// Check for notifications (new comments on user's persons)
+// Check for notifications (new comments on user's persons + @mentions)
 function checkNotifications() {
     const user = getCurrentUser();
     if (!user) return;
@@ -1507,12 +1508,30 @@ function checkNotifications() {
         return new Date(comment.createdAt) > oneDayAgo;
     });
     
+    // Get @mention notifications
+    const notificationsKey = 'pastlife_notifications';
+    const allNotifications = JSON.parse(localStorage.getItem(notificationsKey) || '[]');
+    const userNotifications = allNotifications.filter(n => {
+        if (n.userId !== user.username) return false;
+        if (n.read) return false; // Don't count read notifications
+        
+        if (lastCheck) {
+            return new Date(n.createdAt) > new Date(lastCheck);
+        }
+        // First time checking - only show notifications from last 24 hours
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return new Date(n.createdAt) > oneDayAgo;
+    });
+    
     // Update last check time
     localStorage.setItem(lastCheckKey, new Date().toISOString());
     
-    // Show notification if there are new comments
-    if (newComments.length > 0) {
-        showNotificationBadge(newComments.length);
+    // Total notification count
+    const totalCount = newComments.length + userNotifications.length;
+    
+    // Show notification if there are new comments or mentions
+    if (totalCount > 0) {
+        showNotificationBadge(totalCount);
         // Don't show message on every page load - just show badge
     }
 }
@@ -1534,6 +1553,111 @@ function showNotificationBadge(count) {
         profileLink.appendChild(badge);
     }
 }
+
+// Load and display notifications
+async function loadNotifications() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const notificationsKey = 'pastlife_notifications';
+    const allNotifications = JSON.parse(localStorage.getItem(notificationsKey) || '[]');
+    const userNotifications = allNotifications
+        .filter(n => n.userId === user.username)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
+    
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    
+    if (userNotifications.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--gray-dark); padding: 2rem;">No notifications</p>';
+        return;
+    }
+    
+    // Get all persons and comments for display
+    const { getAllPersons, getCommentsForPerson, getPersonById } = await import('./data.js');
+    const allPersons = getAllPersons();
+    const commentsKey = 'pastlife_comments';
+    const allComments = JSON.parse(localStorage.getItem(commentsKey) || '[]');
+    
+    container.innerHTML = userNotifications.map(notif => {
+        const person = getPersonById(notif.personId);
+        const personName = person ? person.name : 'Unknown person';
+        const date = new Date(notif.createdAt).toLocaleString();
+        const isRead = notif.read ? 'read' : 'unread';
+        const readStyle = notif.read ? 'opacity: 0.7;' : '';
+        
+        let notificationText = '';
+        if (notif.type === 'mention') {
+            notificationText = `<strong>@${escapeHtml(notif.author)}</strong> mentioned you in a comment on <strong>${escapeHtml(personName)}</strong>`;
+        } else {
+            notificationText = `<strong>@${escapeHtml(notif.author)}</strong> commented on <strong>${escapeHtml(personName)}</strong>`;
+        }
+        
+        return `
+            <div class="notification-item ${isRead}" style="
+                padding: 1rem;
+                margin-bottom: 0.5rem;
+                background: ${notif.read ? 'var(--gray-light)' : 'var(--white)'};
+                border-left: 4px solid ${notif.read ? 'var(--gray-medium)' : 'var(--turquoise-primary)'};
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                ${readStyle}
+            " onclick="viewNotification('${notif.id}', '${notif.personId}')">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <div style="margin-bottom: 0.5rem;">
+                            ${notificationText}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--gray-dark); margin-bottom: 0.5rem;">
+                            ${escapeHtml(notif.text.substring(0, 100))}${notif.text.length > 100 ? '...' : ''}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--gray-dark);">
+                            ${date}
+                        </div>
+                    </div>
+                    ${!notif.read ? '<span style="background: var(--turquoise-primary); color: white; border-radius: 50%; width: 10px; height: 10px; display: inline-block; margin-left: 0.5rem;"></span>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// View notification (mark as read and navigate to person)
+window.viewNotification = function(notificationId, personId) {
+    // Mark notification as read
+    const notificationsKey = 'pastlife_notifications';
+    const allNotifications = JSON.parse(localStorage.getItem(notificationsKey) || '[]');
+    const notification = allNotifications.find(n => n.id === notificationId);
+    if (notification) {
+        notification.read = true;
+        localStorage.setItem(notificationsKey, JSON.stringify(allNotifications));
+    }
+    
+    // Reload notifications and update badge
+    loadNotifications();
+    checkNotifications();
+    
+    // Navigate to person page
+    window.location.href = `person.html?id=${personId}`;
+};
+
+// Mark all notifications as read
+window.markAllNotificationsRead = function() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const notificationsKey = 'pastlife_notifications';
+    const allNotifications = JSON.parse(localStorage.getItem(notificationsKey) || '[]');
+    const userNotifications = allNotifications.filter(n => n.userId === user.username && !n.read);
+    
+    userNotifications.forEach(n => n.read = true);
+    localStorage.setItem(notificationsKey, JSON.stringify(allNotifications));
+    
+    loadNotifications();
+    checkNotifications();
+    showMessage('All notifications marked as read', 'success');
+};
 
 // Backup all user data
 window.backupAllData = function() {
