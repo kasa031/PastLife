@@ -154,8 +154,17 @@
   - [x] AND-logikk for flere søkeord ✅
 
 ### 7. Import/Export
-- [ ] Legge til GEDCOM-import
-- [ ] Legge til GEDCOM-export
+- [x] Legge til GEDCOM-import ✅
+  - [x] Parser for GEDCOM-format ✅
+  - [x] Importerer personer med navn, datoer, steder ✅
+  - [x] Importerer notater og kilder ✅
+  - [x] Feilhåndtering og validering ✅
+- [x] Legge til GEDCOM-export ✅
+  - [x] Eksporterer personer til GEDCOM-format ✅
+  - [x] Inkluderer navn, fødselsdato, dødsdato ✅
+  - [x] Inkluderer steder og notater ✅
+  - [x] Inkluderer kilder ✅
+  - [x] Kompatibel med standard GEDCOM 5.5.1 ✅
 - [x] Forbedre CSV-import/export ✅
   - [x] Forbedret CSV-parsing med støtte for quoted values ✅
   - [x] Bedre håndtering av kommaer i verdier ✅

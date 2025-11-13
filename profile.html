@@ -224,15 +224,18 @@
             <div class="data-actions">
                 <button class="btn-export" onclick="exportData()" title="Eksporter alle dine bidrag som JSON">📥 Export JSON</button>
                 <button class="btn-export" onclick="exportToExcel()" title="Eksporter alle dine bidrag som CSV/Excel fil" style="background: var(--orange-primary);">📊 Export Excel</button>
+                <button class="btn-export" onclick="exportToGEDCOM()" title="Export to GEDCOM format (standard genealogy format)" style="background: var(--turquoise-dark);">🌳 Export GEDCOM</button>
                 <button class="btn-export" onclick="bulkExportSelected()" title="Eksporter kun valgte personer" style="background: var(--turquoise-primary);">📦 Export Selected</button>
                 <button class="btn-edit" onclick="bulkEditSelected()" title="Edit multiple selected persons" style="background: var(--orange-primary);">✏️ Bulk Edit Selected</button>
                 <button class="btn-import" onclick="document.getElementById('importFile').click()" title="Import ancestor data from JSON file">📤 Import JSON</button>
                 <button class="btn-import" onclick="document.getElementById('importCSVFile').click()" title="Import ancestor data from CSV/Excel file" style="background: var(--orange-primary);">📊 Import CSV/Excel</button>
+                <button class="btn-import" onclick="document.getElementById('importGEDCOMFile').click()" title="Import from GEDCOM format (standard genealogy format)" style="background: var(--turquoise-dark);">🌳 Import GEDCOM</button>
                 <button class="btn-export" onclick="backupAllData()" title="Create a complete backup of all your data (persons, favorites, tree, etc.)" style="background: var(--orange-primary);">💾 Backup All Data</button>
                 <button class="btn-import" onclick="document.getElementById('restoreFile').click()" title="Restore from a complete backup" style="background: var(--turquoise-dark);">🔄 Restore Backup</button>
                 <button class="btn-export" onclick="exportErrorLog()" title="Eksporter feillogg for debugging" style="background: var(--gray-medium); font-size: 0.9rem;">🐛 Export Error Log</button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
                 <input type="file" id="importCSVFile" accept=".csv,.xlsx,.xls" style="display: none;" onchange="importCSVData(event)">
+                <input type="file" id="importGEDCOMFile" accept=".ged" style="display: none;" onchange="importGEDCOM(event)">
                 <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreBackup(event)">
             </div>
             
