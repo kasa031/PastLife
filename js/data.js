@@ -6,7 +6,11 @@ export const COMMENTS_KEY = 'pastlife_comments';
 let personsCache = null;
 let personsCacheTimestamp = null;
 let searchIndexCache = null;
-const CACHE_DURATION = 5000; // 5 seconds cache
+let commentsCache = null;
+let commentsCacheTimestamp = null;
+let personByIdCache = new Map(); // Cache for individual person lookups
+const CACHE_DURATION = 10000; // 10 seconds cache (increased from 5s)
+const PERSON_BY_ID_CACHE_DURATION = 30000; // 30 seconds for individual person cache
 
 // Initialize data storage
 function initData() {
@@ -23,6 +27,9 @@ function invalidateCache() {
     personsCache = null;
     personsCacheTimestamp = null;
     searchIndexCache = null;
+    commentsCache = null;
+    commentsCacheTimestamp = null;
+    personByIdCache.clear(); // Clear individual person cache
 }
 
 // Get all persons with caching
@@ -210,27 +217,29 @@ export function deletePerson(personId) {
     const persons = getAllPersons(true); // Force refresh
     const filtered = persons.filter(p => p.id !== personId);
     localStorage.setItem(PERSONS_KEY, JSON.stringify(filtered));
-    invalidateCache(); // Invalidate cache after deletion
     
     // Also delete associated comments
-    const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY));
+    const comments = getAllComments(true); // Force refresh
     const filteredComments = comments.filter(c => c.personId !== personId);
     localStorage.setItem(COMMENTS_KEY, JSON.stringify(filteredComments));
+    
+    invalidateCache(); // Invalidate cache after deletion
 }
 
 // Delete comment
 export function deleteComment(commentId) {
     initData();
-    const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY));
+    const comments = getAllComments(true); // Force refresh
     const filtered = comments.filter(c => c.id !== commentId);
     localStorage.setItem(COMMENTS_KEY, JSON.stringify(filtered));
+    invalidateCache(); // Invalidate cache after deletion
 }
 
 // Export all data
 export function exportData() {
     return {
         persons: getAllPersons(),
-        comments: JSON.parse(localStorage.getItem(COMMENTS_KEY) || '[]'),
+        comments: getAllComments(),
         exportDate: new Date().toISOString()
     };
 }
@@ -245,10 +254,30 @@ export function importData(data) {
     }
 }
 
-// Get person by ID
+// Get person by ID with caching
 export function getPersonById(id) {
+    if (!id) return null;
+    
+    // Check cache first
+    const now = Date.now();
+    const cached = personByIdCache.get(id);
+    if (cached && (now - cached.timestamp) < PERSON_BY_ID_CACHE_DURATION) {
+        return cached.person;
+    }
+    
+    // Load from persons cache or storage
     const persons = getAllPersons();
-    return persons.find(p => p.id === id);
+    const person = persons.find(p => p.id === id);
+    
+    // Cache the result
+    if (person) {
+        personByIdCache.set(id, {
+            person: person,
+            timestamp: now
+        });
+    }
+    
+    return person;
 }
 
 // Search persons with improved fuzzy search and indexing
@@ -674,9 +703,28 @@ function createMentionNotifications(comment, mentionedNames) {
 }
 
 // Get comments for person
-export function getCommentsForPerson(personId) {
+// Get all comments with caching
+function getAllComments(forceRefresh = false) {
     initData();
-    const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY));
+    
+    // Check if cache is valid
+    const now = Date.now();
+    if (!forceRefresh && commentsCache && commentsCacheTimestamp && (now - commentsCacheTimestamp) < CACHE_DURATION) {
+        return commentsCache;
+    }
+    
+    // Load from localStorage
+    const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY) || '[]');
+    
+    // Update cache
+    commentsCache = comments;
+    commentsCacheTimestamp = now;
+    
+    return comments;
+}
+
+export function getCommentsForPerson(personId) {
+    const comments = getAllComments();
     return comments.filter(c => c.personId === personId)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }

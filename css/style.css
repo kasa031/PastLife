@@ -1973,11 +1973,13 @@ img.loading {
 @media (min-width: 769px) and (max-width: 1024px) {
     .container {
         padding: 0 1.5rem;
+        max-width: 100%;
     }
     
     .person-detail-header {
         gap: 2rem;
         padding: 2rem;
+        grid-template-columns: 1fr 1.5fr;
     }
     
     .nav-brand img {
@@ -1986,15 +1988,33 @@ img.loading {
     
     .persons-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.25rem;
     }
     
     .search-filters {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .tree-controls {
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
     
     .tree-controls button {
         font-size: 0.9rem;
         padding: 0.7rem 1.2rem;
+        min-width: 140px;
+    }
+    
+    .data-actions {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .data-actions button {
+        flex: 1 1 auto;
+        min-width: 150px;
     }
     
     .timeline-person {

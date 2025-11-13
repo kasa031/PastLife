@@ -189,11 +189,23 @@
 - [x] Forbedre loading-indikatorer (delvis implementert) ✅
   - [x] Forbedret loading-animasjoner for bilder ✅
   - [x] Loading skeleton med shimmer-effekt ✅
-- [ ] Forbedre responsivt design (kan finjusteres)
+- [x] Forbedre responsivt design ✅
+  - [x] Forbedret touch-targets (minimum 44x44px) ✅
+  - [x] Forbedret spacing og padding på mobile ✅
+  - [x] Forbedret form inputs (forhindrer zoom på iOS) ✅
+  - [x] Forbedret modal-størrelser på mobile ✅
+  - [x] Forbedret button groups og data-actions ✅
+  - [x] Forbedret tablet-styling ✅
+  - [x] Forbedret grid-layouts for mobile/tablet ✅
 
 ### 9. Performance
 - [ ] Implementere code splitting
-- [ ] Forbedre caching-strategi (delvis implementert)
+- [x] Forbedre caching-strategi ✅
+  - [x] Økt cache-varighet fra 5s til 10s ✅
+  - [x] Lagt til cache for kommentarer ✅
+  - [x] Lagt til cache for getPersonById (30s) ✅
+  - [x] Forbedret cache-invalidering ✅
+  - [x] Optimalisert kommentar-henting med cache ✅
 - [x] Optimalisere bilde-lastning (delvis implementert) ✅
   - [x] Forbedret lazy loading med adaptive rootMargin ✅
   - [x] Lagt til fade-in animasjoner for bilder ✅
