@@ -638,7 +638,7 @@ export function searchByRelationship(personName, relationshipType = 'all') {
 // Add comment
 export function addComment(personId, text, author) {
     initData();
-    const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY));
+    const comments = getAllComments(true); // Force refresh to get latest
     
     // Extract @mentions from comment text
     const mentionMatches = text.match(/@(\w+)/g) || [];

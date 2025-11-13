@@ -1967,6 +1967,79 @@ img.loading {
         font-size: 0.8rem;
         padding: 0.4rem 0.8rem;
     }
+    
+    /* Improved touch targets for mobile (minimum 44x44px) */
+    button, .btn, a.btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Better spacing for mobile */
+    .persons-grid {
+        gap: 1rem;
+        padding: 1rem 0;
+    }
+    
+    /* Improved form inputs on mobile */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="url"],
+    textarea,
+    select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 0.75rem;
+        min-height: 44px;
+    }
+    
+    /* Better modal sizing on mobile */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 1rem auto;
+        padding: 1.5rem;
+        max-height: 90vh;
+    }
+    
+    /* Improved notification items on mobile */
+    .notification-item {
+        padding: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    /* Better button groups on mobile */
+    .data-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .data-actions button {
+        width: 100%;
+    }
+    
+    /* Improved profile sections on mobile */
+    .upload-section {
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    /* Better search filters on mobile */
+    .search-filters {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    /* Improved tree controls on mobile */
+    .tree-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .tree-controls button {
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
 }
 
 /* Tablet styles */
