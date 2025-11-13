@@ -117,7 +117,12 @@
 ### 5. Bildehåndtering
 - [x] Legge til bilde-redigering (crop, rotate) ✅
   - [x] Roter-funksjonalitet implementert (90° rotasjon) ✅
-  - [ ] Crop-funksjonalitet (krever mer avansert UI)
+  - [x] Crop-funksjonalitet ✅
+  - [x] Opprettet image-crop.js modul ✅
+  - [x] Implementert crop-modal med interaktivt valg-område ✅
+  - [x] Støtte for mouse og touch events ✅
+  - [x] Integrert crop-knapp i bildegalleri ✅
+  - [x] Oppdaterer bilde etter cropping ✅
 - [x] Konverter bilder til WebP format for bedre komprimering ✅
   - [x] WebP prioriteres automatisk ved komprimering ✅
   - [x] Fallback til JPEG hvis WebP ikke støttes ✅

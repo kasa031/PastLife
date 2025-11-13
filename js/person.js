@@ -255,6 +255,9 @@ function loadPersonDetails() {
                                         <button class="gallery-rotate-btn" onclick="rotateImageInGallery('${escapedImg}', '${currentPersonId}')" title="Roter bilde 90°" style="background: var(--orange-primary); color: white; border: none; border-radius: 4px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer;">
                                             🔄 Roter
                                         </button>
+                                        <button class="gallery-crop-btn" onclick="cropImageInGallery('${escapedImg}', '${currentPersonId}')" title="Crop bilde" style="background: var(--turquoise-dark); color: white; border: none; border-radius: 4px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer;">
+                                            ✂️ Crop
+                                        </button>
                                     </div>
                                 ` : ''}
                                 ${isOwner && allImages.length > 1 ? `
@@ -1290,6 +1293,72 @@ window.rotateImageInGallery = async function(imageUrl, personId) {
     } catch (error) {
         console.error('Error rotating image:', error);
         showMessage('Feil ved rotasjon av bilde: ' + error.message, 'error');
+    }
+};
+
+// Crop image in gallery
+window.cropImageInGallery = async function(imageUrl, personId) {
+    const person = getPersonById(personId);
+    if (!person) {
+        showMessage('Person ikke funnet', 'error');
+        return;
+    }
+    
+    // Check if user is owner
+    const user = getCurrentUser();
+    if (!user || person.createdBy !== user.username) {
+        showMessage('Du kan bare croppe bilder fra dine egne personer', 'error');
+        return;
+    }
+    
+    try {
+        // Show crop modal
+        const { showCropModal } = await import('./image-crop.js');
+        const croppedImage = await showCropModal(imageUrl);
+        
+        if (!croppedImage) {
+            // User cancelled
+            return;
+        }
+        
+        showMessage('Cropper bilde...', 'info');
+        
+        // Update image in array
+        const currentImages = person.images || (person.photo ? [person.photo] : []);
+        const imageIndex = currentImages.indexOf(imageUrl);
+        
+        if (imageIndex === -1) {
+            showMessage('Bilde ikke funnet i galleriet', 'error');
+            return;
+        }
+        
+        // Replace old image with cropped version
+        const updatedImages = [...currentImages];
+        updatedImages[imageIndex] = croppedImage;
+        
+        // Update main image if it was the cropped one
+        let newMainImage = person.mainImage;
+        if (person.mainImage === imageUrl) {
+            newMainImage = croppedImage;
+        }
+        
+        // Update person
+        const updatedPerson = {
+            ...person,
+            images: updatedImages,
+            mainImage: newMainImage,
+            photo: person.photo === imageUrl ? croppedImage : person.photo
+        };
+        
+        // Save updated person
+        const { savePerson } = await import('./data.js');
+        savePerson(updatedPerson, personId);
+        
+        showMessage('Bilde croppet!', 'success');
+        loadPersonDetails(); // Reload to show cropped image
+    } catch (error) {
+        console.error('Error cropping image:', error);
+        showMessage('Feil ved cropping av bilde: ' + error.message, 'error');
     }
 };
 
