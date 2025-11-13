@@ -97,10 +97,32 @@
     </footer>
 
     <script type="module" src="js/navigation-utils.js"></script>
-    <script type="module" src="js/offline-indicator.js"></script>
     <script type="module" src="js/offline-queue.js"></script>
-    <script type="module" src="js/install-prompt.js"></script>
-    <script type="module" src="js/update-manager.js"></script>
     <script type="module" src="js/person.js"></script>
+    <script type="module">
+        import { initOfflineIndicator, initUpdateManager, initInstallPrompt } from './js/module-loader.js';
+        
+        // Lazy load non-critical modules
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load offline indicator after a short delay
+            setTimeout(async () => {
+                try {
+                    await initOfflineIndicator();
+                } catch (e) {
+                    console.warn('Failed to load offline indicator:', e);
+                }
+            }, 1000);
+            
+            // Load update manager and install prompt after page is fully loaded
+            window.addEventListener('load', async () => {
+                try {
+                    await initUpdateManager();
+                    await initInstallPrompt();
+                } catch (e) {
+                    console.warn('Failed to load update manager or install prompt:', e);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

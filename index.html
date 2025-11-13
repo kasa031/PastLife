@@ -173,19 +173,42 @@
     </footer>
 
     <script type="module" src="js/navigation-utils.js"></script>
-    <script type="module" src="js/offline-indicator.js"></script>
     <script type="module" src="js/offline-queue.js"></script>
-    <script type="module" src="js/install-prompt.js"></script>
-    <script type="module" src="js/update-manager.js"></script>
     <script type="module" src="js/main.js"></script>
     <script type="module">
-        import { showOnboarding } from './js/onboarding.js';
+        import { initOfflineIndicator, initUpdateManager, initOnboarding, initInstallPrompt } from './js/module-loader.js';
         
-        // Show onboarding for new users after page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                showOnboarding();
-            }, 1000); // Wait 1 second after page load
+        // Show onboarding for new users after page loads (lazy loaded)
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Lazy load non-critical modules
+            // Load offline indicator after a short delay
+            setTimeout(async () => {
+                try {
+                    await initOfflineIndicator();
+                } catch (e) {
+                    console.warn('Failed to load offline indicator:', e);
+                }
+            }, 1000);
+            
+            // Load update manager after page is fully loaded
+            window.addEventListener('load', async () => {
+                try {
+                    await initUpdateManager();
+                    await initInstallPrompt();
+                } catch (e) {
+                    console.warn('Failed to load update manager or install prompt:', e);
+                }
+            });
+            
+            // Show onboarding (lazy loaded)
+            setTimeout(async () => {
+                try {
+                    const showOnboarding = await initOnboarding();
+                    showOnboarding();
+                } catch (e) {
+                    console.warn('Failed to load onboarding:', e);
+                }
+            }, 1000);
         });
     </script>
 </body>

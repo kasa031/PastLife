@@ -199,7 +199,14 @@
   - [x] Forbedret grid-layouts for mobile/tablet ✅
 
 ### 9. Performance
-- [ ] Implementere code splitting
+- [x] Implementere code splitting ✅
+  - [x] Opprettet module-loader.js for dynamisk import ✅
+  - [x] Konvertert install-prompt.js til lazy loading ✅
+  - [x] Konvertert offline-indicator.js til lazy loading ✅
+  - [x] Konvertert update-manager.js til lazy loading ✅
+  - [x] Konvertert onboarding.js til lazy loading ✅
+  - [x] Redusert initial bundle size ✅
+  - [x] Moduler lastes kun når de trengs ✅
 - [x] Forbedre caching-strategi ✅
   - [x] Økt cache-varighet fra 5s til 10s ✅
   - [x] Lagt til cache for kommentarer ✅
